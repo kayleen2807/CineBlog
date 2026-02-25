@@ -1,3 +1,3 @@
-# Proyecto-Integrado-2D
+# CineBlog
 
-hola
+Repositorio para trabajar con  el proyecto (en comienzo)
