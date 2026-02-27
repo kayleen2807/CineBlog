@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cine Blog</title>
+  <style>
+    .pantalla {
+      display: none; /* Oculta todas las pantallas */
+    }
+    .activa {
+      display: block; /* Solo la pantalla activa se muestra */
+    }
+  </style>
+</head>
+<body>
+  <!-- Botones de navegación -->
+  <button onclick="mostrarPantalla('inicio')">Inicio</button>
+  <button onclick="mostrarPantalla('visitantes')">Visitantes</button>
+  <button onclick="mostrarPantalla('iniciar_sesion')">Iniciar Sesion</button>
+  <button onclick="mostrarPantalla('registro')">Registrarse</button>
+
+  <!-- Pantallas -->
+  <div id="inicio" class="pantalla activa">
+    <h1>Pantalla de Inicio</h1>
+    <p>Bienvenido a mi blog.</p>
+  </div>
+
+  <div id="visitantes" class="pantalla">
+    <h1>Pantalla de visitantes</h1>
+    <p>Aquí iría la vista del visitante (solo ver)</p>
+  </div>
+
+  <div id="iniciar_sesion" class="pantalla">
+    <h1>Pantalla de Inicio de sesion</h1>
+    <p>Formulario para iniciar sesion o registrarse</p>
+  </div>
+
+  <div id="registro" class="pantalla">
+    <h1>Pantalla de Registro</h1>
+    <p>Formulario para registrarse</p>
+  </div>
+
+  <script>
+    function mostrarPantalla(id) {
+      // Ocultar todas las pantallas
+      const pantallas = document.querySelectorAll('.pantalla');
+      pantallas.forEach(p => p.classList.remove('activa'));
+
+      // Mostrar solo la seleccionada
+      document.getElementById(id).classList.add('activa');
+    }
+  </script>
+</body>
+</html>
