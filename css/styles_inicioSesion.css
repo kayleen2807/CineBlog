@@ -1,0 +1,75 @@
+/* Fondo con degradado */
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+    background: linear-gradient(#0a1f44, #000000);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Contenedor principal */
+.container {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 10px;
+    width: 400px;
+    text-align: center;
+}
+
+/* Logo y títulos */
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.logo img {
+    width: 120px;
+    margin-right: 10px;
+    margin: 0;
+}
+
+.logo h1 {
+    font-size: 40px;
+    margin: 0;
+}
+
+/* Campos de entrada */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    text-align: left;
+    margin: 10px 0 5px;
+}
+
+input {
+    padding: 10px;
+    border: none;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    background-color: #333;
+    color: white;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 16px 24px;   /* más espacio interno: alto y ancho */
+    font-size: 18px;      /* tamaño de la letra */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;          /* ocupa todo el ancho del contenedor */
+}
+
+button:hover {
+    background-color: #0056b3;
+}
