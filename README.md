@@ -46,10 +46,11 @@ Este proyecto está siendo desarrollado con:
 
 ## 🛣️ Roadmap
 
-- [ ] Agregar autenticación por redes sociales
-- [ ] Mejorar rendimiento con caching
-- [ ] Agregar interfaz de usuario responsiva
-- [ ] Panel de administración avanzado
+- [ ] Registro de usuarios.
+- [ ] Navegación como visitante para leer opiniones sin registrarse.
+- [ ] Inicio de sesión.
+- [ ] Publicación de reseñas de películas y series.
+- [ ] Comentarios en reseñas.
 
 ---
 
