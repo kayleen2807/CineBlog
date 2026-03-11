@@ -55,12 +55,13 @@ Este proyecto está siendo desarrollado con:
 ---
 
 ## ✒️ Autores
--Kayleen Avendano Reguera
+- **Kayleen Avendano Reguera** - [Kayleen Avendano Reguera](https://github.com/kayleen2807)
 -Josue Felipe Cruz Espinosa
 -Abril Azucena Díaz Ruelas
 -Carolina Molina Pimentel
 -Maximiliano Tejeda Figueroa
 
+Consulta también la lista de [contribuidores](https://github.com/kayleen2807/CineBlog/graphs/contributors)
 
 ---
 
