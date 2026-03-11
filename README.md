@@ -55,9 +55,12 @@ Este proyecto está siendo desarrollado con:
 ---
 
 ## ✒️ Autores
+-Kayleen Avendano Reguera
+-Josue Felipe Cruz Espinosa
+-Abril Azucena Díaz Ruelas
+-Carolina Molina Pimentel
+-Maximiliano Tejeda Figueroa
 
-
-Consulta también la lista de [contribuidores]().
 
 ---
 
