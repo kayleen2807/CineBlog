@@ -41,6 +41,7 @@ Este proyecto está siendo desarrollado con:
 - [Java](https://www.java.com/) - Lógica del sistema
 - [HTML](https://developer.mozilla.org/es/docs/Web/HTML) - Estructura de la interfaz web
 - [CSS](https://developer.mozilla.org/es/docs/Web/CSS) - Diseño y estilos visuales
+- [PHP](https://www.php.net/) - Vinvulacion con la base de datos
 
 ---
 
