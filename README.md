@@ -56,10 +56,10 @@ Este proyecto está siendo desarrollado con:
 
 ## ✒️ Autores
 - **Kayleen Avendano Reguera** - [Kayleen Avendano Reguera](https://github.com/kayleen2807)
--Josue Felipe Cruz Espinosa
--Abril Azucena Díaz Ruelas
--Carolina Molina Pimentel
--Maximiliano Tejeda Figueroa
+- **Josue Felipe Cruz Espinosa** - [Josue Felipe Cruz Espinosa](https://github.com/kayleen2807)
+- **Abril Azucena Diaz Ruelas** - [Abril Azucena Diaz Ruelas](https://github.com/adiaz108)
+- **Carolina Molina Pimentel** - [Carolina Molina Pimentel](https://github.com/Carolina234184)
+- **Maximiliano Tejeda Figueroal** - [Maximiliano Tejeda Figueroa](https://github.com/mtejeda4)
 
 Consulta también la lista de [contribuidores](https://github.com/kayleen2807/CineBlog/graphs/contributors)
 
