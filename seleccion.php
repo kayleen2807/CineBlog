@@ -20,14 +20,14 @@
             <div class="container1">
                 <div class="icon">👤</div>
                 <h3>Visitante</h3>
-                <a href="registro.php" class="btn-option">
+                <a href="registro.php">
                 <p>Acceso limitado sin registro</p>
                 </a>
             </div>
             <div class="container1">
                 <div class="icon">👥</div>
                 <h3>Usuario</h3>
-                <a href="inicioSesion.php" class="btn-option">
+                <a href="registro.php">
                     <p>Acceso completo con registro</p>
                 </a>
             </div>

@@ -4,34 +4,54 @@ body{
     background: linear-gradient(to bottom, #0a1f44, #000000);
     color : white;
     text-align: center;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 60px;
+    margin-bottom: 20px;
 }
 
 .container {
-    margin-top: 80px;
+    margin: 50px auto;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 10px;
+    width: 600px;
+    text-align: center;
 }
 
 .container1{
     background-color: rgba(255, 255, 255, 0.05);
-    padding: 30px;
-    border-radius: 10px;
-    width: 300px;
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+    width: 220px;
     text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, background-color 0.3s;
+    cursor: pointer;
 }
 
 .logo {
-    width: 150px;
-    margin-bottom: 20px;
-}
-
-header h1 {
-    display: inline-block;
-    margin-left: 10px;
-    font-size: 40px;
-
+    width: 300px;
+    margin-right: 15px;
 }
 
 h2 {
     margin: 40px 0 20px;
+}
+
+.container h1 {
+    font-size: 300px;
+    margin: 0;
 }
 
 .options {
@@ -41,35 +61,25 @@ h2 {
     margin: 40px 0;
 }
 
-.btn_option{
-    display: block;
-    background: #f0f0f0;
-    text-align: center;
-    padding: 25px;
-    border-radius: 12px;
-    width: 220px;
-    text-decoration: none;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    transition: transform 0.2s, background 0.3s;
-}
-
 .container1:hover {
   transform: scale(1.05);
   background: #2c2b53;
 }
 
+.container1 h3 {
+    margin: 10px 0 15px;
+    color: #ffffff;
+}
+
+.container p {
+    font-size: 0.9em;
+    color: #a1a1a1;
+    margin: 0;
+}
+
 .icon {
   font-size: 50px;
   margin-bottom: 15px;
-}
-
-.btn-option h3 {
-  margin: 10px 0 5px;
-}
-
-.btn-option p {
-  font-size: 0.9em;
-  color: #ffffff;
 }
 
 footer {
@@ -80,3 +90,4 @@ footer a{
     color: #00aaff;
     text-decoration: underline;
 }
+
