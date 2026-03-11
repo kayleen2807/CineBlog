@@ -38,7 +38,9 @@ También existirá la opción de navegar como visitante, lo que permitirá leer 
 ## 🛠️ Construido Con
 Este proyecto está siendo desarrollado con:
 
-- [Python](https://www.python.org/) - Lenguaje de programación
+- [Java](https://www.java.com/) - Lógica del sistema
+- [HTML](https://developer.mozilla.org/es/docs/Web/HTML) - Estructura de la interfaz web
+- [CSS](https://developer.mozilla.org/es/docs/Web/CSS) - Diseño y estilos visuales
 
 ---
 
