@@ -1,54 +1,341 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Cine Blog</title>
-  <style>
-    .pantalla {
-      display: none; /* Oculta todas las pantallas */
-    }
-    .activa {
-      display: block; /* Solo la pantalla activa se muestra */
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineBlog</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style> 
+
+*,
+*::before,
+*::after{
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+:root{
+--bg:#0e131a;
+--side:#111827;
+--card:#1d2e53;
+--border:#2e4a7a;
+--accent:#154188;
+--accent2:#1662c0;
+--text:#d0dcec;
+--muted:#8b97ab;
+--pill:#1e2d42;
+}
+
+body{
+background:var(--bg);
+color:var(--text);
+font-family:'Outfit',sans-serif;
+height:100vh;
+overflow:hidden;
+display:flex;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:240px;
+min-width:240px;
+background:var(--side);
+border-right:1px solid var(--border);
+display:flex;
+flex-direction:column;
+height:100vh;
+}
+
+.sb-top{
+padding:24px 20px;
+border-bottom:1px solid var(--border);
+}
+
+.perfil-btn{
+display:flex;
+align-items:center;
+gap:12px;
+background:none;
+border:none;
+color:var(--text);
+cursor:pointer;
+font-family:'Outfit',sans-serif;
+font-size:1rem;
+font-weight:700;
+width:100%;
+padding:6px 8px;
+border-radius:10px;
+transition:background .2s;
+}
+
+.perfil-btn:hover{
+background:rgba(255,255,255,.05);
+}
+
+.avatar{
+width:40px;
+height:40px;
+border-radius:50%;
+background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:1.1rem;
+}
+
+.sb-item{
+display:flex;
+align-items:center;
+gap:14px;
+padding:16px 24px;
+border-bottom:1px solid var(--border);
+font-weight:600;
+cursor:pointer;
+transition:background .2s;
+}
+
+.sb-item:hover{
+background:rgba(255,255,255,.04);
+}
+
+.sb-cats{
+padding:20px;
+flex:1;
+}
+
+.cat-label{
+font-size:.72rem;
+font-weight:700;
+letter-spacing:.12em;
+text-transform:uppercase;
+color:var(--muted);
+margin-bottom:14px;
+}
+
+.pills{
+display:flex;
+flex-wrap:wrap;
+gap:8px;
+}
+
+.pill{
+background:var(--pill);
+color:var(--muted);
+border:1px solid var(--border);
+border-radius:20px;
+padding:5px 14px;
+font-size:.8rem;
+font-weight:600;
+cursor:pointer;
+transition:background .2s,color .2s;
+}
+
+.pill:hover,
+.pill.on{
+background:var(--accent);
+color:#fff;
+border-color:var(--accent);
+}
+
+.sb-footer{
+border-top:1px solid var(--border);
+}
+
+.sb-fitem{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:14px 24px;
+font-size:.9rem;
+font-weight:600;
+color:var(--muted);
+cursor:pointer;
+transition:color .2s;
+}
+
+.sb-fitem:hover{
+color:var(--text);
+}
+
+/* MAIN */
+
+.main{
+flex:1;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+
+/* TOPBAR */
+
+.topbar{
+background:var(--side);
+border-bottom:1px solid var(--border);
+padding:14px 28px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:20px;
+}
+
+.logo-text{
+font-family:'Nunito',sans-serif;
+font-size:1.7rem;
+font-weight:800;
+}
+
+.logo-text span{
+color:var(--accent2);
+}
+
+.search-wrap{
+display:flex;
+align-items:center;
+gap:8px;
+background:var(--card);
+border:1px solid var(--border);
+border-radius:20px;
+padding:7px 16px;
+min-width:200px;
+}
+
+.search-wrap input{
+background:none;
+border:none;
+outline:none;
+color:var(--text);
+font-family:'Outfit',sans-serif;
+font-size:.88rem;
+width:100%;
+}
+
+.search-wrap input::placeholder{
+color:var(--muted);
+}
+
+/* AREA CENTRAL */
+
+.feed{
+flex:1;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+/* BOTON + */
+
+.create-post{
+width:130px;
+height:130px;
+border-radius:25px;
+border:none;
+background:var(--accent);
+color:white;
+font-size:70px;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+transition:transform .2s, background .2s;
+box-shadow:0 6px 25px rgba(0,0,0,.4);
+}
+
+.create-post:hover{
+transform:scale(1.1);
+background:#1923db;
+}
+
+</style>
 </head>
+
 <body>
-  <!-- Botones de navegación -->
-  <button onclick="mostrarPantalla('inicio')">Inicio</button>
-  <button onclick="mostrarPantalla('visitantes')">Visitantes</button>
-  <button onclick="mostrarPantalla('iniciar_sesion')">Iniciar Sesion</button>
-  <button onclick="mostrarPantalla('registro')">Registrarse</button>
 
-  <!-- Pantallas -->
-  <div id="inicio" class="pantalla activa">
-    <h1>Pantalla de Inicio</h1>
-    <p>Bienvenido a mi blog.</p>
-  </div>
+<!-- SIDEBAR -->
 
-  <div id="visitantes" class="pantalla">
-    <h1>Pantalla de visitantes</h1>
-    <p>Aquí iría la vista del visitante (solo ver)</p>
-  </div>
+<aside class="sidebar">
 
-  <div id="iniciar_sesion" class="pantalla">
-    <h1>Pantalla de Inicio de sesion</h1>
-    <p>Formulario para iniciar sesion o registrarse</p>
-  </div>
+<div class="sb-top">
+<button class="perfil-btn">
+<div class="avatar">👤</div>
+<span>Perfil</span>
+</button>
+</div>
 
-  <div id="registro" class="pantalla">
-    <h1>Pantalla de Registro</h1>
-    <p>Formulario para registrarse</p>
-  </div>
+<div class="sb-item">🔔 <span>Notificaciones</span></div>
 
-  <script>
-    function mostrarPantalla(id) {
-      // Ocultar todas las pantallas
-      const pantallas = document.querySelectorAll('.pantalla');
-      pantallas.forEach(p => p.classList.remove('activa'));
+<div class="sb-cats">
 
-      // Mostrar solo la seleccionada
-      document.getElementById(id).classList.add('activa');
-    }
-  </script>
+<div class="cat-label">Categories</div>
+
+<div class="pills">
+<span class="pill on" onclick="selPill(this)">Movies</span>
+<span class="pill" onclick="selPill(this)">Horror</span>
+<span class="pill" onclick="selPill(this)">Action</span>
+<span class="pill" onclick="selPill(this)">Science fiction</span>
+</div>
+
+</div>
+
+<div class="sb-footer">
+
+<div class="sb-fitem">
+<span>Configuración</span>
+<span>⚙️</span>
+</div>
+
+<div class="sb-fitem">
+<span>Cerrar sesión</span>
+<span>🚪</span>
+</div>
+
+</div>
+
+</aside>
+
+<!-- MAIN -->
+
+<div class="main">
+
+<header class="topbar">
+
+<div class="logo-text"><span>C</span>ineBlog</div>
+
+<span style="font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;">
+Tendencies
+</span>
+
+<div class="search-wrap">
+<span style="color:var(--muted)">🔍</span>
+<input type="text" placeholder="Search">
+</div>
+
+</header>
+
+<!-- AREA CENTRAL -->
+
+<div class="feed">
+
+<button class="create-post">
++
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+function selPill(el){
+el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+el.classList.add('on');
+}
+
+</script>
+
 </body>
 </html>
