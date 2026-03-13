@@ -76,6 +76,11 @@ $conn->close();
                 <input type="password" id="password" name="password" required>
 
                 <button type="submit">Iniciar sesión</button> <!-- Botón para enviar el formulario -->
+
+                <!-- Enlace a la página de recuperación de contraseña -->
+                <footer>
+                    <p>¿Olvidaste tu contraseña? <a href="recuperarContrasena.php">Recupérala aquí</a></p>
+                </footer>
             </form>
 
             <!-- Mensaje para saber si puede iniciar sesión -->
