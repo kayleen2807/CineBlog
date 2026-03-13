@@ -1,19 +1,16 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8"> <!-- Esto es para que se muestren correctamente los caracteres especiales -->
+<html lang="es"> <head>
+        <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
         <title>CineBlog - Registro</title>
-        <link rel="stylesheet" href="css/styles_registro.css"> <!-- Enlaza con tu archivo CSS para estilos personalizados -->
-    </head>
+        <link rel="stylesheet" href="css/styles_registro.css"> </head>
 
     <body>
         <div class="container">
             <div class="logo">
-                <img src="css/cineBlog_Logo.png" alt="Logo CineBlog"> <!-- Tener un logo.png en el proyecto -->
-                <h1>CineBlog</h1>
+                <img src="css/cineBlog_Logo.png" alt="Logo CineBlog"> <h1>CineBlog</h1>
             </div>
 
-            <!-- Formulario de registro -->
             <h2>Registro</h2>
             <form method='POST'>
                 <label for="nombre">Nombre completo:</label>

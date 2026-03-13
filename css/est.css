@@ -1,92 +1,89 @@
-body{
+/* 1. Reset para que todos los navegadores partan de cero */
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
     font-family: Arial, sans-serif;
     background: linear-gradient(to bottom, #0a1f44, #000000);
-    color : white;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
+    color: white;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
 }
 
+/* 2. Contenedor Principal (El cuadro oscuro) */
+.container {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 40px 20px;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 500px; /* Un poco más ancho para que quepa el texto */
+    text-align: center;
+    margin: auto; /* Esto lo centra verticalmente si sobra espacio */
+}
+
+/* 3. Header: Logo y Título juntos */
 header {
     display: flex;
-    justify-content: center;
+    flex-direction: row; /* Pone logo y texto de lado */
     align-items: center;
-    margin-top: 60px;
-    margin-bottom: 20px;
-}
-
-.container {
-    margin: 50px auto;
-    background-color: rgba(255, 255, 255, 0.05);
-    padding: 30px;
-    border-radius: 10px;
-    width: 400px;
-    text-align: center;
-}
-
-.container1{
-    background-color: rgba(255, 255, 255, 0.05);
-    color: white;
-    padding: 25px;
-    border-radius: 12px;
-    width: 220px;
-    text-align: center;
-    text-decoration: none;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s, background-color 0.3s;
-    cursor: pointer;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 30px;
+    width: 100%;
 }
 
 .logo {
-    width: 160px;
-}
-
-h2 {
-    margin: 40px 0 20px;
+    width: 120px; /* Tamaño más manejable para que no empuje el texto */
+    height: auto;
 }
 
 .container h1 {
-    font-size: 77px;
+    /* El truco del almendruco: Tamaño dinámico */
+    font-size: clamp(2rem, 10vw, 3.5rem);
     margin: 0;
+    white-space: nowrap; /* Evita que el nombre se parta en dos */
 }
 
+/* 4. Opciones (Los botones de Visitante/Usuario) */
 .options {
     display: flex;
+    flex-wrap: wrap; /* Si no caben, se ponen uno abajo del otro automáticamente */
     justify-content: center;
-    gap: 40px;
-    margin: 40px 0;
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.container1 {
+    background-color: rgba(255, 255, 255, 0.07);
+    padding: 20px;
+    border-radius: 12px;
+    width: 180px; /* Bajamos un poco el ancho base */
+    transition: transform 0.2s;
+    cursor: pointer;
 }
 
 .container1:hover {
-  transform: scale(1.05);
-  background: #2c2b53;
-}
-
-.container1 h3 {
-    margin: 10px 0 15px;
-    color: #ffffff;
-}
-
-.container p {
-    font-size: 0.9em;
-    color: #a1a1a1;
-    margin: 0;
+    transform: scale(1.05);
+    background: rgba(42, 37, 63, 0.913);
 }
 
 .icon {
-  font-size: 50px;
-  margin-bottom: 15px;
+    font-size: 40px;
+    margin-bottom: 10px;
 }
 
-footer {
-    margin-top: 40px;
+/* 5. Ajustes para móviles (Safari/Celulares) */
+@media (max-width: 480px) {
+    header {
+        flex-direction: column; /* En pantallas muy pequeñas, logo arriba y texto abajo */
+    }
+    .container1 {
+        width: 100%; /* Las opciones ocupan todo el ancho disponible */
+    }
 }
-
-footer a{
-    color: #00aaff;
-    text-decoration: underline;
-}
-

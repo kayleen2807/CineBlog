@@ -7,7 +7,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh; /* CORREGIDO: Cambiado de height a min-height */
 }
 
 /* Contenedor principal */
@@ -15,7 +15,9 @@ body {
     background-color: rgba(255, 255, 255, 0.05);
     padding: 30px;
     border-radius: 10px;
-    width: 400px;
+    width: 100%;             /* CORREGIDO: Se adapta a cualquier pantalla */
+    max-width: 400px;        /* CORREGIDO: Tope máximo de 400px para que no se estire de más */
+    box-sizing: border-box;  /* CORREGIDO: Evita que el padding deforme la caja */
     text-align: center;
 }
 
@@ -30,7 +32,7 @@ body {
 .logo img {
     width: 120px;
     margin-right: 10px;
-    margin: 0;
+    /* CORREGIDO: Se eliminó el margin: 0; que arruinaba el margen derecho */
 }
 
 .logo h1 {
