@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/main.css">
+    <title>Perfil CineBlog</title>
+</head>
+<body>
+
+    <div class="page-shell">
+        <nav class="head">
+            <div class="logo">
+                <a href="#" aria-label="CineBlog">
+                    <img class="logo-c" src="assets/logo-c.png" alt="C">
+                    <span class="logo-rest">ineBlog</span>
+                </a>
+            </div>
+            <div class="navbar" aria-label="Navegación principal">
+                <a href="#" class="nav-link active">Tendencias</a>
+                <a href="#" class="nav-link">Estrenos</a>
+                <a href="#" class="nav-link">Recomendado</a>
+            </div>
+        </nav>
+
+        <header class="header-container">
+            <div class="cover-photo" role="img" aria-label="Foto de portada"></div>
+            <div class="profile-section">
+                <div class="profile-pic-container">
+                    <img src="assets/tu-foto-perfil.jpg" class="profile-pic" alt="User">
+                </div>
+                <div class="user-info">
+                    <h1>User</h1>
+                    <div class="metrics-row" aria-label="Métricas del perfil">
+                        <div class="metric-list">
+                            <button type="button" class="metric follower-count metric-btn" aria-label="Followers">
+                                <span class="follower-num">1.2k</span>
+                                <span class="follower-label">Followers</span>
+                            </button>
+                            <button type="button" class="stat metric" data-stat="Reviews">
+                                <span class="stat-num">10</span>
+                                <span class="stat-label">Reviews</span>
+                            </button>
+                
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="tab-nav" aria-label="Secciones del perfil">
+            <a href="#" class="tab">My Reviews</a>
+            <a href="#" class="tab">Activity</a>
+            <a href="#" class="tab">WatchList</a>
+            <a href="#" class="tab">Likes</a>
+            <a href="#" class="tab">Settings</a>
+        </nav>
+
+        <main class="main-layout">
+
+            <section class="left-column">
+                <h2 class="section-title">Last Review</h2>
+
+                <article class="card">
+                    <img src="assets/poster-arcane.jpg" alt="Arcane">
+                    <div class="card-content">
+                        <h3>Arcane</h3>
+                        <div class="stars">★★★★★</div>
+                        <p class="review-copy collapsed">
+                            blablablabla texto de la reseña... blablablabla texto de la reseña... blablablabla texto de la reseña...
+                            blablablabla texto de la reseña... blablablabla texto de la reseña... blablablabla texto de la reseña...
+                        </p>
+                        <div class="card-footer">
+                            <button type="button" class="toggle-review">Mostrar mas</button>
+                            <div class="card-icons" aria-label="Acciones">
+                                <button type="button" class="icon-btn icon-heart" aria-label="Me gusta">♡</button>
+                                <button type="button" class="icon-btn" aria-label="Guardar">◌</button>
+                                <button type="button" class="icon-btn" aria-label="Compartir">↗</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card">
+                    <img src="assets/poster-substance.png" alt="The Substance">
+                    <div class="card-content">
+                        <h3>The Substance</h3>
+                        <div class="stars">★★★★☆</div>
+                        <p class="review-copy collapsed">
+                            blablablabla texto de la reseña... blablablabla texto de la reseña... blablablabla texto de la reseña...
+                            blablablabla texto de la reseña... blablablabla texto de la reseña... blablablabla texto de la reseña...
+                        </p>
+                        <div class="card-footer">
+                            <button type="button" class="toggle-review">Show More</button>
+                            <div class="card-icons" aria-label="Acciones">
+                                <button type="button" class="icon-btn icon-heart" aria-label="Me gusta">♡</button>
+                                <button type="button" class="icon-btn" aria-label="Guardar">◌</button>
+                                <button type="button" class="icon-btn" aria-label="Compartir">↗</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <aside class="right-column">
+                <div class="sidebar-box">
+                    <h3>Best Reviewed</h3>
+                    <div class="best-grid">
+                        <div class="best-slot">
+                            <img class="best-img" src="assets/poster-1.jpeg" alt="Best reviewed 1">
+                        </div>
+                        <div class="best-slot">
+                            <img class="best-img" src="assets/poster-2.jpg" alt="Best reviewed 2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-box">
+                    <h3>Favorite Genres</h3>
+                    <div class="tags">
+                        <button type="button" class="tag">Comedy</button>
+                        <button type="button" class="tag">Anime</button>
+                        <button type="button" class="tag">Drama</button>
+                        <button type="button" class="tag">Suspense</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-box">
+                    <h3>Community</h3>
+                    <div class="community-item">
+                        <div class="comm-img" aria-hidden="true"></div>
+                        <span>AngeSteph</span>
+                    </div>
+                </div>
+            </aside>
+
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
