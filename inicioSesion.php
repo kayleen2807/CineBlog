@@ -21,22 +21,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email    = $_POST['email'];
     $password = $_POST['password'];
 
-    // Consulta segura
-    $stmt = $conn->prepare("SELECT contraseña FROM usuarios WHERE email = ?");
+    // Consulta segura (se agrego lo del rol tambien para que solo puedan iniciar sesión los usuarios registrados, no los visitantes)
+    $stmt = $conn->prepare("SELECT contraseña, rol FROM usuarios WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($hashed_password);
+        $stmt->bind_result($hashed_password, $rol);
         $stmt->fetch();
 
         if (password_verify($password, $hashed_password)) {
             $_SESSION['usuario'] = $email;
+            $_SESSION['rol'] = $rol;
             $mensaje = "Inicio de sesión exitoso. Bienvenido a CineBlog.";
-            // Aquí podrías redirigir si quieres:
-            // header("Location: pagina_principal.php");
-            // exit();
+            // Aquí podrías redirigir si quieres (ya implementado):
+            header("Location: index.php");
+            exit();
         } else {
             $mensaje = "Contraseña incorrecta.";
         }
@@ -80,7 +81,9 @@ $conn->close();
                 <!-- Enlace a la página de recuperación de contraseña -->
                 <footer>
                     <p>¿Olvidaste tu contraseña? <a href="recuperarContrasena.php">Recupérala aquí</a></p>
+                    <p>¿No tienes una cuenta? <a href="registro.php">Regístrate aquí</a></p>
                 </footer>
+                
             </form>
 
             <!-- Mensaje para saber si puede iniciar sesión -->

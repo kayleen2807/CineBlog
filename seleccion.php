@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Cineblog - Acceso</title>
-    <link rel="stylesheet" href="css/est.css">
+    <link rel="stylesheet" href="css/styles_seleccion.css">
 </head>
 <body>
     <div class="container">
@@ -20,23 +20,18 @@
             <div class="container1">
                 <div class="icon">👤</div>
                 <h3>Visitante</h3>
-                <a href="registro.php">
+                <a href="visitante.php">
                 <p>Acceso limitado sin registro</p>
                 </a>
             </div>
             <div class="container1">
                 <div class="icon">👥</div>
                 <h3>Usuario</h3>
-                <a href="registro.php">
-                    <p>Acceso completo con registro</p>
+                <a href="inicioSesion.php">
+                    <p>Usuarios ya registrados</p>
                 </a>
             </div>
         </div>
-
-        <!-- Link de inicio de sesion -->
-         <footer>
-            <p>¿Ya tienes una cuenta? <a href="inicioSesion.php">Inicia sesión aquí</a></p>
-        </footer>
     </div>
 </body>
 </html>
