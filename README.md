@@ -38,10 +38,16 @@ También existirá la opción de navegar como visitante, lo que permitirá leer 
 ## 🛠️ Construido Con
 Este proyecto está siendo desarrollado con:
 
-- [Java](https://www.java.com/) - Lógica del sistema
+- [Java](https://www.java.com/) - Lógica del sistema 
 - [HTML](https://developer.mozilla.org/es/docs/Web/HTML) - Estructura de la interfaz web
 - [CSS](https://developer.mozilla.org/es/docs/Web/CSS) - Diseño y estilos visuales
-- [PHP](https://www.php.net/) - Vinvulacion con la base de datos
+- [PHP](https://www.php.net/)  - Vinculacion con la base de datos
+  <p align="left">
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" width="50" height="50"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" width="50" height="50"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" width="50" height="50"/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg" width="50" height="50"/>
+  <im
 
 ---
 
@@ -54,6 +60,22 @@ Este proyecto está siendo desarrollado con:
 - [ ] Comentarios en reseñas.
 
 ---
+## Visuales:
+Seleecion del ususario:
+<img width="1896" height="1004" alt="image" src="https://github.com/user-attachments/assets/ae2c62b6-fdb3-4aab-9829-951262223399" />
+
+Vista del vistante (en proceso):
+<img width="1905" height="1003" alt="image" src="https://github.com/user-attachments/assets/e21e5453-aece-4382-bccb-338cc615debf" />
+
+Vista del editor y admin (en proceso):
+<img width="1900" height="995" alt="image" src="https://github.com/user-attachments/assets/9d18a654-4e90-4b16-95be-e43d50fea695" />
+
+Inicio de sesion:
+<img width="1906" height="1001" alt="image" src="https://github.com/user-attachments/assets/0abcbc8f-b4f9-4fe5-b53f-0ddeedefcb7e" />
+
+Registro:
+<img width="1909" height="1004" alt="image" src="https://github.com/user-attachments/assets/9e0c62be-339e-4c8a-85aa-6c5f349e6974" />
+
 
 ## ✒️ Autores
 - **Kayleen Avendano Reguera** - [Kayleen Avendano Reguera](https://github.com/kayleen2807)
