@@ -90,6 +90,15 @@ $conn->close();
              <?php if (!empty($mensaje)) : ?>
                 <p style="color: red; margin-top: 15px;"><?php echo $mensaje; ?></p>
             <?php endif; ?>
+            
         </div>
+
+        <!-- Parte de JavaScript para mostrar/ocultar contraseña -->
+         <script>
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === "password" ? "text" : "password";
+        }
+        </script>
     </body>
 </html>
