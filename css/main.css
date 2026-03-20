@@ -561,12 +561,67 @@ body {
 }
 
 .profile-pic {
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
     border: 3px solid #dbe9ff22;
     object-fit: cover;
     background: #1b2433;
+    margin-bottom: 10px;
+}
+
+.profile-pic-container button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.profile-pic-container button:hover {
+    background-color: #0056b3;
+}
+
+.form_foto {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.file-label {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+}
+
+.file-label:hover {
+    background-color: #e0e0e0;
+}
+
+.form_foto input[type="file"] {
+    display: none; /* ocultamos el input */
+}
+
+.btn_foto {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn_foto:hover {
+    background-color: #0056b3;
 }
 
 .user-info h1 {

@@ -1,4 +1,32 @@
-﻿<!DOCTYPE html>
+﻿<?php
+// Archivo para mostrar el perfil del usuario, solo accesible si el usuario ha iniciado sesión
+session_start();
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: inicioSesion.php");
+    exit();
+}
+//conexión a la base de datos para obtener la información del usuario
+$conn = new mysqli("localhost", "root", "", "cineblog_db");
+if ($conn->connect_error) {
+    die("Error de conexión: " . $conn->connect_error);
+}
+
+$id_usuario = $_SESSION['usuario_id'];
+$stmt = $conn->prepare("SELECT foto_perfil FROM usuarios WHERE id_usuario = ?");
+$stmt->bind_param("i", $id_usuario);
+$stmt->execute();
+$resultado = $stmt->get_result();
+$usuario = $resultado->fetch_assoc();
+
+$foto = !empty($usuario['foto_perfil']) ? $usuario['foto_perfil'] : "uploads/default.png";
+
+$stmt->close();
+$conn->close();
+
+
+?>
+
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -12,7 +40,7 @@
         <nav class="head">
             <div class="logo">
                 <a href="#" aria-label="CineBlog">
-                    <img class="logo-c" src="assets/logo-c.png" alt="C">
+                    <img class="logo-c" src="css/cineBlog_Logo.png" alt="C">
                     <span class="logo-rest">ineBlog</span>
                 </a>
             </div>
@@ -27,10 +55,15 @@
             <div class="cover-photo" role="img" aria-label="Foto de portada"></div>
             <div class="profile-section">
                 <div class="profile-pic-container">
-                    <img src="assets/tu-foto-perfil.jpg" class="profile-pic" alt="User">
+                    <img src="<?php echo $foto; ?>" alt="Foto de perfil" class="profile-pic">
+                    <form action="subirFoto.php" method="POST" enctype="multipart/form-data" class="form_foto">
+                        <label for="foto" class="file-label">Seleccionar foto</label>
+                        <input type="file" name="foto" id="foto" accept="image/*" required>
+                        <button type="submit" class="btn_foto">Actualizar foto</button>
+                    </form>
                 </div>
                 <div class="user-info">
-                    <h1>User</h1>
+                    <h1><?php echo $_SESSION['nombre']; ?></h1>
                     <div class="metrics-row" aria-label="Métricas del perfil">
                         <div class="metric-list">
                             <button type="button" class="metric follower-count metric-btn" aria-label="Followers">
@@ -122,14 +155,6 @@
                         <button type="button" class="tag">Anime</button>
                         <button type="button" class="tag">Drama</button>
                         <button type="button" class="tag">Suspense</button>
-                    </div>
-                </div>
-
-                <div class="sidebar-box">
-                    <h3>Community</h3>
-                    <div class="community-item">
-                        <div class="comm-img" aria-hidden="true"></div>
-                        <span>AngeSteph</span>
                     </div>
                 </div>
             </aside>

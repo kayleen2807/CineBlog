@@ -22,17 +22,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Consulta segura (se agrego lo del rol tambien para que solo puedan iniciar sesión los usuarios registrados, no los visitantes)
-    $stmt = $conn->prepare("SELECT contraseña, rol FROM usuarios WHERE email = ?");
+    $stmt = $conn->prepare("SELECT id_usuario, nombre, contraseña, rol FROM usuarios WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        $stmt->bind_result($hashed_password, $rol);
+        $stmt->bind_result($id_usuario, $nombre, $hashed_password, $rol);
         $stmt->fetch();
 
         if (password_verify($password, $hashed_password)) {
-            $_SESSION['usuario'] = $email;
+            $_SESSION['usuario_id'] = $id_usuario;
+            $_SESSION['nombre'] = $nombre;
             $_SESSION['rol'] = $rol;
             $mensaje = "Inicio de sesión exitoso. Bienvenido a CineBlog.";
             // Aquí podrías redirigir si quieres (ya implementado):
@@ -47,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $stmt->close();
 }
+
 $conn->close();
 ?>
 

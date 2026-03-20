@@ -8,6 +8,11 @@ if(!isset($_SESSION['rol'])){
     exit();
 }
 
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: inicioSesion.php");
+    exit();
+}
+
 $rol = $_SESSION['rol'] ?? 'visitante'; // Si no hay rol, asigna 'visitante' por defecto
 ?>
 <!--Maquetado en html para el inicio -->
@@ -24,9 +29,14 @@ $rol = $_SESSION['rol'] ?? 'visitante'; // Si no hay rol, asigna 'visitante' por
     
 </head>
 <body>
-
+    <style>
+        a {
+            text-decoration: none;
+            color: #b9b9b9;
+        }
+    </style>
+    
     <!-- SIDEBAR -->
-
     <aside class="sidebar">
 
         <div class="sb-top">
@@ -34,12 +44,12 @@ $rol = $_SESSION['rol'] ?? 'visitante'; // Si no hay rol, asigna 'visitante' por
             <?php if ($rol == "editor") : ?>
                 <button class="perfil-btn">
                     <div class="avatar">👤</div>
-                        <span><a href="perfil.html">Perfil</a></span>
+                        <span><a href="perfil.php"><?php echo $_SESSION['nombre']; ?></a></span>
                 </button>  
             <?php elseif ($rol == "admin") : ?>
                 <button class="perfil-btn">
                     <div class="avatar">👤</div>
-                        <span><a href="perfil.html">Perfil</a></span>
+                        <span><a href="perfil.php"><?php echo $_SESSION['nombre']; ?></a></span>
                 </button>
              <?php else : ?>
                 <button class="perfil-btn">
