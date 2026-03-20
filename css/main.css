@@ -937,3 +937,113 @@ body {
 .icon-heart {
     font-size: 26px;
 }
+
+.heart-icon{
+    width:22px;
+    height:22px;
+    display:block;
+    transform: translateY(0.5px);
+}
+
+.heart-path{
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2;
+}
+
+.icon-btn.liked .heart-path{
+    fill:currentColor;
+    stroke:currentColor;
+    stroke-width:0;
+}
+
+.icon-btn.liked{
+    color:#ff6b6b;
+    border-color: rgba(255, 107, 107, 0.55);
+    background: rgba(255, 107, 107, 0.10);
+}
+
+.icon-btn.liked:hover{
+    border-color: rgba(255, 107, 107, 0.75);
+    background: rgba(255, 107, 107, 0.14);
+}
+
+.comments{
+    margin-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 12px;
+}
+
+.comment-form{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom: 12px;
+}
+
+.comment-input{
+    width:100%;
+    min-height: 74px;
+    resize:none;
+    border-radius: 12px;
+    border: 1px solid #2f4767;
+    background: #112239;
+    color: #edf1f7;
+    padding: 10px 12px;
+    outline:none;
+}
+
+.comment-input:focus{
+    border-color: #80a7d9;
+    box-shadow: 0 0 0 4px rgba(111, 211, 255, 0.12);
+}
+
+.comment-actions{
+    display:flex;
+    justify-content:flex-end;
+}
+
+.comment-send{
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid #2f4767;
+    background: #19314e;
+    color: #edf1f7;
+    font-weight: 700;
+    cursor:pointer;
+}
+
+.comment-send:disabled{
+    opacity: .6;
+    cursor:not-allowed;
+}
+
+.comment-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.comment-item{
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(17,34,57,0.55);
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+
+.comment-head{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    color: rgba(179, 192, 209, 0.95);
+    font-weight: 700;
+    font-size: .86rem;
+    margin-bottom: 6px;
+}
+
+.comment-body{
+    color: rgba(237, 241, 247, 0.92);
+    font-weight: 500;
+    line-height: 1.35;
+}
