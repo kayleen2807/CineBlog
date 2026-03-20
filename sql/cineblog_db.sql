@@ -21,6 +21,9 @@ SET time_zone = "+00:00";
 -- Base de datos: `cineblog_db`
 --
 
+CREATE DATABASE IF NOT EXISTS `cineblog_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `cineblog_db`;
+
 -- --------------------------------------------------------
 
 --
@@ -94,6 +97,31 @@ CREATE TABLE `posts` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `post_categorias`
+-- (máximo 3 categorías por post desde la app)
+--
+
+CREATE TABLE `post_categorias` (
+  `post_id` int(11) NOT NULL,
+  `categoria` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `post_imagenes`
+-- (múltiples imágenes por post)
+--
+
+CREATE TABLE `post_imagenes` (
+  `id_imagen` int(11) NOT NULL,
+  `post_id` int(11) NOT NULL,
+  `ruta` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -103,6 +131,7 @@ CREATE TABLE `usuarios` (
   `email` varchar(150) NOT NULL,
   `fecha_nac` date NOT NULL,
   `contraseña` varchar(255) NOT NULL,
+  `foto_perfil` varchar(255) DEFAULT NULL,
   `rol` enum('visitante','editor','admin') DEFAULT 'visitante'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -147,6 +176,20 @@ ALTER TABLE `posts`
   ADD KEY `autor_id` (`autor_id`);
 
 --
+-- Indices de la tabla `post_categorias`
+--
+ALTER TABLE `post_categorias`
+  ADD PRIMARY KEY (`post_id`,`categoria`),
+  ADD KEY `post_id` (`post_id`);
+
+--
+-- Indices de la tabla `post_imagenes`
+--
+ALTER TABLE `post_imagenes`
+  ADD PRIMARY KEY (`id_imagen`),
+  ADD KEY `post_id` (`post_id`);
+
+--
 -- Indices de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -188,6 +231,12 @@ ALTER TABLE `posts`
   MODIFY `id_post` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `post_imagenes`
+--
+ALTER TABLE `post_imagenes`
+  MODIFY `id_imagen` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
@@ -222,6 +271,18 @@ ALTER TABLE `notificaciones`
 --
 ALTER TABLE `posts`
   ADD CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`autor_id`) REFERENCES `usuarios` (`id_usuario`);
+
+--
+-- Filtros para la tabla `post_categorias`
+--
+ALTER TABLE `post_categorias`
+  ADD CONSTRAINT `post_categorias_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id_post`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `post_imagenes`
+--
+ALTER TABLE `post_imagenes`
+  ADD CONSTRAINT `post_imagenes_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id_post`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

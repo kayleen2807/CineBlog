@@ -96,3 +96,121 @@ setupFlash(".metric-btn", { durationMs: 1600 });
 setupExclusiveActive(".tags .tag");
 setupImageFallback();
 setupShowMore();
+
+function setupLikes() {
+    document.addEventListener("click", async (event) => {
+        const btn = event.target.closest(".like-btn[data-post-id]");
+        if (!btn) return;
+
+        const postId = btn.dataset.postId;
+        if (!postId) return;
+
+        // Optimistic UI: cambia al instante
+        const before = btn.classList.contains("liked");
+        const next = !before;
+        btn.classList.toggle("liked", next);
+        btn.setAttribute("aria-pressed", next ? "true" : "false");
+
+        try {
+            const body = new URLSearchParams();
+            body.set("post_id", postId);
+
+            const res = await fetch("toggle_like.php", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: body.toString(),
+            });
+            const data = await res.json().catch(() => null);
+            if (!res.ok || !data || !data.ok) throw new Error("like failed");
+
+            const liked = !!data.liked;
+            btn.classList.toggle("liked", liked);
+            btn.setAttribute("aria-pressed", liked ? "true" : "false");
+        } catch {
+            // Si falla, deja el UI como está (para que el usuario vea el cambio).
+        }
+    });
+}
+
+function setupComments() {
+    document.addEventListener("click", (event) => {
+        const btn = event.target.closest(".comment-btn[data-post-id]");
+        if (!btn) return;
+
+        const postId = btn.dataset.postId;
+        if (!postId) return;
+
+        const safeId = window.CSS && typeof CSS.escape === "function" ? CSS.escape(postId) : postId;
+        const sec = document.querySelector(`.comments[data-post-id="${safeId}"]`);
+        if (!sec) return;
+
+        const isHidden = sec.hasAttribute("hidden");
+        if (isHidden) sec.removeAttribute("hidden");
+        else sec.setAttribute("hidden", "");
+
+        if (isHidden) {
+            const input = sec.querySelector(".comment-input");
+            if (input) input.focus();
+        }
+    });
+
+    document.addEventListener("submit", async (event) => {
+        const form = event.target.closest(".comment-form[data-post-id]");
+        if (!form) return;
+        event.preventDefault();
+
+        const postId = form.dataset.postId;
+        const input = form.querySelector(".comment-input");
+        const commentsSection = form.closest(".comments");
+        const list = commentsSection ? commentsSection.querySelector(".comment-list") : null;
+        if (!postId || !input || !list) return;
+
+        const text = (input.value || "").trim();
+        if (!text) return;
+
+        const body = new URLSearchParams();
+        body.set("post_id", postId);
+        body.set("contenido", text);
+
+        const sendBtn = form.querySelector(".comment-send");
+        if (sendBtn) sendBtn.disabled = true;
+
+        try {
+            const res = await fetch("add_comment.php", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: body.toString(),
+            });
+            const data = await res.json().catch(() => null);
+            if (!res.ok || !data || !data.ok) {
+                const msg = (data && data.error) ? data.error : "No se pudo comentar.";
+                alert(msg);
+                return;
+            }
+
+            const c = data.comment || { autor: "Tú", fecha: "", contenido: text };
+            const item = document.createElement("div");
+            item.className = "comment-item";
+            item.innerHTML = `
+<div class="comment-head">
+  <span class="comment-author"></span>
+  <span class="comment-date"></span>
+</div>
+<div class="comment-body"></div>
+`.trim();
+            item.querySelector(".comment-author").textContent = c.autor || "Tú";
+            item.querySelector(".comment-date").textContent = (c.fecha || "").slice(0, 16);
+            item.querySelector(".comment-body").textContent = c.contenido || text;
+            list.appendChild(item);
+
+            input.value = "";
+        } finally {
+            if (sendBtn) sendBtn.disabled = false;
+        }
+    });
+}
+
+setupLikes();
+setupComments();
