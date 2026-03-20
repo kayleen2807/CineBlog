@@ -129,7 +129,7 @@ function contains_profanity(string $text): bool
         'polla',
         'pollas',
         'vagina',
-        'vaginas',
+        'coño',
     ];
 
     foreach ($badWords as $bad) {
