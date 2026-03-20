@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 27-02-2026 a las 16:22:52
+-- Tiempo de generación: 20-03-2026 a las 19:32:41
 -- Versión del servidor: 10.4.32-MariaDB
--- Versión de PHP: 8.2.12
+-- Versión de PHP: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -21,13 +21,10 @@ SET time_zone = "+00:00";
 -- Base de datos: `cineblog_db`
 --
 
-CREATE DATABASE IF NOT EXISTS `cineblog_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-USE `cineblog_db`;
-
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `categorias`
+-- Estructura tabla para la tabla `categorias`
 --
 
 CREATE TABLE `categorias` (
@@ -97,11 +94,10 @@ CREATE TABLE `posts` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `post_categorias`
--- (máximo 3 categorías por post desde la app)
+-- Estructura de tabla para la tabla `posts_ext`
 --
 
-CREATE TABLE `post_categorias` (
+CREATE TABLE `posts_ext` (
   `post_id` int(11) NOT NULL,
   `categoria` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -109,8 +105,36 @@ CREATE TABLE `post_categorias` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `post_categorias`
+--
+
+CREATE TABLE `post_categorias` (
+  `post_id` int(11) NOT NULL,
+  `categoria` varchar(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `post_categorias`
+--
+
+INSERT INTO `post_categorias` (`post_id`, `categoria`) VALUES
+(1, 'Aventura'),
+(1, 'Película'),
+(1, 'Suspenso'),
+(2, 'Drama'),
+(2, 'Película'),
+(2, 'Recomendaciones'),
+(3, 'Fantasía'),
+(3, 'Película'),
+(3, 'Romance'),
+(4, 'Acción'),
+(4, 'Aventura'),
+(4, 'Película');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `post_imagenes`
--- (múltiples imágenes por post)
 --
 
 CREATE TABLE `post_imagenes` (
@@ -134,6 +158,13 @@ CREATE TABLE `usuarios` (
   `foto_perfil` varchar(255) DEFAULT NULL,
   `rol` enum('visitante','editor','admin') DEFAULT 'visitante'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `usuarios`
+--
+
+INSERT INTO `usuarios` (`id_usuario`, `nombre`, `email`, `fecha_nac`, `contraseña`, `foto_perfil`, `rol`) VALUES
+(1, 'Abril Diaz', 'adiaz107@ucol.mx', '2007-04-18', '$2y$10$lPk0xR6BrdujVCWAqU9z4enotTBWGZrytQ7IR3ROLICqPwFgyD9la', NULL, 'editor');
 
 --
 -- Índices para tablas volcadas
@@ -176,6 +207,12 @@ ALTER TABLE `posts`
   ADD KEY `autor_id` (`autor_id`);
 
 --
+-- Indices de la tabla `posts_ext`
+--
+ALTER TABLE `posts_ext`
+  ADD PRIMARY KEY (`post_id`);
+
+--
 -- Indices de la tabla `post_categorias`
 --
 ALTER TABLE `post_categorias`
@@ -210,13 +247,13 @@ ALTER TABLE `categorias`
 -- AUTO_INCREMENT de la tabla `comentarios`
 --
 ALTER TABLE `comentarios`
-  MODIFY `id_comentario` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_comentario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `likes`
 --
 ALTER TABLE `likes`
-  MODIFY `id_like` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_like` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT de la tabla `notificaciones`
@@ -228,19 +265,19 @@ ALTER TABLE `notificaciones`
 -- AUTO_INCREMENT de la tabla `posts`
 --
 ALTER TABLE `posts`
-  MODIFY `id_post` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_post` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `post_imagenes`
 --
 ALTER TABLE `post_imagenes`
-  MODIFY `id_imagen` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_imagen` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Restricciones para tablas volcadas
@@ -273,10 +310,10 @@ ALTER TABLE `posts`
   ADD CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`autor_id`) REFERENCES `usuarios` (`id_usuario`);
 
 --
--- Filtros para la tabla `post_categorias`
+-- Filtros para la tabla `posts_ext`
 --
-ALTER TABLE `post_categorias`
-  ADD CONSTRAINT `post_categorias_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id_post`) ON DELETE CASCADE;
+ALTER TABLE `posts_ext`
+  ADD CONSTRAINT `posts_ext_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id_post`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `post_imagenes`
