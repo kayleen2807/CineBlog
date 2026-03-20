@@ -118,7 +118,7 @@ $conn->close();
             <div class="logo">
                 <a href="#" aria-label="CineBlog">
                     <img class="logo-c" src="css/cineBlog_Logo.png" alt="C">
-                    <span class="logo-rest">ineBlog</span>
+                    <span class="logo-rest">CineBlog</span>
                 </a>
             </div>
             <div class="navbar" aria-label="Navegación principal">
@@ -141,19 +141,6 @@ $conn->close();
                 </div>
                 <div class="user-info">
                     <h1><?php echo $_SESSION['nombre']; ?></h1>
-                    <div class="metrics-row" aria-label="Métricas del perfil">
-                        <div class="metric-list">
-                            <button type="button" class="metric follower-count metric-btn" aria-label="Followers">
-                                <span class="follower-num">1.2k</span>
-                                <span class="follower-label">Followers</span>
-                            </button>
-                            <button type="button" class="stat metric" data-stat="Reviews">
-                                <span class="stat-num">10</span>
-                                <span class="stat-label">Reviews</span>
-                            </button>
-                
-                        </div>
-                    </div>
                 </div>
             </div>
         </header>

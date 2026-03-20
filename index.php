@@ -3,12 +3,7 @@
 session_start();
 
 //si no hay rol en la sesión, redirige a inicioSesion.php
-if(!isset($_SESSION['rol'])){
-    header("Location: inicioSesion.php");
-    exit();
-}
-
-if (!isset($_SESSION['usuario_id'])) {
+if (!isset($_SESSION['usuario_id']) && (!isset($_SESSION['rol']) || $_SESSION['rol'] !== "visitante")) {
     header("Location: inicioSesion.php");
     exit();
 }
