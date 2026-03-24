@@ -36,7 +36,6 @@ CREATE TABLE `categorias` (
 
 --
 -- Estructura de tabla para la tabla `comentarios`
---
 
 CREATE TABLE `comentarios` (
   `id_comentario` int(11) NOT NULL,
@@ -51,7 +50,7 @@ CREATE TABLE `comentarios` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `likes`
+-- Estructura de tabla `likes`
 --
 
 CREATE TABLE `likes` (
@@ -61,9 +60,7 @@ CREATE TABLE `likes` (
   `fecha` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
---
+-- -------------------------------------------------------h
 -- Estructura de tabla para la tabla `notificaciones`
 --
 
@@ -78,7 +75,7 @@ CREATE TABLE `notificaciones` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `posts`
+-- Estructura de tabla `posts`
 --
 
 CREATE TABLE `posts` (
