@@ -1,0 +1,16 @@
+{
+    "name": "max/cineblog",
+    "description": "Aplicación web CineBlog para gestión de usuarios y posts.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "mtejeda4",
+            "email": "mtejeda4@ucol.mx"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "phpmailer/phpmailer": "^7.0"
+    }
+}
