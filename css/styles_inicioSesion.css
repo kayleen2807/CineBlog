@@ -98,3 +98,8 @@ button:hover {
     user-select: none;
     font-size: 18px;
 }
+
+.btn-small {
+    padding: 5px 10px; 
+    font-size: 12px;
+}
