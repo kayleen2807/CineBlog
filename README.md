@@ -59,6 +59,18 @@ Este proyecto está siendo desarrollado con:
 - [ ] Publicación de reseñas de películas y series.
 - [ ] Comentarios en reseñas.
 
+
+##👥 Roles de usuario
+
+• Usuario:
+Puede publicar reseñas, comentar y reaccionar.
+
+• Visitante:
+Solo puede visualizar contenido.
+
+• Administrador:
+Gestiona usuarios y contenido
+
 ---
 ## Visuales:
 Seleecion del ususario:
