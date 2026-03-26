@@ -91,28 +91,21 @@ try {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CineBlog</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles_inicio.css">
-    
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineBlog</title>
+<link rel="stylesheet" href="css/styles_inicio.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <style>
-        a {
-            text-decoration: none;
-            color: #b9b9b9;
-        }
-    </style>
-    
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
 
-        <div class="sb-top">
-            <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
+<div class="cine-bg">
+  <canvas id="cineBg"></canvas>
+</div>
+
+<aside class="sidebar">
+  <div style="display:flex;flex-direction:column;gap:15px;">
+    <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
             <?php if ($rol == "editor") : ?>
                 <button class="perfil-btn">
                     <div class="avatar">👤</div>
@@ -130,66 +123,55 @@ try {
                 </button>
             <?php endif; ?>
 
+    <div class="sb-section">
+      <div class="sb-section-title">TIPO</div>
+      <div class="type-filter">
+        <button class="type-btn active" onclick="selType(this,'movies')">Películas</button>
+        <button class="type-btn" onclick="selType(this,'series')">Series</button>
+      </div>
+    </div>
 
-        </div>
 
-        <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
-            <?php if ($rol == "editor") : ?>
-                <div class="sb-item">🔔 <span>Notificaciones</span></div>
-            <?php elseif ($rol == "admin") : ?>
-                <div class="sb-item">🔔 <span>Notificaciones</span></div>
-            <?php endif; ?>
+    <div class="sb-section">
+      <div class="sb-section-title">CATEGORÍAS</div>
+      <div class="pills">
+        <span class="pill on" onclick="selPill(this)">Romance</span>
+        <span class="pill" onclick="selPill(this)">Ciencia ficción</span>
+        <span class="pill" onclick="selPill(this)">Acción</span>
+        <span class="pill" onclick="selPill(this)">Comedia</span>
+        <span class="pill" onclick="selPill(this)">Animación</span>
+        <span class="pill" onclick="selPill(this)">Terror</span>
+        <span class="pill" onclick="selPill(this)">Drama</span>
+        <span class="pill" onclick="selPill(this)">Aventura</span>
+        <span class="pill" onclick="selPill(this)">Suspenso</span>
+      </div>
+    </div>
+  </div>
 
-        <div class="sb-cats">
+  
+  <div style="display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--card);padding-top:15px;">
+    <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
+    <?php if ($rol == "editor") : ?>
+      <div class="sb-item">🔔 <span>Notificaciones</span></div>
+    <?php elseif ($rol == "admin") : ?>
+      <div class="sb-item">🔔 <span>Notificaciones</span></div>
+    <?php endif; ?>
+    <div class="sb-item">⚙️ Configuración</div>
+    <div class="sb-item">🚪<span><a href="cerrarSesion.php">Cerrar sesión</a></span></div>
+  </div>
+</aside>
 
-            <div class="cat-label">Categories</div>
+<div class="main">
+  <header class="topbar">
+    <div class="logo-text"><span>C</span>ineBlog</div>
+    <span class="tendencies">Tendencias</span>
+    <div class="search-wrap">
+      🔍 <input type="text" placeholder="¿Que estas buscando?...">
+    </div>
+  </header>
 
-            <div class="pills">
-                <span class="pill on" onclick="selPill(this)">Movies</span>
-                <span class="pill" onclick="selPill(this)">Horror</span>
-                <span class="pill" onclick="selPill(this)">Action</span>
-                <span class="pill" onclick="selPill(this)">Science fiction</span>
-            </div>
-
-        </div>
-
-        <div class="sb-footer">
-
-            <div class="sb-fitem">
-                <span>Configuración</span>
-                <span>⚙️</span>
-            </div>
-
-            <div class="sb-fitem">
-            <span><a href="cerrarSesion.php">Cerrar sesión</a></span>
-            <span>🚪</span>
-            </div>
-
-        </div>
-
-    </aside>
-
-    <!-- MAIN -->
-
-    <div class="main">
-
-        <header class="topbar">
-
-        <div class="logo-text"><span>C</span>ineBlog</div>
-
-        <span style="font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;">
-        Tendencies
-        </span>
-
-        <div class="search-wrap">
-            <span style="color:var(--muted)">🔍</span>
-            <input type="text" placeholder="Search">
-        </div>
-        </header>
-
-        <!-- AREA CENTRAL -->
-        <div class="feed">
-            <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
+  <div class="feed">
+    <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
             <?php if ($rol == "editor") : ?>
                 <button class="create-post" type="button" aria-label="Crear publicación" onclick="window.location.href='publicarsubir.php'">+</button>
                 <!-- Se agregaran mas cosas para el editor-->
@@ -273,18 +255,229 @@ try {
                         </section>
                     </article>
                 <?php endforeach; ?>
-            </div>
-        </div>
-                
-    </div>
+  </div>
+</div>
 
-    <script>
-        function selPill(el){
-            el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
-            el.classList.add('on');
-        }   
-    </script>
-    <script src="app.js?v=3"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('cineBg');
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    draw();
+  }
+
+  function drawIcon(ctx, type, x, y, size, angle) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.strokeStyle = '#3b82f6';
+    ctx.fillStyle   = '#3b82f6';
+    ctx.lineWidth   = size * 0.06;
+    ctx.lineCap     = 'round';
+    ctx.lineJoin    = 'round';
+
+    const s = size;
+
+//fondo
+    switch(type) {
+
+      case 'popcorn': {
+        
+        ctx.beginPath();
+        ctx.moveTo(-s*0.32, -s*0.05);
+        ctx.lineTo(-s*0.38, s*0.48);
+        ctx.lineTo( s*0.38, s*0.48);
+        ctx.lineTo( s*0.32, -s*0.05);
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(-s*0.1, -s*0.05);
+        ctx.lineTo(-s*0.13, s*0.48);
+        ctx.moveTo( s*0.1, -s*0.05);
+        ctx.lineTo( s*0.13, s*0.48);
+        ctx.stroke();
+        
+        ctx.lineWidth = size * 0.05;
+        const pops = [
+          [-s*0.28, -s*0.26, s*0.17],
+          [ s*0.0,  -s*0.35, s*0.17],
+          [ s*0.28, -s*0.26, s*0.17],
+          [-s*0.14, -s*0.18, s*0.14],
+          [ s*0.14, -s*0.18, s*0.14],
+        ];
+        pops.forEach(([px,py,pr]) => {
+          ctx.beginPath();
+          ctx.arc(px, py, pr, 0, Math.PI*2);
+          ctx.stroke();
+        });
+        break;
+      }
+
+    
+      case 'clapper': {
+       
+        ctx.beginPath();
+        ctx.roundRect(-s*0.42, -s*0.12, s*0.84, s*0.56, s*0.06);
+        ctx.stroke();
+       
+        ctx.beginPath();
+        ctx.roundRect(-s*0.42, -s*0.42, s*0.84, s*0.3, [s*0.06, s*0.06, 0, 0]);
+        ctx.stroke();
+       
+        for(let i = 0; i < 4; i++){
+          const startX = -s*0.42 + i * s*0.22;
+          ctx.beginPath();
+          ctx.moveTo(startX, -s*0.42);
+          ctx.lineTo(startX + s*0.14, -s*0.12);
+          ctx.stroke();
+        }
+        
+        ctx.lineWidth = size * 0.04;
+        [-s*0.05, s*0.1, s*0.25].forEach(yy => {
+          ctx.beginPath();
+          ctx.moveTo(-s*0.32, yy); ctx.lineTo(s*0.32, yy);
+          ctx.stroke();
+        });
+        break;
+      }
+
+    
+      case 'camera': {
+        ctx.beginPath();
+        ctx.roundRect(-s*0.42, -s*0.28, s*0.64, s*0.56, s*0.06);
+        ctx.stroke();
+      
+        ctx.beginPath();
+        ctx.arc(-s*0.1, 0, s*0.2, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(-s*0.1, 0, s*0.1, 0, Math.PI*2);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.moveTo(s*0.22, -s*0.1);
+        ctx.lineTo(s*0.42, -s*0.24);
+        ctx.lineTo(s*0.42,  s*0.24);
+        ctx.lineTo(s*0.22,  s*0.1);
+        ctx.closePath();
+        ctx.stroke();
+        break;
+      }
+
+      
+      case 'star': {
+        const spikes = 5, outerR = s*0.42, innerR = s*0.18;
+        ctx.beginPath();
+        for(let i = 0; i < spikes*2; i++){
+          const r = i%2===0 ? outerR : innerR;
+          const a = (i * Math.PI / spikes) - Math.PI/2;
+          i===0 ? ctx.moveTo(Math.cos(a)*r, Math.sin(a)*r)
+                : ctx.lineTo(Math.cos(a)*r, Math.sin(a)*r);
+        }
+        ctx.closePath();
+        ctx.stroke();
+        break;
+      }
+
+      case 'film': {
+        ctx.beginPath();
+        ctx.roundRect(-s*0.48, -s*0.28, s*0.96, s*0.56, s*0.04);
+        ctx.stroke();
+        
+        [-s*0.17, s*0.0, s*0.17].forEach(yy => {
+          ctx.beginPath();
+          ctx.roundRect(-s*0.44, yy - s*0.08, s*0.1, s*0.14, s*0.02);
+          ctx.stroke();
+        });
+        [-s*0.17, s*0.0, s*0.17].forEach(yy => {
+          ctx.beginPath();
+          ctx.roundRect(s*0.34, yy - s*0.08, s*0.1, s*0.14, s*0.02);
+          ctx.stroke();
+        });
+        [-s*0.18, s*0.04].forEach(xx => {
+          ctx.beginPath();
+          ctx.roundRect(xx - s*0.03, -s*0.18, s*0.22, s*0.36, s*0.02);
+          ctx.stroke();
+        });
+        break;
+      }
+      case 'ticket': {
+        ctx.beginPath();
+        ctx.roundRect(-s*0.46, -s*0.24, s*0.92, s*0.48, s*0.06);
+        ctx.stroke();
+
+        ctx.setLineDash([s*0.05, s*0.05]);
+        ctx.beginPath();
+        ctx.moveTo(s*0.1, -s*0.24);
+        ctx.lineTo(s*0.1,  s*0.24);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        ctx.beginPath();
+        ctx.arc(-s*0.46, 0, s*0.08, -Math.PI/2, Math.PI/2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc( s*0.46, 0, s*0.08, Math.PI/2, -Math.PI/2);
+        ctx.stroke();
+        
+        ctx.lineWidth = size*0.04;
+        [[-s*0.08, -s*0.1], [-s*0.08, s*0.02], [-s*0.08, s*0.12]].forEach(([lx,ly]) => {
+          ctx.beginPath();
+          ctx.moveTo(-s*0.3, ly); ctx.lineTo(lx, ly);
+          ctx.stroke();
+        });
+        break;
+      }
+    }
+
+    ctx.restore();
+  }
+
+  
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const CELL = 90;          
+    const ANGLE = Math.PI/6;  
+    const icons = ['popcorn','clapper','camera','star','film','ticket'];
+
+    const cols = Math.ceil(canvas.width  / CELL) + 4;
+    const rows = Math.ceil(canvas.height / CELL) + 4;
+
+    for(let row = -2; row < rows; row++){
+      for(let col = -2; col < cols; col++){
+        const offX = (row % 2) * (CELL / 2);
+        const x = col * CELL + offX - CELL;
+        const y = row * CELL - CELL;
+
+        
+        const idx = ((row * 7 + col * 13) & 0xffff) % icons.length;
+       
+        const baseAngle = (row + col) % 2 === 0 ? ANGLE : -ANGLE;
+
+        drawIcon(ctx, icons[idx], x, y, 32, baseAngle);
+      }
+    }
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+})();
+
+function selType(el, type){
+  el.closest('.type-filter').querySelectorAll('.type-btn').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function selPill(el){
+  el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('on'));
+  el.classList.add('on');
+}
+</script>
 
 </body>
 </html>
