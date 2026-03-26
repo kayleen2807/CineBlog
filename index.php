@@ -477,7 +477,8 @@ function selPill(el){
   el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('on'));
   el.classList.add('on');
 }
-</script>
 
+</script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
