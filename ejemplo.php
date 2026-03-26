@@ -87,7 +87,6 @@ try {
     $dbError = "Error de base de datos.";
 }
 ?>
-<!--Maquetado en html para el inicio -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
