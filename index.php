@@ -97,6 +97,16 @@ try {
 <link rel="stylesheet" href="css/styles_inicio.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
+<style>
+  a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  a:hover{
+    text-decoration: none;
+    color: white;
+  }
+</style>
 <body>
 
 <div class="cine-bg">
@@ -155,6 +165,7 @@ try {
       <div class="sb-item">🔔 <span>Notificaciones</span></div>
     <?php elseif ($rol == "admin") : ?>
       <div class="sb-item">🔔 <span>Notificaciones</span></div>
+      <div class="sb-item">📊 <span><a href="dashboard.php">Administracion</a></span></div>
     <?php endif; ?>
     <div class="sb-item">⚙️ Configuración</div>
     <div class="sb-item">🚪<span><a href="cerrarSesion.php">Cerrar sesión</a></span></div>

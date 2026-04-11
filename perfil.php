@@ -147,8 +147,6 @@ $conn->close();
 
         <nav class="tab-nav" aria-label="Secciones del perfil">
             <a href="#" class="tab">My Reviews</a>
-            <a href="#" class="tab">Activity</a>
-            <a href="#" class="tab">WatchList</a>
             <a href="#" class="tab">Likes</a>
             <a href="#" class="tab">Settings</a>
         </nav>
