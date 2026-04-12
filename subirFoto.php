@@ -5,37 +5,79 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-$targetDir = "uploads/"; //carpeta donde se guardarán las fotos
+$targetDir = "uploads/";
 if (!file_exists($targetDir)) {
-    mkdir($targetDir, 0777, true); //crea la carpeta si no existe
+    mkdir($targetDir, 0755, true); // Permisos más seguros
 }
 
-$foto = $_FILES['foto'];
-// se genera un nombre único para la foto usando el ID del usuario y el nombre original del archivo
-$nombreArchivo = "perfil_" . $_SESSION['usuario_id'] . "_" . basename($foto['name']);
-$targetFile = $targetDir . $nombreArchivo; //ruta completa donde se guardará la foto
+// Función para sanitizar nombre de archivo
+function sanitizeFilename($filename) {
+    return preg_replace('/[^a-zA-Z0-9\._-]/', '', $filename);
+}
 
-//validar tipo de archivo (solo imágenes)
-$tipoArchivo = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-$tiposPermitidos = ['jpg', 'jpeg', 'png', 'gif'];
+// Función para redirigir con mensaje
+function redirectWithMessage($message, $type = 'error') {
+    $_SESSION['upload_message'] = $message;
+    $_SESSION['upload_type'] = $type;
+    header("Location: perfil.php");
+    exit();
+}
 
-
-if(in_array($tipoArchivo, $tiposPermitidos)) {
-    // mover la foto a la carpeta de destino
-    if(move_uploaded_file($foto['tmp_name'], $targetFile)) {
-        //guarademos la ruta de la foto en la base
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['delete_photo'])) {
+        // Eliminar foto: volver a la predeterminada
         $conn = new mysqli("localhost", "root", "", "cineblog_db");
-        $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = ? WHERE id_usuario = ?");
-        $stmt->bind_param("si", $targetFile, $_SESSION['usuario_id']);
+        $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = 'uploads/default.png' WHERE id_usuario = ?");
+        $stmt->bind_param("i", $_SESSION['usuario_id']);
         $stmt->execute();
         $stmt->close();
         $conn->close();
-        header("Location: perfil.php"); //redirecciona al perfil para ver la foto actualizada
-        exit();
-    } else {
-        echo "Error al subir la foto.";
+        redirectWithMessage("Foto eliminada exitosamente.", "success");
+    } elseif (isset($_FILES['foto'])) {
+        $foto = $_FILES['foto'];
+        $maxSize = 2 * 1024 * 1024; // 2MB
+        $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+        $tipoArchivo = strtolower(pathinfo($foto['name'], PATHINFO_EXTENSION));
+
+        // Validaciones
+        if ($foto['error'] !== UPLOAD_ERR_OK) {
+            redirectWithMessage("Error al subir el archivo.");
+        }
+        if ($foto['size'] > $maxSize) {
+            redirectWithMessage("El archivo es demasiado grande (máximo 2MB).");
+        }
+        if (!in_array($tipoArchivo, $allowedTypes)) {
+            redirectWithMessage("Solo se permiten archivos de imagen (JPG, JPEG, PNG, GIF).");
+        }
+
+        // Verificar dimensiones (opcional, requiere GD)
+        if (extension_loaded('gd')) {
+            $imageInfo = getimagesize($foto['tmp_name']);
+            if ($imageInfo[0] > 1024 || $imageInfo[1] > 1024) {
+                redirectWithMessage("La imagen es demasiado grande (máximo 1024x1024 píxeles).");
+            }
+        }
+
+        // Generar nombre único y seguro
+        $nombreArchivo = "perfil_" . $_SESSION['usuario_id'] . "_" . time() . "_" . sanitizeFilename(basename($foto['name']));
+        $relativePath = $targetDir . $nombreArchivo;
+        $targetFile = $targetDir . $nombreArchivo;
+
+        if (move_uploaded_file($foto['tmp_name'], $targetFile)) {
+            // Actualizar DB
+            $conn = new mysqli("localhost", "root", "", "cineblog_db");
+            $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = ? WHERE id_usuario = ?");
+            $stmt->bind_param("si", $relativePath, $_SESSION['usuario_id']);
+            $stmt->execute();
+            $stmt->close();
+            $conn->close();
+            redirectWithMessage("Foto actualizada exitosamente.", "success");
+        } else {
+            redirectWithMessage("Error al guardar la foto.");
+        }
     }
 } else {
-    echo "Solo se permiten archivos de imagen (JPG, JPEG, PNG, GIF).";
+    header("Location: perfil.php");
+    exit();
 }
 ?>

@@ -1,3 +1,118 @@
+// ==================== CROPPER SETUP ====================
+const fileInput = document.getElementById("foto");
+const applyBtn = document.getElementById("apply-btn");
+const cropContainer = document.getElementById("crop-container");
+const cropSource = document.getElementById("crop-source");
+const previewContainer = document.getElementById("preview-container");
+const previewImg = document.getElementById("preview-img");
+
+let cropper = null;
+let croppedBlob = null;
+
+function resetCropper() {
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    cropContainer.classList.add("hidden");
+    previewContainer.classList.add("hidden");
+    applyBtn.classList.add("hidden");
+    croppedBlob = null;
+    cropSource.src = "";
+    previewImg.src = "";
+}
+
+if (!fileInput) {
+    console.error("Error: #foto input not found! Check HTML.");
+} else {
+    fileInput.addEventListener("change", (event) => {
+        const file = event.target.files?.[0];
+        if (!file) {
+            resetCropper();
+            return;
+        }
+
+        const url = URL.createObjectURL(file);
+        cropSource.src = url;
+        cropContainer.classList.remove("hidden");
+
+        cropSource.onerror = () => {
+            console.error("Image failed to load");
+        };
+
+        cropSource.onload = () => {
+            if (cropper) cropper.destroy();
+
+            cropper = new Cropper(cropSource, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 0.8,
+                background: false,
+                movable: true,
+                zoomable: true,
+                scalable: false,
+                rotatable: false,
+                responsive: true,
+            });
+        };
+
+        applyBtn.classList.remove("hidden");
+        previewContainer.classList.add("hidden");
+    });
+
+    applyBtn.addEventListener("click", async () => {
+        if (!cropper) {
+            alert("Por favor, selecciona y ajusta una imagen primero.");
+            return;
+        }
+
+        applyBtn.disabled = true;
+        applyBtn.textContent = "Subiendo...";
+
+        const canvas = cropper.getCroppedCanvas({
+            width: 400,
+            height: 400,
+            imageSmoothingQuality: "high",
+            fillColor: "#ffffff",
+        });
+
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                alert("Error al procesar la imagen.");
+                applyBtn.disabled = false;
+                applyBtn.textContent = "Aplicar y subir";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("foto", blob, "perfil_cortado.jpg");
+
+            try {
+                const response = await fetch("subirFoto.php", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    const text = await response.text();
+                    console.error("Error al subir:", text);
+                    alert("Error al subir la imagen. Revisa la consola.");
+                    applyBtn.disabled = false;
+                    applyBtn.textContent = "Aplicar y subir";
+                }
+            } catch (error) {
+                console.error("Error de red:", error);
+                alert("Error de conexión. Intenta de nuevo.");
+                applyBtn.disabled = false;
+                applyBtn.textContent = "Aplicar y subir";
+            }
+        }, "image/jpeg", 0.92);
+    });
+}
+
+
 function setupExclusiveActive(selector, { preventDefault = false, activeClass = "active" } = {}) {
     const items = Array.from(document.querySelectorAll(selector));
     if (!items.length) return;

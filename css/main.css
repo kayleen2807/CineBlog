@@ -121,7 +121,7 @@ body {
 }
 
 .cover {
-    height: 220px;
+    height: 80px;
     background: linear-gradient(to bottom, rgba(13, 21, 34, 0.35), rgba(13, 21, 34, 0.7)),
         url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80") center/cover;
 }
@@ -546,7 +546,7 @@ body {
 }
 
 .cover-photo {
-    height: 220px;
+    height: 80px;
     background: linear-gradient(to bottom, rgba(13, 21, 34, 0.35), rgba(13, 21, 34, 0.7)),
         url("assets/images.jpg") center/cover;
 }
@@ -558,29 +558,6 @@ body {
     padding: 0 34px;
     transform: translateY(-46px);
     margin-bottom: -20px;
-}
-
-.profile-pic {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 3px solid #dbe9ff22;
-    object-fit: cover;
-    background: #1b2433;
-    margin-bottom: 10px;
-}
-
-.profile-pic-container button {
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.profile-pic-container button:hover {
-    background-color: #0056b3;
 }
 
 .form_foto {

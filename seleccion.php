@@ -28,12 +28,13 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == "sesion_cerrada") {
             font-weight: bold;
             margin-bottom: 20px;
             animation: fadeOut 4s forwards; 
-            }
+            
 
             @keyframes fadeOut {
             0% { opacity: 1; }
             80% { opacity: 1; }
             100% { opacity: 0; display: none; }
+            }
         }
     </style>
     <div class="alerta_exito">

@@ -100,7 +100,6 @@ if (count($misPosts)) {
 }
 $conn->close();
 
-
 ?>
 
 <!DOCTYPE html>
@@ -109,14 +108,23 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/style_perfil.css">
+    <link rel="stylesheet" href="lib/cropper.min.css">
     <title>Perfil CineBlog</title>
 </head>
 <body>
+    <!--Agregar manejo de mensajes al inicio del body o main, muestra mensajes de éxito o error -->
+    <?php if (isset($_SESSION['upload_message'])): ?>
+        <div class="alert <?php echo $_SESSION['upload_type'] === 'success' ? 'success' : 'error'; ?>">
+            <?php echo htmlspecialchars($_SESSION['upload_message'], ENT_QUOTES, 'UTF-8'); ?>
+            <?php unset($_SESSION['upload_message'], $_SESSION['upload_type']); ?>
+        </div>
+    <?php endif; ?>
 
     <div class="page-shell">
         <nav class="head">
             <div class="logo">
-                <a href="#" aria-label="CineBlog">
+                <a href="index.php" aria-label="CineBlog">
                     <img class="logo-c" src="css/cineBlog_Logo.png" alt="C">
                     <span class="logo-rest">CineBlog</span>
                 </a>
@@ -129,18 +137,36 @@ $conn->close();
         </nav>
 
         <header class="header-container">
-            <div class="cover-photo" role="img" aria-label="Foto de portada"></div>
-            <div class="profile-section">
-                <div class="profile-pic-container">
-                    <img src="<?php echo $foto; ?>" alt="Foto de perfil" class="profile-pic">
-                    <form action="subirFoto.php" method="POST" enctype="multipart/form-data" class="form_foto">
-                        <label for="foto" class="file-label">Seleccionar foto</label>
-                        <input type="file" name="foto" id="foto" accept="image/*" required>
-                        <button type="submit" class="btn_foto">Actualizar foto</button>
+            <div class="profile-picture-panel">
+                <div class="profile-header-section">
+                    <div class="current-picture">
+                        <img id="profile-pic" src="<?php echo htmlspecialchars($foto, ENT_QUOTES, 'UTF-8'); ?>" alt="Foto de perfil">
+                    </div>
+                    <div class="user-info">
+                        <h1><?php echo $_SESSION['nombre']; ?></h1>
+                    </div>
+                </div>
+
+                <div class="photo-actions">
+                    <label class="btn btn-primary">
+                        Seleccionar foto
+                        <input type="file" id="foto" accept="image/*" hidden>
+                    </label>
+                    <button id="apply-btn" type="button" class="btn btn-outline hidden">Aplicar y subir</button>
+
+                    <form id="delete-form" action="subirFoto.php" method="POST">
+                        <button type="submit" name="delete_photo" class="btn btn-danger">Eliminar foto</button>
                     </form>
                 </div>
-                <div class="user-info">
-                    <h1><?php echo $_SESSION['nombre']; ?></h1>
+
+                <div id="crop-container" class="crop-container hidden" style="display: block; !important; visibility: visible; !important;">
+                    <p>Ajusta el recorte arrastrando y zoomando:</p>
+                    <img id="crop-source" src="" alt="Recorte de imagen">
+                </div>
+
+                <div id="preview-container" class="preview-container hidden">
+                    <p>Vista previa del recorte:</p>
+                    <img id="preview-img" src="" alt="Vista previa">
                 </div>
             </div>
         </header>
@@ -255,7 +281,10 @@ $conn->close();
 
         </main>
     </div>
-
+    <script src="lib/cropper.min.js"></script>
+    <script>
+    console.log("inline test - script works");
+    </script>
     <script src="app.js?v=3"></script>
 </body>
 </html>
