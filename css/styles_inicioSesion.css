@@ -15,9 +15,9 @@ body {
     background-color: rgba(255, 255, 255, 0.05);
     padding: 30px;
     border-radius: 10px;
-    width: 100%;             /* CORREGIDO: Se adapta a cualquier pantalla */
-    max-width: 400px;        /* CORREGIDO: Tope máximo de 400px para que no se estire de más */
-    box-sizing: border-box;  /* CORREGIDO: Evita que el padding deforme la caja */
+    width: 100%;             /* Se adapta a cualquier pantalla */
+    max-width: 400px;        /* Tope máximo de 400px para que no se estire de más */
+    box-sizing: border-box;  /* Evita que el padding deforme la caja */
     text-align: center;
 }
 
@@ -102,4 +102,16 @@ button:hover {
 .btn-small {
     padding: 5px 10px; 
     font-size: 12px;
+}
+
+.toggle-password i {
+    color: white;
+}
+
+.toggle-password:hover i {
+    color: #007bff; /* Azul igual que tu botón */
+}
+
+.toggle-password i {
+    font-size: 20px; /* Ajusta según prefieras */
 }
