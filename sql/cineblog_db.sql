@@ -12,7 +12,7 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARA                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        CTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
@@ -143,6 +143,22 @@ CREATE TABLE `post_imagenes` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `post_tmdb`
+--
+
+CREATE TABLE `post_tmdb` (
+  `post_id` int(11) NOT NULL,
+  `tmdb_id` int(11) NOT NULL,
+  `media_type` enum('movie','tv') NOT NULL,
+  `titulo` varchar(255) NOT NULL,
+  `poster_url` varchar(500) DEFAULT NULL,
+  `release_date` varchar(20) DEFAULT NULL,
+  `overview` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `usuarios`
 --
 
@@ -222,6 +238,13 @@ ALTER TABLE `post_categorias`
 ALTER TABLE `post_imagenes`
   ADD PRIMARY KEY (`id_imagen`),
   ADD KEY `post_id` (`post_id`);
+
+--
+-- Indices de la tabla `post_tmdb`
+--
+ALTER TABLE `post_tmdb`
+  ADD PRIMARY KEY (`post_id`),
+  ADD KEY `tmdb_id` (`tmdb_id`);
 
 --
 -- Indices de la tabla `usuarios`
@@ -317,6 +340,12 @@ ALTER TABLE `posts_ext`
 --
 ALTER TABLE `post_imagenes`
   ADD CONSTRAINT `post_imagenes_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id_post`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `post_tmdb`
+--
+ALTER TABLE `post_tmdb`
+  ADD CONSTRAINT `post_tmdb_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id_post`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

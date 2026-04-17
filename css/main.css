@@ -785,6 +785,21 @@ body {
     border-radius: 10px;
 }
 
+.card .card-media{
+    display:block;
+}
+
+.card-title-link,
+.card-date-link{
+    color: inherit;
+    text-decoration: none;
+}
+
+.card-title-link:hover,
+.card-date-link:hover{
+    text-decoration: underline;
+}
+
 .card-content h3 {
     font-size: 1.35rem;
     margin-bottom: 4px;
@@ -897,6 +912,7 @@ body {
     cursor: pointer;
     font-size: 20px;
     line-height: 1;
+    text-decoration: none;
     transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 

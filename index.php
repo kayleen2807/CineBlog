@@ -15,6 +15,7 @@ $posts = [];
 $likedPosts = [];
 $commentsByPost = [];
 $dbError = '';
+
 function format_fecha_sin_segundos(?string $value): string
 {
     $value = (string)$value;
@@ -22,6 +23,37 @@ function format_fecha_sin_segundos(?string $value): string
     if ($ts === false) return $value;
     return date('Y-m-d H:i', $ts);
 }
+
+  function normalize_filter_value(string $value): string
+  {
+    $value = trim($value);
+    $value = function_exists('mb_strtolower') ? mb_strtolower($value, 'UTF-8') : strtolower($value);
+
+    if (function_exists('iconv')) {
+      $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+      if ($converted !== false) $value = $converted;
+    }
+
+    $value = preg_replace('/\s+/', ' ', $value) ?? '';
+    return trim($value);
+  }
+
+  $initialType = trim((string)($_GET['tipo'] ?? 'movies'));
+  if ($initialType !== 'series') $initialType = 'movies';
+
+  $initialCat = normalize_filter_value((string)($_GET['categoria'] ?? ''));
+
+  $sidebarCats = [
+    'Romance',
+    'Ciencia ficción',
+    'Acción',
+    'Comedia',
+    'Animación',
+    'Terror',
+    'Drama',
+    'Aventura',
+    'Suspenso',
+  ];
 try {
     $conn = new mysqli("localhost", "root", "", "cineblog_db");
     if ($conn->connect_error) {
@@ -36,11 +68,17 @@ try {
                 p.fecha,
                 u.nombre AS autor,
                 GROUP_CONCAT(DISTINCT pc.categoria SEPARATOR '||') AS categorias,
-                GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes
+            GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes,
+            MAX(pt.tmdb_id) AS tmdb_id,
+            MAX(pt.media_type) AS tmdb_type,
+            MAX(pt.titulo) AS tmdb_titulo,
+            MAX(pt.poster_url) AS tmdb_poster,
+            MAX(pt.release_date) AS tmdb_release_date
             FROM posts p
             JOIN usuarios u ON u.id_usuario = p.autor_id
             LEFT JOIN post_categorias pc ON pc.post_id = p.id_post
             LEFT JOIN post_imagenes pi ON pi.post_id = p.id_post
+          LEFT JOIN post_tmdb pt ON pt.post_id = p.id_post
             GROUP BY p.id_post
             ORDER BY p.fecha DESC
             LIMIT 50
@@ -136,8 +174,8 @@ try {
     <div class="sb-section">
       <div class="sb-section-title">TIPO</div>
       <div class="type-filter">
-        <button class="type-btn active" onclick="selType(this,'movies')">Películas</button>
-        <button class="type-btn" onclick="selType(this,'series')">Series</button>
+        <button class="type-btn <?php echo $initialType === 'movies' ? 'active' : ''; ?>" onclick="selType(this,'movies')">Películas</button>
+        <button class="type-btn <?php echo $initialType === 'series' ? 'active' : ''; ?>" onclick="selType(this,'series')">Series</button>
       </div>
     </div>
 
@@ -145,15 +183,10 @@ try {
     <div class="sb-section">
       <div class="sb-section-title">CATEGORÍAS</div>
       <div class="pills">
-        <span class="pill on" onclick="selPill(this)">Romance</span>
-        <span class="pill" onclick="selPill(this)">Ciencia ficción</span>
-        <span class="pill" onclick="selPill(this)">Acción</span>
-        <span class="pill" onclick="selPill(this)">Comedia</span>
-        <span class="pill" onclick="selPill(this)">Animación</span>
-        <span class="pill" onclick="selPill(this)">Terror</span>
-        <span class="pill" onclick="selPill(this)">Drama</span>
-        <span class="pill" onclick="selPill(this)">Aventura</span>
-        <span class="pill" onclick="selPill(this)">Suspenso</span>
+        <?php foreach ($sidebarCats as $sidebarCat) : ?>
+          <?php $sidebarCatNorm = normalize_filter_value($sidebarCat); ?>
+          <span class="pill <?php echo $initialCat !== '' && $initialCat === $sidebarCatNorm ? 'on' : ''; ?>" onclick="selPill(this)"><?php echo htmlspecialchars($sidebarCat, ENT_QUOTES, 'UTF-8'); ?></span>
+        <?php endforeach; ?>
       </div>
     </div>
   </div>
@@ -177,7 +210,8 @@ try {
     <div class="logo-text"><span>C</span>ineBlog</div>
     <span class="tendencies">Tendencias</span>
     <div class="search-wrap">
-      🔍 <input type="text" placeholder="¿Que estas buscando?...">
+      🔍 <input type="text" id="tmdbGlobalSearch" placeholder="Busca peliculas o series en TMDB...">
+      <div class="search-results" id="tmdbGlobalResults" aria-live="polite"></div>
     </div>
   </header>
 
@@ -191,7 +225,7 @@ try {
                 <!-- Se agregaran mas cosas para el admin-->
             <?php endif; ?>
 
-            <div class="feed-inner">
+            <div class="feed-inner" data-initial-type="<?php echo htmlspecialchars($initialType, ENT_QUOTES, 'UTF-8'); ?>" data-initial-cat="<?php echo htmlspecialchars($initialCat, ENT_QUOTES, 'UTF-8'); ?>">
                 <?php if ($dbError !== '') : ?>
                     <div class="feed-alert error"><?php echo htmlspecialchars($dbError, ENT_QUOTES, 'UTF-8'); ?></div>
                 <?php endif; ?>
@@ -210,8 +244,23 @@ try {
                         $pid = (int)($p['id_post'] ?? 0);
                         $isLiked = $pid && isset($likedPosts[$pid]);
                         $comments = $pid && isset($commentsByPost[$pid]) ? $commentsByPost[$pid] : [];
+                        $tmdbId = (int)($p['tmdb_id'] ?? 0);
+                        $tmdbTitle = trim((string)($p['tmdb_titulo'] ?? ''));
+                        $tmdbType = trim((string)($p['tmdb_type'] ?? ''));
+                        $tmdbPoster = trim((string)($p['tmdb_poster'] ?? ''));
+                        $tmdbReleaseDate = trim((string)($p['tmdb_release_date'] ?? ''));
+                        $tmdbYear = strlen($tmdbReleaseDate) >= 4 ? substr($tmdbReleaseDate, 0, 4) : '';
+
+                        $postType = 'movie';
+                        if ($tmdbType === 'tv') {
+                          $postType = 'series';
+                        } elseif (in_array('Serie', $cats, true)) {
+                          $postType = 'series';
+                        }
+
+                        $catsFilterValue = implode('|', array_map('strval', $cats));
                     ?>
-                    <article class="post-card">
+                      <article class="post-card" data-type="<?php echo htmlspecialchars($postType, ENT_QUOTES, 'UTF-8'); ?>" data-cats="<?php echo htmlspecialchars($catsFilterValue, ENT_QUOTES, 'UTF-8'); ?>">
                         <header class="post-head">
                             <div class="post-title"><?php echo htmlspecialchars($p['titulo'], ENT_QUOTES, 'UTF-8'); ?></div>
                             <div class="post-date"><?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
@@ -219,10 +268,29 @@ try {
 
                         <p class="post-body"><?php echo nl2br(htmlspecialchars($p['contenido'], ENT_QUOTES, 'UTF-8')); ?></p>
 
+                        <?php if ($tmdbId > 0 && $tmdbTitle !== '') : ?>
+                          <a
+                            class="post-media"
+                            href="pelicula.php?tmdb_id=<?php echo $tmdbId; ?>&type=<?php echo $tmdbType === 'tv' ? 'tv' : 'movie'; ?>"
+                          >
+                            <?php if ($tmdbPoster !== '') : ?>
+                              <img class="post-media-poster" src="<?php echo htmlspecialchars($tmdbPoster, ENT_QUOTES, 'UTF-8'); ?>" alt="Poster de <?php echo htmlspecialchars($tmdbTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php else : ?>
+                              <div class="post-media-poster placeholder">Sin poster</div>
+                            <?php endif; ?>
+
+                            <div class="post-media-meta">
+                              <span class="post-media-kicker"><?php echo $tmdbType === 'tv' ? 'Serie' : 'Pelicula'; ?></span>
+                              <strong><?php echo htmlspecialchars($tmdbTitle, ENT_QUOTES, 'UTF-8'); ?></strong>
+                              <span><?php echo htmlspecialchars($tmdbYear !== '' ? $tmdbYear : 'Sin fecha', ENT_QUOTES, 'UTF-8'); ?></span>
+                            </div>
+                          </a>
+                        <?php endif; ?>
+
                         <?php if (count($cats)) : ?>
                             <div class="post-cats">
                                 <?php foreach ($cats as $c) : ?>
-                                    <span class="post-cat"><?php echo htmlspecialchars($c, ENT_QUOTES, 'UTF-8'); ?></span>
+                              <span class="post-cat" data-cat="<?php echo htmlspecialchars((string)$c, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($c, ENT_QUOTES, 'UTF-8'); ?></span>
                                 <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
@@ -482,14 +550,98 @@ try {
 function selType(el, type){
   el.closest('.type-filter').querySelectorAll('.type-btn').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
+  window.__cbFilters = window.__cbFilters || { type: 'movies', cat: '' };
+  window.__cbFilters.type = type === 'series' ? 'series' : 'movies';
+  applyFeedFilters();
+}
+
+function fixUtf8Mojibake(value){
+  let s = String(value ?? '');
+  for (let i = 0; i < 2; i++) {
+    if (!/[ÃÂ]/.test(s)) break;
+    try{
+      const fixed = decodeURIComponent(escape(s));
+      const score = (v) => (String(v).match(/[ÃÂ]/g) || []).length;
+      s = score(fixed) < score(s) ? fixed : s;
+    }catch(_){
+      break;
+    }
+  }
+  return s;
+}
+
+function normalizeFilter(value){
+  return fixUtf8Mojibake(String(value || ''))
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
 }
 
 function selPill(el){
-  el.closest('.pills').querySelectorAll('.pill').forEach(p => p.classList.remove('on'));
-  el.classList.add('on');
+  const pills = el.closest('.pills').querySelectorAll('.pill');
+  const wasOn = el.classList.contains('on');
+  pills.forEach(p => p.classList.remove('on'));
+
+  window.__cbFilters = window.__cbFilters || { type: 'movies', cat: '' };
+  if (wasOn) {
+    window.__cbFilters.cat = '';
+  } else {
+    el.classList.add('on');
+    window.__cbFilters.cat = normalizeFilter(el.textContent || '');
+  }
+  applyFeedFilters();
 }
 
+function applyFeedFilters(){
+  const state = window.__cbFilters || { type: 'movies', cat: '' };
+  const cards = Array.from(document.querySelectorAll('.post-card'));
+
+  cards.forEach((card) => {
+    const cardType = card.dataset.type || 'movies';
+    const cats = (card.dataset.cats || '').split('|').filter(Boolean).map(normalizeFilter);
+
+    const typeOk = state.type === 'series' ? cardType === 'series' : cardType === 'movie';
+    const catOk = !state.cat || cats.includes(state.cat);
+
+    card.style.display = typeOk && catOk ? '' : 'none';
+  });
+}
+
+function syncSidebarWithCat(cat){
+  const pills = Array.from(document.querySelectorAll('.pills .pill'));
+  pills.forEach((p) => p.classList.remove('on'));
+  if (!cat) return;
+
+  const found = pills.find((p) => normalizeFilter(p.textContent || '') === normalizeFilter(cat));
+  if (found) found.classList.add('on');
+}
+
+function setupTagFilters(){
+  document.addEventListener('click', (event) => {
+    const tag = event.target.closest('.post-cat[data-cat]');
+    if (!tag) return;
+
+    const cat = normalizeFilter(tag.dataset.cat || '');
+    if (!cat) return;
+
+    window.__cbFilters = window.__cbFilters || { type: 'movies', cat: '' };
+    window.__cbFilters.cat = cat;
+    syncSidebarWithCat(cat);
+    applyFeedFilters();
+  });
+}
+
+const feedInner = document.querySelector('.feed-inner');
+window.__cbFilters = {
+  type: (feedInner?.dataset.initialType === 'series') ? 'series' : 'movies',
+  cat: normalizeFilter(feedInner?.dataset.initialCat || ''),
+};
+setupTagFilters();
+applyFeedFilters();
+
 </script>
-<script src="app.js?v=3"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

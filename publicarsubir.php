@@ -182,6 +182,18 @@ function ensure_post_tables(mysqli $conn): void
         PRIMARY KEY (post_id, categoria),
         KEY (post_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+    $conn->query("CREATE TABLE IF NOT EXISTS post_tmdb (
+        post_id INT NOT NULL,
+        tmdb_id INT NOT NULL,
+        media_type ENUM('movie','tv') NOT NULL,
+        titulo VARCHAR(255) NOT NULL,
+        poster_url VARCHAR(500) DEFAULT NULL,
+        release_date VARCHAR(20) DEFAULT NULL,
+        overview TEXT DEFAULT NULL,
+        PRIMARY KEY (post_id),
+        KEY (tmdb_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 }
 
 function safe_filename(string $name): string
@@ -214,13 +226,41 @@ $categorias = [
 $mensaje = '';
 $mensajeTipo = 'error';
 
+$oldTmdbId = trim((string)($_POST['tmdb_id'] ?? ''));
+$oldTmdbType = trim((string)($_POST['tmdb_type'] ?? ''));
+$oldTmdbTitle = trim((string)($_POST['tmdb_title'] ?? ''));
+$oldTmdbPoster = trim((string)($_POST['tmdb_poster'] ?? ''));
+$oldTmdbRelease = trim((string)($_POST['tmdb_release_date'] ?? ''));
+$oldTmdbOverview = trim((string)($_POST['tmdb_overview'] ?? ''));
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titulo = trim((string)($_POST['titulo'] ?? ''));
     $contenido = trim((string)($_POST['contenido'] ?? ''));
     $categoriasSel = $_POST['categorias'] ?? [];
     if (!is_array($categoriasSel)) $categoriasSel = [];
 
-    if ($titulo === '' || mb_len_safe($titulo) < 3) {
+    $tmdbId = filter_var($_POST['tmdb_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: null;
+    $tmdbType = trim((string)($_POST['tmdb_type'] ?? ''));
+    $tmdbTitle = trim((string)($_POST['tmdb_title'] ?? ''));
+    $tmdbPoster = trim((string)($_POST['tmdb_poster'] ?? ''));
+    $tmdbReleaseDate = trim((string)($_POST['tmdb_release_date'] ?? ''));
+    $tmdbOverview = trim((string)($_POST['tmdb_overview'] ?? ''));
+
+    $hasTmdbSelection = $tmdbId !== null || $tmdbType !== '' || $tmdbTitle !== '';
+    if ($hasTmdbSelection) {
+        if ($tmdbId === null || !in_array($tmdbType, ['movie', 'tv'], true) || $tmdbTitle === '') {
+            $mensaje = 'La pelicula/serie seleccionada no es valida. Intenta seleccionarla otra vez.';
+        }
+
+        if (strlen($tmdbTitle) > 255) $tmdbTitle = substr($tmdbTitle, 0, 255);
+        if (strlen($tmdbPoster) > 500) $tmdbPoster = substr($tmdbPoster, 0, 500);
+        if (strlen($tmdbReleaseDate) > 20) $tmdbReleaseDate = substr($tmdbReleaseDate, 0, 20);
+        if (strlen($tmdbOverview) > 2000) $tmdbOverview = substr($tmdbOverview, 0, 2000);
+    }
+
+    if ($mensaje !== '') {
+        // Ya existe error previo.
+    } elseif ($titulo === '' || mb_len_safe($titulo) < 3) {
         $mensaje = 'El título debe tener al menos 3 caracteres.';
     } elseif ($contenido === '' || mb_len_safe($contenido) < 1) {
         $mensaje = 'El contenido no puede ir vacío.';
@@ -340,6 +380,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($mensaje === '') {
+                    if ($hasTmdbSelection && $tmdbId !== null) {
+                        $stmtTmdb = $conn->prepare("REPLACE INTO post_tmdb (post_id, tmdb_id, media_type, titulo, poster_url, release_date, overview) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                        $stmtTmdb->bind_param("iisssss", $postId, $tmdbId, $tmdbType, $tmdbTitle, $tmdbPoster, $tmdbReleaseDate, $tmdbOverview);
+                        $stmtTmdb->execute();
+                        $stmtTmdb->close();
+                    }
+
                     if ($firstImagePath !== null) {
                         $stmtUp = $conn->prepare("UPDATE posts SET imagen = ? WHERE id_post = ?");
                         $stmtUp->bind_param("si", $firstImagePath, $postId);
@@ -368,7 +415,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva publicación - CineBlog</title>
-    <link rel="stylesheet" href="css/style_publicarsubir.css">
+    <link rel="stylesheet" href="css/style_publicarsubir.css?v=3">
 </head>
 <body>
     <main class="ps-overlay">
@@ -398,6 +445,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             value="<?php echo htmlspecialchars($_POST['titulo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                             required
                         >
+
+                        <label class="ps-label" for="psTmdbSearch">Pelicula o serie (TMDB, opcional)</label>
+                        <div class="ps-tmdb" id="psTmdb">
+                            <div class="ps-tmdb-controls">
+                                <input
+                                    class="ps-input"
+                                    id="psTmdbSearch"
+                                    type="text"
+                                    placeholder="Ej. Dune, The Last of Us..."
+                                    autocomplete="off"
+                                >
+                                <select class="ps-select" id="psTmdbType">
+                                    <option value="multi">Todo</option>
+                                    <option value="movie">Peliculas</option>
+                                    <option value="tv">Series</option>
+                                </select>
+                                <button class="ps-upbtn ps-tmdb-btn" type="button" id="psTmdbBtn">Buscar</button>
+                            </div>
+
+                            <input type="hidden" name="tmdb_id" id="tmdbId" value="<?php echo htmlspecialchars($oldTmdbId, ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="tmdb_type" id="tmdbType" value="<?php echo htmlspecialchars($oldTmdbType, ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="tmdb_title" id="tmdbTitle" value="<?php echo htmlspecialchars($oldTmdbTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="tmdb_poster" id="tmdbPoster" value="<?php echo htmlspecialchars($oldTmdbPoster, ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="tmdb_release_date" id="tmdbReleaseDate" value="<?php echo htmlspecialchars($oldTmdbRelease, ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="tmdb_overview" id="tmdbOverview" value="<?php echo htmlspecialchars($oldTmdbOverview, ENT_QUOTES, 'UTF-8'); ?>">
+
+                            <div class="ps-tmdb-selected" id="psTmdbSelected"></div>
+                            <div class="ps-tmdb-results" id="psTmdbResults" aria-live="polite"></div>
+                        </div>
 
                         <label class="ps-label" for="contenido">Contenido</label>
                         <textarea
@@ -454,6 +530,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </section>
     </main>
 
-    <script src="publicarsubir.js"></script>
+    <script src="publicarsubir.js?v=6"></script>
 </body>
 </html>
