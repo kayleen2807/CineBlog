@@ -22,9 +22,7 @@ function resetCropper() {
     previewImg.src = "";
 }
 
-if (!fileInput) {
-    console.error("Error: #foto input not found! Check HTML.");
-} else {
+if (fileInput) {
     fileInput.addEventListener("change", (event) => {
         const file = event.target.files?.[0];
         if (!file) {
@@ -60,7 +58,7 @@ if (!fileInput) {
         previewContainer.classList.add("hidden");
     });
 
-    applyBtn.addEventListener("click", async () => {
+    if (applyBtn) applyBtn.addEventListener("click", async () => {
         if (!cropper) {
             alert("Por favor, selecciona y ajusta una imagen primero.");
             return;
@@ -249,6 +247,8 @@ function setupLikes() {
 }
 
 function setupComments() {
+    const escapeAttrSelectorValue = (value) => String(value ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+
     document.addEventListener("click", (event) => {
         const btn = event.target.closest(".comment-btn[data-post-id]");
         if (!btn) return;
@@ -256,8 +256,7 @@ function setupComments() {
         const postId = btn.dataset.postId;
         if (!postId) return;
 
-        const safeId = window.CSS && typeof CSS.escape === "function" ? CSS.escape(postId) : postId;
-        const sec = document.querySelector(`.comments[data-post-id="${safeId}"]`);
+        const sec = document.querySelector(`.comments[data-post-id="${escapeAttrSelectorValue(postId)}"]`);
         if (!sec) return;
 
         const isHidden = sec.hasAttribute("hidden");
@@ -327,5 +326,86 @@ function setupComments() {
     });
 }
 
+function setupGlobalTmdbSearch() {
+    const input = document.getElementById("tmdbGlobalSearch");
+    const panel = document.getElementById("tmdbGlobalResults");
+    if (!input || !panel) return;
+
+    let timer = null;
+
+    const closePanel = () => {
+        panel.classList.remove("open");
+        panel.innerHTML = "";
+    };
+
+    const render = (items) => {
+        if (!Array.isArray(items) || !items.length) {
+            panel.innerHTML = '<div class="search-empty">Sin resultados.</div>';
+            panel.classList.add("open");
+            return;
+        }
+
+        panel.innerHTML = items.slice(0, 8).map((item) => {
+            const type = item.media_type === "tv" ? "Serie" : "Pelicula";
+            const year = String(item.release_date || "").slice(0, 4);
+            const poster = item.poster_url
+                ? `<img src="${item.poster_url}" alt="Poster de ${item.title}">`
+                : '<div class="search-noimg">Sin poster</div>';
+                        const pathType = item.media_type === "tv" ? "tv" : "movie";
+
+            return `
+<a class="search-item" href="pelicula.php?tmdb_id=${item.tmdb_id}&type=${pathType}">
+  ${poster}
+  <span class="search-meta">
+    <strong>${item.title}</strong>
+    <small>${type}${year ? ` (${year})` : ""}</small>
+  </span>
+</a>
+`;
+        }).join("");
+
+        panel.classList.add("open");
+    };
+
+    const runSearch = async () => {
+        const q = (input.value || "").trim();
+        if (q.length < 2) {
+            closePanel();
+            return;
+        }
+
+        panel.innerHTML = '<div class="search-empty">Buscando...</div>';
+        panel.classList.add("open");
+
+        try {
+            const params = new URLSearchParams({ q, type: "multi" });
+            const res = await fetch(`tmdb_search.php?${params.toString()}`, { credentials: "same-origin" });
+            const data = await res.json().catch(() => null);
+            if (!res.ok || !data || !data.ok) throw new Error("Busqueda fallida");
+            render(data.results || []);
+        } catch {
+            panel.innerHTML = '<div class="search-empty">No se pudo consultar TMDB.</div>';
+            panel.classList.add("open");
+        }
+    };
+
+    input.addEventListener("input", () => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(runSearch, 260);
+    });
+
+    input.addEventListener("focus", () => {
+        if ((input.value || "").trim().length >= 2 && panel.innerHTML.trim() !== "") {
+            panel.classList.add("open");
+        }
+    });
+
+    document.addEventListener("click", (event) => {
+        if (event.target === input || panel.contains(event.target)) return;
+        closePanel();
+    });
+}
+
+setupGlobalTmdbSearch();
 setupLikes();
 setupComments();

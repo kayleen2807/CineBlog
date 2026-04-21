@@ -48,10 +48,15 @@ $stmtPosts = $conn->prepare("
         p.contenido,
         p.fecha,
         GROUP_CONCAT(DISTINCT pc.categoria SEPARATOR '||') AS categorias,
-        GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes
+        GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes,
+        MAX(pt.tmdb_id) AS tmdb_id,
+        MAX(pt.media_type) AS tmdb_type,
+        MAX(pt.titulo) AS tmdb_titulo,
+        MAX(pt.poster_url) AS tmdb_poster
     FROM posts p
     LEFT JOIN post_categorias pc ON pc.post_id = p.id_post
     LEFT JOIN post_imagenes pi ON pi.post_id = p.id_post
+    LEFT JOIN post_tmdb pt ON pt.post_id = p.id_post
     WHERE p.autor_id = ?
     GROUP BY p.id_post
     ORDER BY p.fecha DESC
@@ -194,18 +199,31 @@ $conn->close();
                         if (!empty($p['categorias'])) $cats = array_values(array_filter(explode('||', (string)$p['categorias'])));
                         $imgs = [];
                         if (!empty($p['imagenes'])) $imgs = array_values(array_filter(explode('||', (string)$p['imagenes'])));
-                        $img = count($imgs) ? $imgs[0] : "css/cineBlog_Logo.png";
+                        $tmdbId = (int)($p['tmdb_id'] ?? 0);
+                        $tmdbType = trim((string)($p['tmdb_type'] ?? ''));
+                        $tmdbTitle = trim((string)($p['tmdb_titulo'] ?? ''));
+                        $tmdbPoster = trim((string)($p['tmdb_poster'] ?? ''));
+
+                        $img = "css/cineBlog_Logo.png";
+                        if ($tmdbPoster !== '') {
+                            $img = $tmdbPoster;
+                        } elseif (count($imgs)) {
+                            $img = $imgs[0];
+                        }
                         $pid = (int)($p['id_post'] ?? 0);
+                        $postUrl = "post.php?id_post=" . $pid;
                         $isLiked = $pid && isset($likedPosts[$pid]);
                         $comments = $pid && isset($commentsByPost[$pid]) ? $commentsByPost[$pid] : [];
                     ?>
                     <article class="card">
-                        <img src="<?php echo htmlspecialchars($img, ENT_QUOTES, 'UTF-8'); ?>" alt="Publicación">
+                        <a class="card-media" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>" aria-label="Ver publicación">
+                            <img src="<?php echo htmlspecialchars($img, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($tmdbTitle !== '' ? ('Poster de ' . $tmdbTitle) : 'Publicación', ENT_QUOTES, 'UTF-8'); ?>">
+                        </a>
                         <div class="card-content">
-                            <h3><?php echo htmlspecialchars($p['titulo'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                            <h3><a class="card-title-link" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($p['titulo'], ENT_QUOTES, 'UTF-8'); ?></a></h3>
 
                             <div style="color: var(--muted); font-weight: 600; margin-bottom: 10px;">
-                                <?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
+                                <a class="card-date-link" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></a>
                             </div>
 
                             <?php if (count($cats)) : ?>
@@ -226,7 +244,7 @@ $conn->close();
                                         </svg>
                                     </button>
                                     <button type="button" class="icon-btn comment-btn" data-post-id="<?php echo $pid; ?>" aria-label="Comentar">💬</button>
-                                    <button type="button" class="icon-btn" aria-label="Compartir">↗</button>
+                                    <a class="icon-btn" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>" aria-label="Ver publicación">↗</a>
                                 </div>
                             </div>
 
@@ -285,6 +303,6 @@ $conn->close();
     <script>
     console.log("inline test - script works");
     </script>
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
