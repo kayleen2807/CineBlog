@@ -81,7 +81,7 @@ function contains_profanity(string $text): bool
         'puto',
         'puts',
         'pt',
-        'tonto'
+        'tonto',
         'tonta',
         'tontos',
         'tontas',

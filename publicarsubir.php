@@ -530,6 +530,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </section>
     </main>
 
-    <script src="publicarsubir.js?v=6"></script>
+    <script src="js/publicarsubir.js?v=6"></script>
 </body>
 </html>

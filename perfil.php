@@ -14,11 +14,7 @@ function format_fecha_sin_segundos(?string $value): string
     return date('Y-m-d H:i', $ts);
 }
 //conexión a la base de datos para obtener la información del usuario
-$conn = new mysqli("localhost", "root", "", "cineblog_db");
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
-$conn->set_charset("utf8mb4");
+include 'includes/conexion.php';
 
 $id_usuario = $_SESSION['usuario_id'];
 $foto = "uploads/default.png";
@@ -303,6 +299,6 @@ $conn->close();
     <script>
     console.log("inline test - script works");
     </script>
-    <script src="app.js?v=5"></script>
+    <script src="js/app.js?v=5"></script>
 </body>
 </html>

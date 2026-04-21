@@ -3,16 +3,7 @@
 session_start();
 
 // Conexión a la base de datos
-$servername = "localhost";
-$username   = "root";
-$password   = "";
-$dbname     = "cineblog_db";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
-}
+include 'includes/conexion.php';
 
 $mensaje = ""; // Variable para mostrar mensajes en la misma página
 

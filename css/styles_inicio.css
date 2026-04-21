@@ -526,15 +526,131 @@ font-weight: 400;
 line-height: 1.35;
 }
 
-@media(max-width:768px){
-  body{ flex-direction:column; }
+@media(max-width:1024px){
   .sidebar{
-    width:100%; min-height:auto; flex-direction:row;
-    justify-content:flex-start; gap:20px;
-    border-right:none; border-bottom:1px solid var(--card); overflow-x:auto;
+    width:240px;
   }
-  .topbar{ flex-wrap:wrap; }
-  .search-wrap{ max-width:100%; flex:1; min-width:200px; }
-  .post-imgs{ grid-template-columns:1fr; }
-  .post-img{ height:250px; }
+  .feed-inner{
+    width:min(700px, 100%);
+  }
+}
+
+@media(max-width:768px){
+  body{ 
+    flex-direction:column; 
+  }
+  .sidebar{
+    width:100%; 
+    height:auto;
+    min-height:auto; 
+    flex-direction:row;
+    justify-content:flex-start; 
+    gap:20px;
+    border-right:none; 
+    border-bottom:1px solid var(--card); 
+    overflow-x:auto;
+    padding:15px;
+    position:relative;
+    top:auto;
+  }
+  .main{
+    min-height:auto;
+  }
+  .topbar{ 
+    flex-wrap:wrap; 
+    padding:15px;
+  }
+  .logo-text{
+    font-size:1.5rem;
+  }
+  .search-wrap{ 
+    max-width:100%; 
+    flex:1; 
+    min-width:200px; 
+  }
+  .search-wrap input{
+    font-size:0.85rem;
+  }
+  .feed{
+    padding:15px;
+  }
+  .feed-inner{
+    width:100%;
+    gap:12px;
+    padding-bottom:80px;
+  }
+  .post-imgs{ 
+    grid-template-columns:1fr; 
+  }
+  .post-img{ 
+    height:200px; 
+  }
+  .post-card{
+    padding:15px;
+    margin-bottom:12px;
+  }
+  .post-title{
+    font-size:1rem;
+  }
+  .post-body{
+    font-size:0.9rem;
+  }
+  .icon-btn{
+    width:36px;
+    height:36px;
+    font-size:18px;
+  }
+  .create-post{
+    width:48px;
+    height:48px;
+    font-size:1.5rem;
+  }
+  .topbar{
+    gap:10px;
+  }
+  .tendencies{
+    display:none;
+  }
+}
+
+@media(max-width:480px){
+  body{
+    padding:0;
+  }
+  .sidebar{
+    flex-wrap:wrap;
+    gap:10px;
+    padding:10px;
+    overflow-x:auto;
+    border-bottom:1px solid var(--card);
+  }
+  .sb-section{
+    margin:10px 0;
+    min-width:150px;
+  }
+  .topbar{
+    flex-direction:column;
+    align-items:stretch;
+    padding:10px;
+  }
+  .logo-text{
+    font-size:1.3rem;
+    text-align:center;
+  }
+  .search-wrap{
+    width:100%;
+  }
+  .feed{
+    padding:10px;
+  }
+  .feed-inner{
+    gap:10px;
+  }
+  .post-card{
+    padding:12px;
+    border-radius:10px;
+  }
+  .post-actions{
+    font-size:1rem;
+  }
 }

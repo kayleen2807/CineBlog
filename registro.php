@@ -1,16 +1,9 @@
 <?php
 //Archivo para el registro de nuevos usuarios, con validación de datos y almacenamiento seguro de contraseñas (hashing)
 session_start();
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "cineblog_db";
 
 // Crear conexión
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error){
-    die("Error de conexión: " . $conn->connect_error);
-}
+include 'includes/conexion.php';
 
 $mensaje = "";
 
