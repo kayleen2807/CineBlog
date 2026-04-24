@@ -12,6 +12,8 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 
+
+
 --
 -- Base de datos: `cineblog_db`
 --
@@ -342,4 +344,5 @@ ALTER TABLE `post_imagenes`
 ALTER TABLE `post_tmdb`
   ADD CONSTRAINT `post_tmdb_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id_post`) ON DELETE CASCADE;
 COMMIT;
+
 

@@ -1,0 +1,36 @@
+/* Tema oscuro (default) */
+body {
+    background: linear-gradient(#0a1f44, #000000);
+    color: white;
+}
+
+/* Tema claro */
+body.light-theme {
+    background: linear-gradient(white, #cccccc); /* Degradado de blanco a gris */
+    color: #222; /* Texto oscuro para contraste */
+}
+
+body.light-theme input {
+    background-color: #fff;
+    color: #000;
+}
+
+.container {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body.light-theme .container {
+    background-color: rgba(255, 255, 255, 0.8); /* blanco semi-transparente */
+    color: #000; /* texto oscuro */
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2); /* opcional: sombra para que se vea el “cuadro” */
+}
+
+body.light-theme button {
+    background-color: #007bff;
+    color: white;
+}
+
+body.light-theme a {
+    color: #007bff;
+}

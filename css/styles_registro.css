@@ -7,7 +7,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh; /* CORREGIDO: Cambiado de height a min-height */
+    min-height: 100vh;
 }
 
 /* Contenedor principal */
