@@ -12,8 +12,18 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == "sesion_cerrada") {
     <meta charset="UTF-8">
     <title>Cineblog - Acceso</title>
     <link rel="stylesheet" href="css/styles_seleccion.css">
+    <!-- 🔹 Estilos globales de tema -->
+    <link rel="stylesheet" href="css/temas.css">
+    <!-- 🔹 Script global de tema -->
+    <script src="js/temas.js" defer></script>
 </head>
 <body>
+    <!-- 🔹 Switch de tema (arriba a la derecha) -->
+    <div class="theme-toggle">
+        <input type="checkbox" id="theme-switch">
+        <label for="theme-switch" class="switch"></label>
+    </div>
+
     <style>
         a {
             text-decoration: none;
