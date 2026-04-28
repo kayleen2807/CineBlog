@@ -133,8 +133,17 @@ elseif (count($imgs)) $coverImg = $imgs[0];
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/style_post.css?v=1">
     <title><?php echo htmlspecialchars((string)($post['titulo'] ?? 'Publicación'), ENT_QUOTES, 'UTF-8'); ?> - CineBlog</title>
+    <!-- 🔹 Estilos globales de tema -->
+    <link rel="stylesheet" href="css/temas.css">
+    <!-- 🔹 Script global de tema -->
+    <script src="js/temas.js" defer></script>
 </head>
 <body>
+    <!-- 🔹 Switch de tema (arriba a la derecha) -->
+    <div class="theme-toggle">
+        <input type="checkbox" id="theme-switch">
+        <label for="theme-switch" class="switch"></label>
+    </div>
     <div class="page-shell">
         <main class="post-wrap">
             <a class="back-link" href="perfil.php">← Volver al perfil</a>
