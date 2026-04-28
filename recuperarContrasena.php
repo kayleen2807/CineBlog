@@ -67,8 +67,17 @@ $conn->close();
         <meta charset="UTF-8">
         <title>CineBlog - Recuperar contraseña</title>
         <link rel="stylesheet" href="css/styles_inicioSesion.css">
+        <!-- 🔹 Estilos globales de tema -->
+        <link rel="stylesheet" href="css/temas.css">
+        <!-- 🔹 Script global de tema -->
+        <script src="js/temas.js" defer></script>
     </head>
     <body>
+        <!-- 🔹 Switch de tema (arriba a la derecha) -->
+        <div class="theme-toggle">
+            <input type="checkbox" id="theme-switch">
+            <label for="theme-switch" class="switch"></label>
+        </div>
         <div class="container">
             <div class="logo">
                 <img src="css/cineBlog_Logo.png" alt="Logo CineBlog">
