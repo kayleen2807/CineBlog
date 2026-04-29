@@ -60,6 +60,16 @@ try {
         $dbError = "Error de conexión: " . $conn->connect_error;
     } else {
         $conn->set_charset("utf8mb4");
+        $fotoPerfil = "uploads/default.png";
+        $stmt = $conn->prepare("SELECT foto_perfil FROM usuarios WHERE id_usuario = ?");
+        $stmt->bind_param("i", $_SESSION['usuario_id']);
+        $stmt->execute();
+        $res1 = $stmt->get_result();
+        if ($res1 && $row1 = $res1->fetch_assoc()) {
+            if (!empty($row1['foto_perfil'])) {
+                $fotoPerfil = "uploads/" . $row1['foto_perfil'];
+            }
+        }
         $sql = "
             SELECT
                 p.id_post,
@@ -67,19 +77,21 @@ try {
                 p.contenido,
                 p.fecha,
                 u.nombre AS autor,
+                u.foto_perfil AS autor_foto,
+                u.id_usuario AS autor_id,
                 GROUP_CONCAT(DISTINCT pc.categoria SEPARATOR '||') AS categorias,
-            GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes,
-            MAX(pt.tmdb_id) AS tmdb_id,
-            MAX(pt.media_type) AS tmdb_type,
-            MAX(pt.titulo) AS tmdb_titulo,
-            MAX(pt.poster_url) AS tmdb_poster,
-            MAX(pt.release_date) AS tmdb_release_date
+                GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes,
+                MAX(pt.tmdb_id) AS tmdb_id,
+                MAX(pt.media_type) AS tmdb_type,
+                MAX(pt.titulo) AS tmdb_titulo,
+                MAX(pt.poster_url) AS tmdb_poster,
+                MAX(pt.release_date) AS tmdb_release_date
             FROM posts p
             JOIN usuarios u ON u.id_usuario = p.autor_id
             LEFT JOIN post_categorias pc ON pc.post_id = p.id_post
             LEFT JOIN post_imagenes pi ON pi.post_id = p.id_post
-          LEFT JOIN post_tmdb pt ON pt.post_id = p.id_post
-            GROUP BY p.id_post
+            LEFT JOIN post_tmdb pt ON pt.post_id = p.id_post
+            GROUP BY p.id_post, p.titulo, p.contenido, p.fecha, u.nombre, u.foto_perfil, u.id_usuario
             ORDER BY p.fecha DESC
             LIMIT 50
         ";
@@ -119,6 +131,7 @@ try {
                 }
             }
         }
+        $stmt->close();
         $conn->close();
     }
 } catch (Throwable $e) {
@@ -165,12 +178,12 @@ try {
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
             <?php if ($rol == "editor") : ?>
                 <button class="perfil-btn">
-                    <div class="avatar">👤</div>
+                    <div class="avatar"><img src="<?= htmlspecialchars($fotoPerfil, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($_SESSION['nombre'], ENT_QUOTES, 'UTF-8') ?>" class="avatar"></div>
                         <span><a href="perfil.php"><?php echo $_SESSION['nombre']; ?></a></span>
                 </button>  
             <?php elseif ($rol == "admin") : ?>
                 <button class="perfil-btn">
-                    <div class="avatar">👤</div>
+                    <div><img src="<?= htmlspecialchars($fotoPerfil, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($_SESSION['nombre'], ENT_QUOTES, 'UTF-8') ?>" class="avatar"></div>
                         <span><a href="perfil.php"><?php echo $_SESSION['nombre']; ?></a></span>
                 </button>
              <?php else : ?>
@@ -228,10 +241,8 @@ try {
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
             <?php if ($rol == "editor") : ?>
                 <button class="create-post" type="button" aria-label="Crear publicación" onclick="window.location.href='publicarsubir.php'">+</button>
-                <!-- Se agregaran mas cosas para el editor-->
             <?php elseif ($rol == "admin") : ?>
                 <button class="create-post" type="button" aria-label="Crear publicación" onclick="window.location.href='publicarsubir.php'">+</button>
-                <!-- Se agregaran mas cosas para el admin-->
             <?php endif; ?>
 
             <div class="feed-inner" data-initial-type="<?php echo htmlspecialchars($initialType, ENT_QUOTES, 'UTF-8'); ?>" data-initial-cat="<?php echo htmlspecialchars($initialCat, ENT_QUOTES, 'UTF-8'); ?>">
@@ -269,12 +280,15 @@ try {
 
                         $catsFilterValue = implode('|', array_map('strval', $cats));
                     ?>
+                    
                       <article class="post-card" data-type="<?php echo htmlspecialchars($postType, ENT_QUOTES, 'UTF-8'); ?>" data-cats="<?php echo htmlspecialchars($catsFilterValue, ENT_QUOTES, 'UTF-8'); ?>">
                         <header class="post-head">
-                            <div class="post-title"><?php echo htmlspecialchars($p['titulo'], ENT_QUOTES, 'UTF-8'); ?></div>
-                            <div class="post-date"><?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
+                          <img src="uploads/<?= $p['autor_foto'] ?: 'default.png' ?>" alt="Foto de <?= $p['autor'] ?>" class="avatar">
+                          <div class="post-author"><?php echo htmlspecialchars($p['autor'] ?? '', ENT_QUOTES, 'UTF-8'); ?></div>
+                          <a href="perfil.php?id= <?= $p['autor_id'] ?>" class="btn-perfil">Ver Perfil</a>
+                          <div class="post-date"><?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
                         </header>
-
+                        <div class="post-title"><?php echo htmlspecialchars($p['titulo'], ENT_QUOTES, 'UTF-8'); ?></div>
                         <p class="post-body"><?php echo nl2br(htmlspecialchars($p['contenido'], ENT_QUOTES, 'UTF-8')); ?></p>
 
                         <?php if ($tmdbId > 0 && $tmdbTitle !== '') : ?>

@@ -150,7 +150,7 @@ $conn->close();
             <div class="profile-picture-panel">
                 <div class="profile-header-section">
                     <div class="current-picture">
-                        <img id="profile-pic" src="<?php echo htmlspecialchars($foto, ENT_QUOTES, 'UTF-8'); ?>" alt="Foto de perfil">
+                        <img id="profile-pic" src="uploads/<?= htmlspecialchars($foto, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de perfil">
                     </div>
                     <div class="user-info">
                         <h1><?php echo $_SESSION['nombre']; ?></h1>

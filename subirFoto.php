@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_photo'])) {
         // Eliminar foto: volver a la predeterminada
         $conn = new mysqli("localhost", "root", "", "cineblog_db");
-        $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = 'uploads/default.png' WHERE id_usuario = ?");
+        $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = 'default.png' WHERE id_usuario = ?");
         $stmt->bind_param("i", $_SESSION['usuario_id']);
         $stmt->execute();
         $stmt->close();
@@ -64,10 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $targetFile = $targetDir . $nombreArchivo;
 
         if (move_uploaded_file($foto['tmp_name'], $targetFile)) {
-            // Actualizar DB
+            // Actualizar DB con solo el nombre (antes salia la ruta completa, ahora solo el nombre)
             $conn = new mysqli("localhost", "root", "", "cineblog_db");
             $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = ? WHERE id_usuario = ?");
-            $stmt->bind_param("si", $relativePath, $_SESSION['usuario_id']);
+            $stmt->bind_param("si", $nombreArchivo, $_SESSION['usuario_id']);
             $stmt->execute();
             $stmt->close();
             $conn->close();
