@@ -211,8 +211,17 @@ $typeFilter = $mediaType === 'tv' ? 'series' : 'movies';
     <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?> - Reseñas | CineBlog</title>
     <link rel="stylesheet" href="css/styles_media.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- 🔹 Estilos globales de tema -->
+    <link rel="stylesheet" href="css/temas.css">
+    <!-- 🔹 Script global de tema -->
+    <script src="js/temas.js" defer></script>
 </head>
 <body>
+    <!-- 🔹 Switch de tema (arriba a la derecha) -->
+    <div class="theme-toggle">
+        <input type="checkbox" id="theme-switch">
+        <label for="theme-switch" class="switch"></label>
+    </div>
     <main class="media-wrap">
         <a class="back-link" href="index.php">← Volver al inicio</a>
 

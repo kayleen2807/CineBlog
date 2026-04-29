@@ -52,6 +52,10 @@ $conn->close();
   <link rel="stylesheet" href="css/styles_dashboard.css">
   <link rel="stylesheet" href="css/styles_inicio.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 🔹 Estilos globales de tema -->
+  <link rel="stylesheet" href="css/temas.css">
+  <!-- 🔹 Script global de tema -->
+  <script src="js/temas.js" defer></script>
 </head>
 <style>
   a {
@@ -68,6 +72,11 @@ $conn->close();
   }
 </style>
 <body>
+<!-- 🔹 Switch de tema (arriba a la derecha) -->
+  <div class="theme-toggle">
+    <input type="checkbox" id="theme-switch">
+    <label for="theme-switch" class="switch"></label>
+  </div>
 <div class="cine-bg">
   <canvas id="cineBg"></canvas>
 </div>

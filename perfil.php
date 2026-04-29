@@ -112,8 +112,17 @@ $conn->close();
     <link rel="stylesheet" href="css/style_perfil.css">
     <link rel="stylesheet" href="lib/cropper.min.css">
     <title>Perfil CineBlog</title>
+    <!-- 🔹 Estilos globales de tema -->
+    <link rel="stylesheet" href="css/temas.css">
+    <!-- 🔹 Script global de tema -->
+    <script src="js/temas.js" defer></script>
 </head>
 <body>
+    <!-- 🔹 Switch de tema (arriba a la derecha) -->
+    <div class="theme-toggle">
+        <input type="checkbox" id="theme-switch">
+        <label for="theme-switch" class="switch"></label>
+    </div>
     <!--Agregar manejo de mensajes al inicio del body o main, muestra mensajes de éxito o error -->
     <?php if (isset($_SESSION['upload_message'])): ?>
         <div class="alert <?php echo $_SESSION['upload_type'] === 'success' ? 'success' : 'error'; ?>">
@@ -141,7 +150,7 @@ $conn->close();
             <div class="profile-picture-panel">
                 <div class="profile-header-section">
                     <div class="current-picture">
-                        <img id="profile-pic" src="<?php echo htmlspecialchars($foto, ENT_QUOTES, 'UTF-8'); ?>" alt="Foto de perfil">
+                        <img id="profile-pic" src="uploads/<?= htmlspecialchars($foto, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de perfil">
                     </div>
                     <div class="user-info">
                         <h1><?php echo $_SESSION['nombre']; ?></h1>

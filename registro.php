@@ -82,8 +82,17 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <link rel="stylesheet" href="css/styles_registro.css">
         <!-- Librería de Bootstrap Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"> <!-- Librería de bootstrap icons -->
+        <!-- 🔹 Estilos globales de tema -->
+        <link rel="stylesheet" href="css/temas.css">
+        <!-- 🔹 Script global de tema -->
+        <script src="js/temas.js" defer></script>
     </head>
     <body>
+        <!-- 🔹 Switch de tema (arriba a la derecha) -->
+        <div class="theme-toggle">
+        <input type="checkbox" id="theme-switch">
+        <label for="theme-switch" class="switch"></label>
+        </div>
         <div class="container">
             <div class="logo">
                 <img src="css/cineBlog_Logo.png" alt="Logo CineBlog">
