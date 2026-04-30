@@ -103,3 +103,24 @@ button:hover {
 .toggle-password:hover i {
     color: #007bff; /* Azul igual que tu botón */
 }
+
+.btn-regresar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #dcd9d9;
+    text-decoration: none;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    opacity: 0.8;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.btn-regresar:hover {
+    opacity: 1;
+    transform: translateX(-3px);
+}
+
+.btn-regresar i {
+    font-size: 1.2rem;
+}
