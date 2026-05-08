@@ -1,5 +1,6 @@
 <?php
 session_start();
+//Verifica que el usuario es admin, si no lo es redirige al inicio de sesión
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     header("Location: inicioSesion.php");
     exit();
@@ -17,6 +18,7 @@ $result = $conn->query($sql);
 $categorias = [];
 $totales = [];
 
+// Almacena los resultados en arrays para usarlos en los gráficos 
 while($row = $result->fetch_assoc()) {
   $categorias[] = $row['categoria'];
   $totales[] = $row['total'];
@@ -29,6 +31,7 @@ $resultRoles = $conn->query($sqlRoles);
 $roles = [];
 $totalesRoles = [];
 
+// Almacena los resultados en arrays para usarlos en los gráficos de roles
 while($row = $resultRoles->fetch_assoc()) {
   $roles[] = $row['rol'];
   $totalesRoles[] = $row['total'];
@@ -81,6 +84,7 @@ $conn->close();
   <canvas id="cineBg"></canvas>
 </div>
 
+<!-- Sidebar del admin -->
 <?php include 'includes/sidebar_admin.php'; ?>
 
 <div class="main">
@@ -126,12 +130,13 @@ $conn->close();
 <script src="js/cinedbg.js"></script>
 <script src="js/app.js?v=3"></script>
 <script>
+  // Datos para el gráfico de posts por categoría
   const categorias = <?php echo json_encode($categorias); ?>;
   const totales = <?php echo json_encode($totales); ?>;
-
+  // Configuración del gráfico de barras para posts por categoría
   const ctx = document.getElementById('postsPorCategoria').getContext('2d');
   new Chart(ctx, {
-    type: 'bar', // puedes cambiar a 'pie', 'line', etc.
+    type: 'bar', 
     data: {
       labels: categorias,
       datasets: [{
@@ -152,9 +157,10 @@ $conn->close();
   });
 </script>
 <script>
+  // Datos para el gráfico de usuarios por rol
   const roles = <?php echo json_encode($roles); ?>;
   const totalesRoles = <?php echo json_encode($totalesRoles); ?>;
-
+  // Configuración del gráfico de pastel para usuarios por rol
   const ctxRoles = document.getElementById('usuariosPorRol').getContext('2d');
   new Chart(ctxRoles, {
     type: 'pie',

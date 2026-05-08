@@ -27,10 +27,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->execute();
             $stmt->store_result();
 
+            // Verifica si se encontró un usuario con ese correo
             if ($stmt->num_rows > 0) {
                 $stmt->bind_result($id_usuario, $nombre, $hashed_password, $rol);
                 $stmt->fetch();
 
+                // Verifica la contraseña usando password_verify
                 if (password_verify($password, $hashed_password)) {
                     $_SESSION['usuario_id'] = $id_usuario;
                     $_SESSION['nombre'] = $nombre;
@@ -40,9 +42,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     header("Location: index.php");
                     exit();
                 } else {
+                    // Contraseña incorrecta
                     $mensaje = "Contraseña incorrecta.";
                 }
             } else {
+                // No se encontró un usuario con ese correo
                 $mensaje = "El correo no está registrado.";
             }
 

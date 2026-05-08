@@ -1,3 +1,4 @@
+// CineBlog - Fondo animado con íconos relacionados al cine utilizando Canvas
 (function() {
   const canvas = document.getElementById('cineBg');
   const ctx = canvas.getContext('2d');

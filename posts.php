@@ -1,9 +1,12 @@
 <?php
 session_start();
+// Conexion a la base datos
 include 'includes/conexion.php';
 
+// Verifica que el usuario es admin, si no lo es redirige al inicio de sesión
 if ($_SESSION['rol'] !== 'admin') { header("Location: inicioSesion.php"); exit(); }
 
+// Consulta para obtener los posts junto con el nombre del autor y su categoría
 $result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nombre AS autor, c.categoria
         FROM posts p
         LEFT JOIN usuarios u ON p.autor_id = u.id_usuario
@@ -42,16 +45,20 @@ $result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nomb
   <div class="cine-bg">
     <canvas id="cineBg"></canvas>
   </div>
+  <!-- Sidebar del admin-->
   <?php include 'includes/sidebar_admin.php'; ?>
   <div class="main">
     <header class="topbar">
       <h1>Usuarios</h1>
     </header>
 
+<!--Vista principal para el admin-->
     <div class="feed">
         <div class="feed-inner">
             <main class="admin-main">
+              <!-- Contenido principal para el admin -->
                 <h1>Gestión de Publicaciones</h1>
+                <!-- Tabla para mostrar las publicaciones -->
                 <table class="admin-table">
                     <thead>
                     <tr>
@@ -64,6 +71,7 @@ $result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nomb
                     </tr>
                     </thead>
                     <tbody>
+                    <!-- Se recorre el resultado de la consulta para mostrar cada publicación en una fila de la tabla, con opciones para editar o eliminar cada publicación -->
                     <?php while($row = $result->fetch_assoc()): ?>
                         <tr>
                         <td><?= $row['id_post'] ?></td>
