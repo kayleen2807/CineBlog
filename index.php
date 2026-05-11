@@ -173,6 +173,7 @@ try {
   <canvas id="cineBg"></canvas>
 </div>
 
+<!-- Sidebar de navegación lateral -->
 <aside class="sidebar">
   <div style="display:flex;flex-direction:column;gap:15px;">
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
@@ -223,9 +224,11 @@ try {
       <div class="sb-item">📊 <span><a href="dashboard.php">Administracion</a></span></div>
     <?php endif; ?>
     <div class="sb-item">⚙️ Configuración</div>
-    <div class="sb-item">🚪<span><a href="cerrarSesion.php">Cerrar sesión</a></span></div>
+    <div class="sb-item">🚪<a href="cerrarSesion.php">Cerrar sesión</a></div>
   </div>
 </aside>
+<!-- Termina Sidebar -->
+
 
 <div class="main">
   <header class="topbar">

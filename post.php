@@ -1,6 +1,12 @@
 <?php
 session_start();
 
+// Evitar caché
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+// Validar sesión o rol visitante
 if (!isset($_SESSION['usuario_id']) && (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'visitante')) {
     header("Location: inicioSesion.php");
     exit();
@@ -230,5 +236,15 @@ elseif (count($imgs)) $coverImg = $imgs[0];
     </div>
 
     <script src="app.js?v=5"></script>
+    <!-- 🔹 Script para forzar recarga al volver atrás -->
+    <script>
+  window.addEventListener("pageshow", function(event) {
+        // Detecta si la página viene de caché (persisted)
+        // o si el usuario llegó con la flecha atrás/adelante (back_forward)
+        if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+            window.location.href = window.location.href;
+        }
+    });
+</script>
 </body>
 </html>

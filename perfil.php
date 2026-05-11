@@ -1,6 +1,11 @@
 ﻿<?php
 // Archivo para mostrar el perfil del usuario, solo accesible si el usuario ha iniciado sesión
 session_start();
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0"); // Evita que el navegador almacene en caché esta página.
+header("Pragma: no-cache"); // Para HTTP/1.0
+header("Expires: 0"); // Para indicar que la página ya expiró
+
+//Validar que el usuario haya iniciado sesión
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: inicioSesion.php");
     exit();
@@ -13,6 +18,7 @@ function format_fecha_sin_segundos(?string $value): string
     if ($ts === false) return $value;
     return date('Y-m-d H:i', $ts);
 }
+
 //conexión a la base de datos para obtener la información del usuario
 include 'includes/conexion.php';
 
@@ -309,5 +315,13 @@ $conn->close();
     console.log("inline test - script works");
     </script>
     <script src="js/app.js?v=5"></script>
+    <!-- 🔹 Script para forzar recarga al volver atrás -->
+    <script>
+        window.addEventListener("pageshow", function(event) {
+            if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+                window.location.href = window.location.href;
+            }
+        });
+    </script>
 </body>
 </html>

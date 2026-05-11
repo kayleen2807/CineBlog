@@ -1,5 +1,10 @@
 <?php
 session_start();
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0"); // Evita que el navegador almacene en caché esta página.
+header("Pragma: no-cache"); // Para HTTP/1.0
+header("Expires: 0"); // Para indicar que la página ya expiró
+
+// Verificar si el usuario está autenticado y es admin.
 if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
     header("Location: inicioSesion.php");
     exit();
@@ -179,6 +184,14 @@ $conn->close();
       }
     }
   });
+</script>
+<!-- 🔹 Script para forzar recarga al volver atrás -->
+<script>
+window.addEventListener("pageshow", function(event) {
+    if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+        window.location.href = window.location.href;
+    }
+});
 </script>
 </body>
 </html>
