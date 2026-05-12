@@ -53,11 +53,10 @@ $result = $conn->query("SELECT id_usuario, nombre, email, rol FROM usuarios");
             <h1>Gestión de Usuarios</h1>
             <table class="admin-table">
               <!-- Tabla para mostrar los usuarios registrados, con columnas para ID, nombre, correo y rol -->
-              <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead>
+              <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead>
               <tbody>
                 <?php while($row = $result->fetch_assoc()): ?>
                   <tr>
-                    <td><?= $row['id_usuario'] ?></td>
                     <td><?= $row['nombre'] ?></td>
                     <td><?= $row['email'] ?></td>
                     <td><?= $row['rol'] ?></td>

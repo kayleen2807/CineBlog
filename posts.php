@@ -17,10 +17,20 @@ include 'includes/conexion.php';
 if ($_SESSION['rol'] !== 'admin') { header("Location: inicioSesion.php"); exit(); } // Verificar que el usuario es admin
 
 // Consulta para obtener los posts junto con el nombre del autor y su categoría
-$result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nombre AS autor, c.categoria
+$sql = "SELECT 
+            p.id_post,
+            p.titulo,
+            p.contenido,
+            p.fecha,
+            u.id_usuario AS autor_id,
+            u.nombre AS autor,
+            GROUP_CONCAT(DISTINCT c.categoria SEPARATOR ', ') AS categorias
         FROM posts p
         LEFT JOIN usuarios u ON p.autor_id = u.id_usuario
-        LEFT JOIN post_categorias c ON p.id_post = c.post_id");
+        LEFT JOIN post_categorias c ON p.id_post = c.post_id
+        GROUP BY p.id_post
+        ORDER BY p.fecha DESC";
+$result = $conn->query($sql);
 
 ?>
 <!DOCTYPE html>
@@ -72,7 +82,6 @@ $result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nomb
                 <table class="admin-table">
                     <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Título</th>
                         <th>Autor</th>
                         <th>Categoría</th>
@@ -84,15 +93,14 @@ $result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nomb
                     <!-- Se recorre el resultado de la consulta para mostrar cada publicación en una fila de la tabla, con opciones para editar o eliminar cada publicación -->
                     <?php while($row = $result->fetch_assoc()): ?>
                         <tr>
-                        <td><?= $row['id_post'] ?></td>
                         <td><?= $row['titulo'] ?></td>
-                        <td><?= $row['autor'] ?></td>
-                        <td><?= $row['categoria'] ?></td>
+                        <td><a href="perfil.php?id=<?= $row['autor_id'] ?>"><?= $row['autor'] ?></a></td>
+                        <td><?= htmlspecialchars($row['categorias']) ?></td>
                         <td><?= $row['fecha'] ?></td>
                         <td>
                             <a href="editar_post.php?id=<?= $row['id_post'] ?>">Editar</a> |
-                            <a href="eliminar_post.php?id=<?= $row['id_post'] ?>" onclick="return confirm('¿Seguro que quieres eliminar este post?')">Eliminar</a>
-                        </td>
+                            <a href="eliminar_post.php?id=<?= $row['id_post'] ?>" onclick="return confirm('¿Seguro que quieres eliminar este post?')">Eliminar</a> |
+                            <a href="post.php?id_post=<?= $row['id_post'] ?>">Ver publicación</a>
                         </tr>
                     <?php endwhile; ?>
                     </tbody>
@@ -103,7 +111,7 @@ $result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nomb
 </div>
 
 <script src="js/cinedbg.js"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/app.js?v=5"></script>
 <!-- 🔹 Script para forzar recarga al volver atrás -->
 <script>
 window.addEventListener("pageshow", function(event) {

@@ -7,6 +7,9 @@ header("Pragma: no-cache");
 header("Expires: 0");
 
 // Validar sesión o rol visitante
+$rol = $_SESSION['rol'] ?? 'visitante';
+
+
 // Verifica que el usuario está autenticado, si no lo está redirige al inicio de sesión. Se permite el acceso a usuarios con rol "visitante" para que puedan ver los posts y comentar, pero no crear posts ni acceder al dashboard.
 if (!isset($_SESSION['usuario_id']) && (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'visitante')) {
     header("Location: inicioSesion.php");
@@ -50,6 +53,7 @@ try {
                 p.titulo,
                 p.contenido,
                 p.fecha,
+                p.editado_por_admin,
                 u.nombre AS autor,
                 GROUP_CONCAT(DISTINCT pc.categoria SEPARATOR '||') AS categorias,
                 GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes,
@@ -143,6 +147,9 @@ $coverImg = "css/cineBlog_Logo.png";
 if ($tmdbPoster !== '') $coverImg = $tmdbPoster;
 elseif (count($imgs)) $coverImg = $imgs[0];
 
+$idPerfil = isset($_GET['perfil']) ? (int)$_GET['perfil'] : $_SESSION['usuario_id'];
+$esPropio = ($idPerfil === $_SESSION['usuario_id']);
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -151,6 +158,7 @@ elseif (count($imgs)) $coverImg = $imgs[0];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/style_post.css?v=1">
+    <link rel="stylesheet" href="css/styles_media.css">
     <title><?php echo htmlspecialchars((string)($post['titulo'] ?? 'Publicación'), ENT_QUOTES, 'UTF-8'); ?> - CineBlog</title>
     <!-- 🔹 Estilos globales de tema -->
     <link rel="stylesheet" href="css/temas.css">
@@ -166,7 +174,16 @@ elseif (count($imgs)) $coverImg = $imgs[0];
     <div class="page-shell">
         <!-- Cabecera del sitio, con el logo y un enlace al perfil del usuario -->
         <main class="post-wrap">
-            <a class="back-link" href="perfil.php">← Volver al perfil</a>
+            <?php if ($rol == "editor") : ?>
+                <a class="back-link" href="perfil.php?id=<?= $idPerfil ?>">← Volver al perfil</a>
+            <!-- Si el rol es admin lo regresa a su dashboard/panel dependiendo si entro desde su pnale o desde el perfil -->
+            <?php elseif ($rol == "admin") : ?>
+                <?php if (isset($_GET['perfil'])): ?>
+                    <a class="back-link" href="perfil.php?id=<?= $idPerfil ?>">← Volver al perfil</a>
+                <?php else: ?>
+                    <a class="back-link" href="posts.php">← Volver al panel de administración</a>
+                <?php endif; ?>
+            <?php endif; ?>
             <!-- Si hubo un error al cargar los datos del post, se muestra un mensaje de error en lugar del contenido del post -->
             <?php if ($dbError !== '') : ?>
                 <div class="sidebar-box">
@@ -228,6 +245,9 @@ elseif (count($imgs)) $coverImg = $imgs[0];
                     <button type="button" class="icon-btn comment-btn" data-post-id="<?php echo $postId; ?>" aria-label="Comentar">💬</button>
                     <span class="post-likecount">❤ <?php echo (int)$likesCount; ?></span>
                     <span class="post-muted">Por <?php echo htmlspecialchars((string)($post['autor'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
+                    <?php if (!empty($post['editado_por_admin'])): ?>
+                        <span class="post-tag">✏️ Editado por administrador</span>
+                    <?php endif; ?>
                 </footer>
                 <!-- Sección de comentarios, inicialmente oculta, se muestra al hacer clic en el botón de comentar, muestra un formulario para agregar un nuevo comentario y una lista de comentarios existentes asociados a la publicación -->
                 <section class="comments post-comments" data-post-id="<?php echo $postId; ?>" hidden>
@@ -254,16 +274,16 @@ elseif (count($imgs)) $coverImg = $imgs[0];
         </main>
     </div>
 
-    <script src="app.js?v=5"></script>
+    <script src="js/app.js?v=5"></script>
     <!-- 🔹 Script para forzar recarga al volver atrás -->
     <script>
-  window.addEventListener("pageshow", function(event) {
-        // Detecta si la página viene de caché (persisted)
-        // o si el usuario llegó con la flecha atrás/adelante (back_forward)
-        if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
-            window.location.href = window.location.href;
-        }
-    });
-</script>
+    window.addEventListener("pageshow", function(event) {
+            // Detecta si la página viene de caché (persisted)
+            // o si el usuario llegó con la flecha atrás/adelante (back_forward)
+            if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+                window.location.href = window.location.href;
+            }
+        });
+    </script>
 </body>
 </html>

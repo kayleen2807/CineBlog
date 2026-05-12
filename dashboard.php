@@ -116,10 +116,6 @@ $conn->close();
             <h3>Comentarios</h3>
             <p><?php echo $totalComentarios; ?></p>
           </div>
-          <div class="stat-card">
-            <h3>Likes</h3>
-            <p><?php echo $totalLikes; ?></p>
-          </div>
         </div>
         <div class="chart-container" >
           <canvas id="postsPorCategoria"></canvas>

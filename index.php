@@ -83,6 +83,7 @@ try {
                 p.titulo,
                 p.contenido,
                 p.fecha,
+                p.editado_por_admin,
                 u.nombre AS autor,
                 u.foto_perfil AS autor_foto,
                 u.id_usuario AS autor_id,
@@ -191,7 +192,7 @@ try {
             <!-- Si el rol es editor o admin se muestra el avatar y su nombre de usuario en la side bar y lo lleva a su perfil (perfil.php)-->
             <?php if ($rol == "editor") : ?>
                 <button class="perfil-btn">
-                    <div class="avatar"><img src="<?= htmlspecialchars($fotoPerfil, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($_SESSION['nombre'], ENT_QUOTES, 'UTF-8') ?>" class="avatar"></div>
+                    <div><img src="<?= htmlspecialchars($fotoPerfil, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($_SESSION['nombre'], ENT_QUOTES, 'UTF-8') ?>" class="avatar"></div>
                         <span><a href="perfil.php"><?php echo $_SESSION['nombre']; ?></a></span>
                 </button>  
             <?php elseif ($rol == "admin") : ?>
@@ -202,8 +203,7 @@ try {
               <!-- Si el rol es visitante solo muestra un icono y en vez de llevarlo aun perfil, lo lleve a registrarse -->
              <?php else : ?>
                 <button class="perfil-btn">
-                    <div class="avatar">👤</div>
-                        <span><a href="registro.php">¿Registrarse?</a></span>
+                      <h2><span><a href="registro.php">¿Registrarse?</a></span></h2>
                 </button>
             <?php endif; ?>
     <!-- Sidebar principal  -->
@@ -252,7 +252,6 @@ try {
 <div class="main">
   <header class="topbar">
     <div class="logo-text"><span>C</span>ineBlog</div>
-    <span class="tendencies">Tendencias</span>
     <!-- Barra de búsqueda-->
     <div class="search-wrap">
       <!-- El buscador utiliza la API de TMDB para buscar películas o series -->
@@ -315,7 +314,9 @@ try {
                           <!-- Encabezado de la publicación / post , contiene foto de perfil, nombre del autor y fecha -->
                           <img src="uploads/<?= $p['autor_foto'] ?: 'default.png' ?>" alt="Foto de <?= $p['autor'] ?>" class="avatar">
                           <div class="post-author"><?php echo htmlspecialchars($p['autor'] ?? '', ENT_QUOTES, 'UTF-8'); ?></div>
-                          <a href="perfil.php?id= <?= $p['autor_id'] ?>" class="btn-perfil">Ver Perfil</a>
+                          <?php if ($rol == "editor" || $rol == "admin") : ?>
+                            <a href="perfil.php?id= <?= $p['autor_id'] ?>" class="btn-perfil">Ver Perfil</a>
+                          <?php endif; ?>
                           <div class="post-date"><?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
                         </header>
                         <!-- Título de la publicación / post -->
@@ -348,8 +349,11 @@ try {
                         <?php if (count($cats)) : ?>
                             <div class="post-cats">
                                 <?php foreach ($cats as $c) : ?>
-                              <span class="post-cat" data-cat="<?php echo htmlspecialchars((string)$c, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($c, ENT_QUOTES, 'UTF-8'); ?></span>
+                                  <span class="post-cat" data-cat="<?php echo htmlspecialchars((string)$c, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($c, ENT_QUOTES, 'UTF-8'); ?></span>
                                 <?php endforeach; ?>
+                                <?php if (!empty($p['editado_por_admin'])): ?>
+                                  <span class="post-cat">✏️ Editado por administrador</span>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                         <!-- Imágenes de la publicación / post -->
@@ -362,40 +366,42 @@ try {
                         <?php endif; ?>
 
                         <!-- Acciones de la publicación / post (comentar y dar like)-->
-                        <div class="post-actions" aria-label="Acciones">
-                            <button type="button" class="icon-btn icon-heart like-btn <?php echo $isLiked ? 'liked' : ''; ?>" data-post-id="<?php echo $pid; ?>" aria-label="Me gusta" aria-pressed="<?php echo $isLiked ? 'true' : 'false'; ?>">
-                                <svg class="heart-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                                    <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
-                                </svg>
-                            </button>
-                            <button type="button" class="icon-btn comment-btn" data-post-id="<?php echo $pid; ?>" aria-label="Comentar">💬</button>
-                        </div>
-                        <!-- Sección de comentarios, inicialmente oculta, se muestra al hacer clic en el botón de comentar-->  
-                        <section class="comments" data-post-id="<?php echo $pid; ?>" hidden>
-                            <form class="comment-form" data-post-id="<?php echo $pid; ?>">
-                                <textarea class="comment-input" name="contenido" maxlength="400" placeholder="Escribe un comentario..." required></textarea>
-                                <div class="comment-actions">
-                                    <button class="comment-send" type="submit">Comentar</button>
-                                </div>
-                            </form>
-                            <!-- Lista de comentarios que se han agregado -->
-                            <div class="comment-list" aria-label="Comentarios">
-                                <?php foreach ($comments as $c) : ?>
-                                    <div class="comment-item">
-                                        <div class="comment-head">
-                                            <span class="comment-author"><?php echo htmlspecialchars($c['autor'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span>
-                                            <span class="comment-date"><?php echo htmlspecialchars(format_fecha_sin_segundos($c['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
-                                        </div>
-                                        <div class="comment-body"><?php echo nl2br(htmlspecialchars($c['contenido'] ?? '', ENT_QUOTES, 'UTF-8')); ?></div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </section>
+                        <?php if ($rol == "editor" || $rol == "admin") : ?>
+                          <div class="post-actions" aria-label="Acciones">
+                              <button type="button" class="icon-btn icon-heart like-btn <?php echo $isLiked ? 'liked' : ''; ?>" data-post-id="<?php echo $pid; ?>" aria-label="Me gusta" aria-pressed="<?php echo $isLiked ? 'true' : 'false'; ?>">
+                                  <svg class="heart-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                      <path class="heart-path" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+                                  </svg>
+                              </button>
+                              <button type="button" class="icon-btn comment-btn" data-post-id="<?php echo $pid; ?>" aria-label="Comentar">💬</button>
+                          </div>
+                          <!-- Sección de comentarios, inicialmente oculta, se muestra al hacer clic en el botón de comentar-->  
+                          <section class="comments" data-post-id="<?php echo $pid; ?>" hidden>
+                              <form class="comment-form" data-post-id="<?php echo $pid; ?>">
+                                  <textarea class="comment-input" name="contenido" maxlength="400" placeholder="Escribe un comentario..." required></textarea>
+                                  <div class="comment-actions">
+                                      <button class="comment-send" type="submit">Comentar</button>
+                                  </div>
+                              </form>
+                              <!-- Lista de comentarios que se han agregado -->
+                              <div class="comment-list" aria-label="Comentarios">
+                                  <?php foreach ($comments as $c) : ?>
+                                      <div class="comment-item">
+                                          <div class="comment-head">
+                                              <span class="comment-author"><?php echo htmlspecialchars($c['autor'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span>
+                                              <span class="comment-date"><?php echo htmlspecialchars(format_fecha_sin_segundos($c['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
+                                          </div>
+                                          <div class="comment-body"><?php echo nl2br(htmlspecialchars($c['contenido'] ?? '', ENT_QUOTES, 'UTF-8')); ?></div>
+                                      </div>
+                                  <?php endforeach; ?>
+                              </div>
+                          </section>
+                        <?php endif; ?>
                     </article>
                 <?php endforeach; ?>
   </div>
 </div>
 <script src="js/cinedbg.js"></script>
-<script src="app.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>

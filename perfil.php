@@ -23,8 +23,9 @@ function format_fecha_sin_segundos(?string $value): string
 //conexión a la base de datos para obtener la información del usuario
 include 'includes/conexion.php';
 
-// Obtiene el ID del usuario desde la sesión y luego su foto de perfil, si existe, para mostrarla en la página de perfil
-$id_usuario = $_SESSION['usuario_id'];
+//Dectectar si se está viendo el propio perfil o el de otro usuario
+$idPerfil = isset($_GET['id']) ? (int)$_GET['id'] : $_SESSION['usuario_id'];
+$esPropio = ($idPerfil === $_SESSION['usuario_id']);
 $foto = "uploads/default.png";
 
 // Foto de perfil (si la columna existe)
@@ -35,8 +36,8 @@ if ($colRes) $colRes->free();
 
 // Si la columna de foto de perfil existe, intenta obtener la foto del usuario, si no tiene una foto personalizada se mostrará la imagen por defecto
 if ($hasFotoCol) {
-    $stmt = $conn->prepare("SELECT foto_perfil FROM usuarios WHERE id_usuario = ?");
-    $stmt->bind_param("i", $id_usuario);
+    $stmt = $conn->prepare("SELECT nombre, foto_perfil FROM usuarios WHERE id_usuario = ?");
+    $stmt->bind_param("i", $idPerfil);
     $stmt->execute();
     $resultado = $stmt->get_result();
     $usuario = $resultado ? $resultado->fetch_assoc() : null;
@@ -68,7 +69,7 @@ $stmtPosts = $conn->prepare("
     LIMIT 50
 ");
 // Se obtiene la información de las publicaciones del usuario, incluyendo categorías, imágenes asociadas y datos de TMDB si están disponibles, para mostrar en su perfil
-$stmtPosts->bind_param("i", $id_usuario);
+$stmtPosts->bind_param("i", $idPerfil);
 $stmtPosts->execute();
 $resPosts = $stmtPosts->get_result();
 if ($resPosts) {
@@ -87,7 +88,7 @@ if (count($misPosts)) {
     if (count($postIds)) {
         $idList = implode(',', $postIds);
 
-        $resLikes = $conn->query("SELECT post_id FROM likes WHERE usuario_id = " . (int)$id_usuario . " AND post_id IN ($idList)");
+        $resLikes = $conn->query("SELECT post_id FROM likes WHERE usuario_id = " . (int)$idPerfil . " AND post_id IN ($idList)");
         if ($resLikes) {
             while ($r = $resLikes->fetch_assoc()) $likedPosts[(int)$r['post_id']] = true;
             $resLikes->free();
@@ -151,13 +152,7 @@ $conn->close();
                     <span class="logo-rest">CineBlog</span>
                 </a>
             </div>
-            <div class="navbar" aria-label="Navegación principal">
-                <a href="#" class="nav-link active">Tendencias</a>
-                <a href="#" class="nav-link">Estrenos</a>
-                <a href="#" class="nav-link">Recomendado</a>
-            </div>
         </nav>
-
         <!-- Contenedor principal del perfil, con una sección para mostrar la foto de perfil y acciones relacionadas (cambiar foto, eliminar foto) -->
         <header class="header-container">
             <div class="profile-picture-panel">
@@ -166,10 +161,11 @@ $conn->close();
                         <img id="profile-pic" src="uploads/<?= htmlspecialchars($foto, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de perfil">
                     </div>
                     <div class="user-info">
-                        <h1><?php echo $_SESSION['nombre']; ?></h1>
+                        <h1><?= htmlspecialchars($usuario['nombre'] ?? 'Usuario', ENT_QUOTES, 'UTF-8') ?></h1>
                     </div>
                 </div>
 
+                <?php if ($esPropio): ?>
                 <div class="photo-actions">
                     <label class="btn btn-primary">
                         Seleccionar foto
@@ -191,20 +187,14 @@ $conn->close();
                     <p>Vista previa del recorte:</p>
                     <img id="preview-img" src="" alt="Vista previa">
                 </div>
+                <?php endif; ?>
             </div>
         </header>
-
-        <!-- Navegación secundaria dentro del perfil para acceder a secciones como "Mis reseñas", "Likes" y "Configuración", para organizar mejor la información dentro del perfil -->
-        <nav class="tab-nav" aria-label="Secciones del perfil">
-            <a href="#" class="tab">My Reviews</a>
-            <a href="#" class="tab">Likes</a>
-            <a href="#" class="tab">Settings</a>
-        </nav>
 
         <main class="main-layout">
             <!-- Sección principal del perfil donde se muestran las publicaciones del usuario, con información relevante como título, fecha, categorías, imágenes asociadas, y acciones para interactuar con cada publicación (me gusta, comentar) -->
             <section class="left-column">
-                <h2 class="section-title">Mis publicaciones</h2>
+                <h2 class="section-title">Publicaciones</h2>
 
                 <!-- Si el usuario no tiene publicaciones, se muestra un mensaje indicando que todavía no ha publicado nada, para informar al usuario sobre el estado de su perfil -->
                 <?php if (!count($misPosts)) : ?>
@@ -232,7 +222,7 @@ $conn->close();
                             $img = $imgs[0];
                         }
                         $pid = (int)($p['id_post'] ?? 0);
-                        $postUrl = "post.php?id_post=" . $pid;
+                        $postUrl = "post.php?id_post=" . $pid . "&perfil=" . $idPerfil;
                         $isLiked = $pid && isset($likedPosts[$pid]);
                         $comments = $pid && isset($commentsByPost[$pid]) ? $commentsByPost[$pid] : [];
                     ?>
@@ -302,33 +292,10 @@ $conn->close();
                 <?php endforeach; ?>
             </section>
 
-            <!-- Barra lateral derecha del perfil, muestra información adicional como las películas mejor valoradas por el usuario y sus géneros favoritos (posible implementación)-->
-            <aside class="right-column">
-                <div class="sidebar-box">
-                    <h3>Best Reviewed</h3>
-                    <div class="best-grid">
-                        <div class="best-slot">
-                            <img class="best-img" src="assets/poster-1.jpeg" alt="Best reviewed 1">
-                        </div>
-                        <div class="best-slot">
-                            <img class="best-img" src="assets/poster-2.jpg" alt="Best reviewed 2">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sidebar-box">
-                    <h3>Favorite Genres</h3>
-                    <div class="tags">
-                        <button type="button" class="tag">Comedy</button>
-                        <button type="button" class="tag">Anime</button>
-                        <button type="button" class="tag">Drama</button>
-                        <button type="button" class="tag">Suspense</button>
-                    </div>
-                </div>
-            </aside>
 
         </main>
     </div>
+    <script src="js/cinedbg.js"></script>
     <script src="lib/cropper.min.js"></script>
     <script>
     console.log("inline test - script works");
