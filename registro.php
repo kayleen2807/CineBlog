@@ -7,6 +7,7 @@ include 'includes/conexion.php';
 
 $mensaje = "";
 
+// Validar que el formulario se haya enviado
 if($_SERVER["REQUEST_METHOD"] == "POST"){
     $nombre = $_POST['nombre'];
     $email = $_POST['email'];
@@ -53,7 +54,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                             // Insertar nuevo usuario con contraseña hasheada
                             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                             $rol = 'editor';
-
+                            
                             $stmt_insert = $conn->prepare("INSERT INTO usuarios (nombre, email, contraseña, fecha_nac, rol) VALUES (?, ?, ?, ?, ?)");
                             $stmt_insert->bind_param("sssss", $nombre, $email, $hashed_password, $fecha_nacimiento, $rol);
 
@@ -101,6 +102,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             <h2>Registro</h2>
             <form method='POST'>
+            <!-- Formulario de registro con validación HTML5 y un botón para mostrar/ocultar contraseña -->
                 <label for="nombre">Nombre completo:</label>
                 <input type="text" id="nombre" name="nombre" required>
 
@@ -136,12 +138,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <button type="submit">Registrarse</button>
             </form>
 
+            <!-- Mensaje de error o exito-->
             <?php if (!empty($mensaje)) : ?>
                 <p style="color: yellow; margin-top: 15px;"><?php echo $mensaje; ?></p>
             <?php endif; ?>
         </div>
 
         <script>
+        // Función para mostrar/ocultar contraseña
         function togglePassword(id) {
             const input = document.getElementById(id);
             const icon = input.nextElementSibling.querySelector("i");

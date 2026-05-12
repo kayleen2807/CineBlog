@@ -27,10 +27,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->execute();
             $stmt->store_result();
 
+            // Verifica si se encontró un usuario con ese correo
             if ($stmt->num_rows > 0) {
                 $stmt->bind_result($id_usuario, $nombre, $hashed_password, $rol);
                 $stmt->fetch();
 
+                // Verifica la contraseña usando password_verify
                 if (password_verify($password, $hashed_password)) {
                     $_SESSION['usuario_id'] = $id_usuario;
                     $_SESSION['nombre'] = $nombre;
@@ -40,9 +42,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     header("Location: index.php");
                     exit();
                 } else {
+                    // Contraseña incorrecta
                     $mensaje = "Contraseña incorrecta.";
                 }
             } else {
+                // No se encontró un usuario con ese correo
                 $mensaje = "El correo no está registrado.";
             }
 
@@ -62,19 +66,15 @@ $conn->close();
         <title>CineBlog - Inicio de sesión</title>
         <link rel="stylesheet" href="css/styles_inicioSesion.css"> <!-- Enlaza con tu archivo CSS para estilos personalizados -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"> <!-- Librería de bootstrap icons -->
-        <!-- 🔹 Estilos globales de tema -->
-        <link rel="stylesheet" href="css/temas.css">
-        <!-- 🔹 Script global de tema -->
-        <script src="js/temas.js" defer></script>
+
     </head>
 
     <body>
-        <!-- 🔹 Switch de tema (arriba a la derecha) -->
-        <div class="theme-toggle">
-            <input type="checkbox" id="theme-switch">
-            <label for="theme-switch" class="switch"></label>
-        </div>
         <div class="container">
+
+        <a href="seleccion.php" class="btn-regresar">
+    <i class="bi bi-arrow-left-circle"></i> Regresar
+</a>
         
             <div class="logo">
                 <img src="css/cineBlog_Logo.png" alt="Logo CineBlog"> <!-- Tener un logo.png en el proyecto -->

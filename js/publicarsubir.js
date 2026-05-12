@@ -1,4 +1,6 @@
+// JavaScript para la página de publicación/subida de contenido incluyendo manejo de imágenes, categorías y búsqueda en TMDB
 (() => {
+  // Obtener referencias a los elementos del DOM necesarios para la funcionalidad de la página de publicación/subida
   const content = document.getElementById("contenido");
   const count = document.getElementById("psCount");
   const fileInput = document.getElementById("imagenes");
@@ -24,31 +26,37 @@
   const MAX = 4;
   const MAX_CATS = 3;
 
+  // Función para actualizar el contador de caracteres del campo de contenido, mostrando la cantidad actual de caracteres y el límite máximo permitido
   function updateCount() {
     if (!content || !count) return;
     const len = (content.value || "").length;
     count.textContent = `${len} / 500`;
   }
 
+  // Función para establecer el contador de imágenes seleccionadas, mostrando la cantidad actual de imágenes seleccionadas y el límite máximo permitido
   function setImagesCount(n) {
     if (!imgsCount) return;
     imgsCount.textContent = `Imágenes: ${n} / ${MAX}`;
   }
 
+  // Función para limpiar las miniaturas de imágenes mostradas en la interfaz, eliminando todo el contenido del contenedor de miniaturas
   function clearThumbs() {
     if (!thumbs) return;
     thumbs.innerHTML = "";
   }
 
+  // Función para construir una miniatura de imagen a partir de un archivo de imagen 
   function buildThumb(file, idx, onRemove) {
     const wrap = document.createElement("div");
     wrap.className = "ps-thumb";
 
+    // Crear un elemento de imagen utilizando URL.createObjectURL para mostrar una vista previa de la imagen seleccionada
     const img = document.createElement("img");
     img.alt = `Imagen ${idx + 1}`;
     img.src = URL.createObjectURL(file);
     img.onload = () => URL.revokeObjectURL(img.src);
 
+    // Configurar un botón para eliminar la imagen de la selección actual
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "ps-rm";
@@ -60,6 +68,7 @@
     return wrap;
   }
 
+  // Función para sincronizar la selección de archivos con el input de archivos
   function syncFromFiles(files) {
     if (!fileInput) return;
     const list = Array.from(files || []).slice(0, MAX);
@@ -69,6 +78,7 @@
     renderThumbs();
   }
 
+  // Función para renderizar las miniaturas de las imágenes seleccionadas, actualizando la interfaz con las miniaturas correspondientes a los archivos seleccionados
   function renderThumbs() {
     if (!fileInput || !thumbs) return;
     const files = Array.from(fileInput.files || []);
@@ -85,22 +95,23 @@
     });
   }
 
+  // Configuración de eventos para el campo de contenido
   if (content) {
     updateCount();
     content.addEventListener("input", updateCount);
   }
-
+  //Configuracion de eventos para la selección de archivos, incluyendo clic en el botón de selecció
   if (pick && fileInput) {
     pick.addEventListener("click", () => fileInput.click());
   }
-
+  // Configuración de eventos para el input de archivos, actualizando la selección de archivos y renderizando las miniaturas correspondientes cuando se seleccionan nuevos archivos
   if (fileInput) {
     fileInput.addEventListener("change", () => {
       const files = Array.from(fileInput.files || []);
       syncFromFiles(files);
     });
   }
-
+  // Configuración de eventos para el área de arrastrar y soltar, permitiendo a los usuarios arrastrar archivos de imagen directamente al área designada para seleccionarlos
   if (drop && fileInput) {
     const setDrag = (on) => drop.classList.toggle("dragover", on);
 
@@ -132,10 +143,11 @@
     });
   }
 
+  // Inicializar el contador de imágenes seleccionadas y renderizar las miniaturas correspondientes a los archivos seleccionados inicialmente (si los hay)
   setImagesCount(0);
   renderThumbs();
 
-  // Categorías deja seleccionar solo 3
+  // Categorías que deja seleccionar 8solo 3()
   function updateCatsUI() {
     if (!catGrid) return;
     const boxes = Array.from(catGrid.querySelectorAll('input[type="checkbox"]'));
@@ -154,10 +166,12 @@
     updateCatsUI();
   }
 
+  // Funcion para extraer el año de una fecha dada en formato de cadena
   function yearFromDate(dateStr) {
     return String(dateStr || "").slice(0, 4);
   }
 
+  // Funciones relacionadas con la búsqueda en TMDB, incluyendo escritura y lectura de la película seleccionada, renderizado de resultados de búsqueda y manejo de eventos para la selección de películas
   function writeSelectedTmdb(item) {
     if (!tmdbIdField || !tmdbTypeField || !tmdbTitleField) return;
 
@@ -209,6 +223,7 @@
     tmdbResults.setAttribute("aria-hidden", visible ? "false" : "true");
   }
 
+  // Función para renderizar la película seleccionada de TMDB en la interfaz, mostrando información relevante como el título, tipo, año de lanzamiento y una imagen de poster si está disponible, además de proporcionar un botón para quitar la selección actual
   function renderSelectedTmdb() {
     if (!tmdbSelected) return;
     const item = readSelectedTmdb();
@@ -245,7 +260,7 @@
       });
     }
   }
-
+  // Función para realizar la búsqueda en TMDB utilizando la consulta ingresada por el usuario, mostrando los resultados obtenidos y manejando posibles errores durante la búsqueda
   async function searchTmdb() {
     if (!tmdbSearch || !tmdbTypeFilter || !tmdbResults) return;
     const q = (tmdbSearch.value || "").trim();
@@ -271,7 +286,7 @@
       if (tmdbBtn) tmdbBtn.disabled = false;
     }
   }
-
+  // Función para renderizar los resultados de búsqueda obtenidos de TMDB, mostrando una lista de películas o series que coinciden con la consulta de búsqueda, incluyendo información relevante como el título, tipo, año de lanzamiento y una breve descripción
   function renderTmdbResults(items) {
     if (!tmdbResults) return;
     if (!Array.isArray(items) || !items.length) {

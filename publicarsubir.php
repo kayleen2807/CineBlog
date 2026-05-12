@@ -5,7 +5,7 @@ header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-// Validar sesión
+// Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: inicioSesion.php");
     exit();
@@ -18,22 +18,25 @@ if ($rol !== 'editor' && $rol !== 'admin') {
     exit();
 }
 
+// Funcion de normalización y detección de lenguaje inapropiado (para títulos y contenido de publicaciones)
 function mb_lower_safe(string $value): string
 {
     if (function_exists('mb_strtolower')) return mb_strtolower($value, 'UTF-8');
     return strtolower($value);
 }
 
+// Función para contar longitud de string de forma segura con multibytes
 function mb_len_safe(string $value): int
 {
     if (function_exists('mb_strlen')) return mb_strlen($value, 'UTF-8');
     return strlen($value);
 }
 
+//Función para normalizar texto y detectar lenguaje inapropiado incluso con caracteres especiales o separados por espacios/símbolos
 function normalize_for_moderation_spaces(string $text): string
 {
     $value = mb_lower_safe($text);
-
+     // Transliteración básica para convertir caracteres acentuados a su forma base, y algunos símbolos comunes usados para evadir filtros.
     if (function_exists('iconv')) {
         $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
         if ($converted !== false) $value = $converted;
@@ -87,6 +90,7 @@ function normalize_for_moderation_spaces(string $text): string
     return trim($value);
 }
 
+//Funcion para detectar lenguaje inapropiado incluso con caracteres especiales o separados por espacios/símbolos
 function contains_profanity(string $text): bool
 {
     $normalized = normalize_for_moderation_spaces($text);
@@ -162,6 +166,7 @@ function contains_profanity(string $text): bool
     return false;
 }
 
+// Función para conectar a la base de datos
 function db_connect(): mysqli
 {
     $conn = new mysqli("localhost", "root", "", "cineblog_db");
@@ -172,8 +177,10 @@ function db_connect(): mysqli
     return $conn;
 }
 
+// Función para asegurar que las tablas necesarias para posts existen (imágenes, categorías, TMDB)
 function ensure_post_tables(mysqli $conn): void
 {
+    // Tabla principal de posts
     $conn->query("CREATE TABLE IF NOT EXISTS post_imagenes (
         id_imagen INT NOT NULL AUTO_INCREMENT,
         post_id INT NOT NULL,
@@ -182,6 +189,7 @@ function ensure_post_tables(mysqli $conn): void
         KEY (post_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
+    // Tabla de categorías (relación muchos a muchos)
     $conn->query("CREATE TABLE IF NOT EXISTS post_categorias (
         post_id INT NOT NULL,
         categoria VARCHAR(100) NOT NULL,
@@ -189,6 +197,7 @@ function ensure_post_tables(mysqli $conn): void
         KEY (post_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 
+    // Tabla para almacenar relación de posts con TMDB (película/serie seleccionada)
     $conn->query("CREATE TABLE IF NOT EXISTS post_tmdb (
         post_id INT NOT NULL,
         tmdb_id INT NOT NULL,
@@ -202,6 +211,7 @@ function ensure_post_tables(mysqli $conn): void
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 }
 
+// Función para generar un nombre de archivo seguro a partir del original, evitando caracteres problemáticos.
 function safe_filename(string $name): string
 {
     $name = basename($name);
@@ -232,6 +242,7 @@ $categorias = [
 $mensaje = '';
 $mensajeTipo = 'error';
 
+// Variables para mantener selección de TMDB en caso de error de validación
 $oldTmdbId = trim((string)($_POST['tmdb_id'] ?? ''));
 $oldTmdbType = trim((string)($_POST['tmdb_type'] ?? ''));
 $oldTmdbTitle = trim((string)($_POST['tmdb_title'] ?? ''));
@@ -239,12 +250,15 @@ $oldTmdbPoster = trim((string)($_POST['tmdb_poster'] ?? ''));
 $oldTmdbRelease = trim((string)($_POST['tmdb_release_date'] ?? ''));
 $oldTmdbOverview = trim((string)($_POST['tmdb_overview'] ?? ''));
 
+// Manejo del formulario al enviar la publicación
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validación de campos de texto
     $titulo = trim((string)($_POST['titulo'] ?? ''));
     $contenido = trim((string)($_POST['contenido'] ?? ''));
     $categoriasSel = $_POST['categorias'] ?? [];
     if (!is_array($categoriasSel)) $categoriasSel = [];
 
+    // Validación de selección de película/serie de TMDB (si se hizo)
     $tmdbId = filter_var($_POST['tmdb_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: null;
     $tmdbType = trim((string)($_POST['tmdb_type'] ?? ''));
     $tmdbTitle = trim((string)($_POST['tmdb_title'] ?? ''));
@@ -252,18 +266,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tmdbReleaseDate = trim((string)($_POST['tmdb_release_date'] ?? ''));
     $tmdbOverview = trim((string)($_POST['tmdb_overview'] ?? ''));
 
+    // Si hay algún dato relacionado con TMDB, se consideran como selección de película/serie, y se validan en conjunto.
     $hasTmdbSelection = $tmdbId !== null || $tmdbType !== '' || $tmdbTitle !== '';
     if ($hasTmdbSelection) {
         if ($tmdbId === null || !in_array($tmdbType, ['movie', 'tv'], true) || $tmdbTitle === '') {
             $mensaje = 'La pelicula/serie seleccionada no es valida. Intenta seleccionarla otra vez.';
         }
 
+        // Para evitar problemas de almacenamiento, se limitan las longitudes de los campos relacionados con TMDB
         if (strlen($tmdbTitle) > 255) $tmdbTitle = substr($tmdbTitle, 0, 255);
         if (strlen($tmdbPoster) > 500) $tmdbPoster = substr($tmdbPoster, 0, 500);
         if (strlen($tmdbReleaseDate) > 20) $tmdbReleaseDate = substr($tmdbReleaseDate, 0, 20);
         if (strlen($tmdbOverview) > 2000) $tmdbOverview = substr($tmdbOverview, 0, 2000);
     }
 
+    // Validación de campos de texto y contenido, solo si no hay error previo
     if ($mensaje !== '') {
         // Ya existe error previo.
     } elseif ($titulo === '' || mb_len_safe($titulo) < 3) {
@@ -275,11 +292,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (contains_profanity($titulo . ' ' . $contenido)) {
         $mensaje = 'No se puede publicar: se detectó lenguaje inapropiado.';
     } else {
+        // Validación de imágenes
         $imagenes = $_FILES['imagenes'] ?? null;
         $maxImages = 4;
         $maxSizeBytes = 5 * 1024 * 1024;
         $allowedExt = ['jpg', 'jpeg', 'png'];
 
+        // Contar solo los archivos que realmente se intentaron subir (ignorando inputs vacíos)
         $selectedCount = 0;
         if ($imagenes && isset($imagenes['name']) && is_array($imagenes['name'])) {
             foreach ($imagenes['name'] as $name) {
@@ -287,17 +306,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        // Validar cantidad de imágenes seleccionadas
         if ($selectedCount > $maxImages) {
             $mensaje = 'Solo puedes subir hasta 4 imágenes.';
         } else {
             $conn = db_connect();
             ensure_post_tables($conn);
-
+            // Insertar post sin imagen (se actualiza después) y sin categorías (se insertan después) para obtener el ID del post.
             $stmt = $conn->prepare("INSERT INTO posts (titulo, contenido, autor_id, imagen) VALUES (?, ?, ?, NULL)");
             $autorId = (int)$_SESSION['usuario_id'];
             $stmt->bind_param("ssi", $titulo, $contenido, $autorId);
             $ok = $stmt->execute();
 
+            // Si no se pudo insertar el post, no se procede con imágenes ni categorías.
             if (!$ok) {
                 $mensaje = 'Error al guardar la publicación.';
             } else {
@@ -313,12 +334,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (in_array($c, $cats, true)) continue;
                     $cats[] = $c;
                 }
-
+                // Si no se selecciona ninguna categoría válida, se asigna "Película" por defecto.
                 if (count($cats) > 3) {
                     $mensaje = 'Puedes escoger máximo 3 categorías.';
                 } else {
+                    // Insertar categorías seleccionadas
                     if (!count($cats)) $cats = ['Película'];
-
                     $insertCat = $conn->prepare("INSERT INTO post_categorias (post_id, categoria) VALUES (?, ?)");
                     foreach ($cats as $cat) {
                         $insertCat->bind_param("is", $postId, $cat);
@@ -327,16 +348,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $insertCat->close();
                 }
 
+                // Manejo de imágenes: se validan, se guardan en el servidor, y se insertan sus rutas en la base de datos
                 $uploadDir = __DIR__ . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'posts' . DIRECTORY_SEPARATOR;
                 $publicPrefix = 'uploads/posts/';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
 
+                // Para mostrar una imagen representativa del post, se guarda la ruta de la primera imagen subida en la tabla principal de posts. Las demás imágenes se guardan solo en la tabla de post_imagenes.
                 $firstImagePath = null;
                 if ($imagenes && isset($imagenes['tmp_name']) && is_array($imagenes['tmp_name'])) {
                     $insertImg = $conn->prepare("INSERT INTO post_imagenes (post_id, ruta) VALUES (?, ?)");
 
+                    // Se itera sobre los archivos subidos, validando cada uno y guardándolo si es correcto
                     $idx = 0;
                     foreach ($imagenes['tmp_name'] as $i => $tmp) {
                         $name = (string)($imagenes['name'][$i] ?? '');
@@ -344,37 +368,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $size = (int)($imagenes['size'][$i] ?? 0);
                         if ($name === '' || $err === UPLOAD_ERR_NO_FILE) continue;
 
+                        // Si hay algún error con una imagen, se detiene el proceso de guardado de imágenes y se muestra el error.
                         if ($err !== UPLOAD_ERR_OK) {
                             $mensaje = 'Una imagen no se pudo subir (error de archivo).';
                             break;
                         }
+                        // Validar tamaño y tipo de archivo
                         if ($size <= 0 || $size > $maxSizeBytes) {
                             $mensaje = 'Cada imagen debe pesar máximo 5MB.';
                             break;
                         }
-
+                        // Validar extensión del archivo (basado en el nombre original, no es 100% seguro pero ayuda a filtrar)
                         $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
                         if (!in_array($ext, $allowedExt, true)) {
                             $mensaje = 'Solo se permiten imágenes JPG o PNG.';
                             break;
                         }
-
+                        // Validar que el archivo es realmente una imagen (esto ayuda a evitar que se suban archivos maliciosos con extensión de imagen)
                         $info = @getimagesize($tmp);
                         if ($info === false) {
                             $mensaje = 'Uno de los archivos no es una imagen válida.';
                             break;
                         }
-
+                        // Generar un nombre de archivo seguro y único para evitar colisiones y problemas de seguridad.
                         $safe = safe_filename(pathinfo($name, PATHINFO_FILENAME));
                         $finalName = 'post_' . $postId . '_' . $idx . '_' . $safe . '.' . $ext;
                         $target = $uploadDir . $finalName;
                         $publicPath = $publicPrefix . $finalName;
-
+                        // Mover el archivo subido a la ubicación final
                         if (!move_uploaded_file($tmp, $target)) {
                             $mensaje = 'No se pudo guardar una de las imágenes.';
                             break;
                         }
-
+                        // Si esta es la primera imagen válida, se guarda su ruta para actualizar el campo "imagen" del post principal, que se usará como imagen representativa del post.
                         if ($firstImagePath === null) $firstImagePath = $publicPath;
 
                         $insertImg->bind_param("is", $postId, $publicPath);
@@ -384,7 +410,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $insertImg->close();
                 }
-
+                // Si no hubo ningún error durante el proceso, se guardan los datos relacionados con TMDB (si se seleccionó)
                 if ($mensaje === '') {
                     if ($hasTmdbSelection && $tmdbId !== null) {
                         $stmtTmdb = $conn->prepare("REPLACE INTO post_tmdb (post_id, tmdb_id, media_type, titulo, poster_url, release_date, overview) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -392,14 +418,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmtTmdb->execute();
                         $stmtTmdb->close();
                     }
-
+                    // Si esta todo correcto y se subió al menos una imagen, se actualiza el campo "imagen" del post principal con la ruta de la primera imagen subida, para que sirva como imagen representativa del post.
                     if ($firstImagePath !== null) {
                         $stmtUp = $conn->prepare("UPDATE posts SET imagen = ? WHERE id_post = ?");
                         $stmtUp->bind_param("si", $firstImagePath, $postId);
                         $stmtUp->execute();
                         $stmtUp->close();
                     }
-
+                    //Mensajes de exito y redirección a la página principal después de publicar
                     $mensajeTipo = 'ok';
                     $mensaje = 'Publicación guardada.';
                     header("Location: index.php");
@@ -435,20 +461,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <main class="ps-overlay">
         <section class="ps-modal" role="dialog" aria-modal="true" aria-label="Nueva publicación">
+            <!-- Encabezado del modal -->
             <header class="ps-head">
                 <h1>Nueva publicación</h1>
                 <a class="ps-close" href="index.php" aria-label="Cerrar">×</a>
             </header>
-
+            <!-- Mensajes de alerta -->
             <?php if ($mensaje !== '') : ?>
                 <div class="ps-alert <?php echo $mensajeTipo === 'ok' ? 'ok' : 'error'; ?>">
                     <?php echo htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8'); ?>
                 </div>
             <?php endif; ?>
-
+            <!-- Formulario de publicación / post -->
             <form class="ps-form" method="POST" enctype="multipart/form-data" novalidate>
                 <div class="ps-grid">
                     <div class="ps-left">
+                        <!-- Campo del Titulo-->
                         <label class="ps-label" for="titulo">Título</label>
                         <input
                             class="ps-input"
@@ -460,7 +488,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             value="<?php echo htmlspecialchars($_POST['titulo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                             required
                         >
-
+                        <!-- Campo de búsqueda de películas o series (TMDB, opcional) -->
                         <label class="ps-label" for="psTmdbSearch">Pelicula o serie (TMDB, opcional)</label>
                         <div class="ps-tmdb" id="psTmdb">
                             <div class="ps-tmdb-controls">
@@ -478,18 +506,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </select>
                                 <button class="ps-upbtn ps-tmdb-btn" type="button" id="psTmdbBtn">Buscar</button>
                             </div>
-
+                            <!-- Campos ocultos para almacenar los datos de la película o serie seleccionada -->
                             <input type="hidden" name="tmdb_id" id="tmdbId" value="<?php echo htmlspecialchars($oldTmdbId, ENT_QUOTES, 'UTF-8'); ?>">
                             <input type="hidden" name="tmdb_type" id="tmdbType" value="<?php echo htmlspecialchars($oldTmdbType, ENT_QUOTES, 'UTF-8'); ?>">
                             <input type="hidden" name="tmdb_title" id="tmdbTitle" value="<?php echo htmlspecialchars($oldTmdbTitle, ENT_QUOTES, 'UTF-8'); ?>">
                             <input type="hidden" name="tmdb_poster" id="tmdbPoster" value="<?php echo htmlspecialchars($oldTmdbPoster, ENT_QUOTES, 'UTF-8'); ?>">
                             <input type="hidden" name="tmdb_release_date" id="tmdbReleaseDate" value="<?php echo htmlspecialchars($oldTmdbRelease, ENT_QUOTES, 'UTF-8'); ?>">
                             <input type="hidden" name="tmdb_overview" id="tmdbOverview" value="<?php echo htmlspecialchars($oldTmdbOverview, ENT_QUOTES, 'UTF-8'); ?>">
-
+                            <!-- Área para mostrar la película o serie seleccionada -->
                             <div class="ps-tmdb-selected" id="psTmdbSelected"></div>
                             <div class="ps-tmdb-results" id="psTmdbResults" aria-live="polite"></div>
                         </div>
-
+                        <!-- Campo del Contenido-->
                         <label class="ps-label" for="contenido">Contenido</label>
                         <textarea
                             class="ps-textarea"
@@ -498,7 +526,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             maxlength="500"
                             placeholder="¿Qué quieres compartir?"
                             required
-                        ><?php echo htmlspecialchars($_POST['contenido'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea>
+                        ><?php echo htmlspecialchars($_POST['contenido'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea> 
+                         <!-- Contadores de caracteres e imágenes, y selección de categorías -->
                         <div class="ps-meta">
                             <span id="psCount">0 / 500</span>
                             <span id="psImgsCount">Imágenes: 0 / 4</span>
@@ -509,6 +538,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <span id="psCatCount">Categorías: 0 / 3</span>
                         </div>
                         <div class="ps-catgrid" id="psCatGrid">
+                            <!-- Opciones de categoría -->
                             <?php
                             $selectedCats = $_POST['categorias'] ?? ['Película'];
                             if (!is_array($selectedCats)) $selectedCats = ['Película'];
@@ -523,7 +553,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             ?>
                         </div>
                     </div>
-
+                    <!-- Campo de Imágenes (el usuario selecciona)-->
                     <div class="ps-right">
                         <div class="ps-uplabel">Imágenes</div>
                         <div class="ps-drop" id="psDrop">
@@ -536,7 +566,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="ps-thumbs" id="psThumbs" aria-label="Vista previa de imágenes"></div>
                     </div>
                 </div>
-
+                <!-- Botones de acción, cancelar la publicacion/post o publicarla-->
                 <footer class="ps-actions">
                     <a class="ps-btn ghost" href="index.php">Cancelar</a>
                     <button class="ps-btn primary" type="submit">Publicar ✨</button>

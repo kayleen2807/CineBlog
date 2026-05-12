@@ -1,9 +1,11 @@
 <?php
 session_start();
+//Conexion a la base de datos
 include 'includes/conexion.php';
 
 $mensaje = "";
 
+// Verificar si se recibió el token por GET
 if (isset($_GET['token'])) {
     $token = $_GET['token'];
 
@@ -13,6 +15,7 @@ if (isset($_GET['token'])) {
     $stmt->execute();
     $stmt->store_result();
 
+    // Si el token es válido
     if ($stmt->num_rows > 0) {
         $stmt->bind_result($id_usuario, $reset_expira);
         $stmt->fetch();
@@ -48,6 +51,7 @@ $conn->close();
     <link rel="stylesheet" href="css/styles_inicioSesion.css">
 </head>
 <body>
+    <!-- Contenedor principal para el formulario de restablecimiento de contraseña -->
     <div class="container">
         <h2>Restablecer contraseña</h2>
         <?php if (isset($_GET['token'])): ?>
@@ -63,6 +67,7 @@ $conn->close();
             <button type="submit" class="btn-small">Regresar al inicio de sesión</button>
         </form>
 
+        <!-- Mensaje de resultado -->
         <?php if (!empty($mensaje)) : ?>
             <p style="color: yellow; margin-top: 15px;"><?php echo $mensaje; ?></p>
         <?php endif; ?>

@@ -47,6 +47,7 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == "sesion_cerrada") {
             }
         }
     </style>
+    <!-- Mensaje de sesión cerrada -->
     <div class="alerta_exito">
             <?php echo $mensaje; ?>
     </div>
@@ -54,7 +55,7 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == "sesion_cerrada") {
         setTimeout(() => {
             const alerta = document.querySelector('.alerta_exito');
             if (alerta) alerta.style.display = 'none';
-        }, 4000); // 4 segundos
+        }, 4000); // Alerta de 4 segundos
     </script>
     <div class="container">
         <!--Logo y el titulo (header de este apartado) -->

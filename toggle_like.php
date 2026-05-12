@@ -3,12 +3,14 @@ session_start();
 
 header('Content-Type: application/json; charset=utf-8');
 
+// Solo usuarios autenticados pueden dar like
 if (!isset($_SESSION['usuario_id'])) {
     http_response_code(401);
     echo json_encode(['ok' => false, 'error' => 'No autenticado.']);
     exit();
 }
 
+// Validación de entrada
 $postId = filter_input(INPUT_POST, 'post_id', FILTER_VALIDATE_INT);
 if (!$postId || $postId <= 0) {
     http_response_code(400);
@@ -18,6 +20,7 @@ if (!$postId || $postId <= 0) {
 
 $userId = (int)$_SESSION['usuario_id'];
 
+// Conexión a la base de datos
 $conn = new mysqli("localhost", "root", "", "cineblog_db");
 if ($conn->connect_error) {
     http_response_code(500);

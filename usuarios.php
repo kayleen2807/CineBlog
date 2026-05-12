@@ -13,6 +13,7 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['rol'] !== 'admin') {
 
 include 'includes/conexion.php';
 
+// Consulta para obtener los usuarios registrados
 $result = $conn->query("SELECT id_usuario, nombre, email, rol FROM usuarios");
 ?>
 <!DOCTYPE html>
@@ -38,17 +39,20 @@ $result = $conn->query("SELECT id_usuario, nombre, email, rol FROM usuarios");
   <div class="cine-bg">
     <canvas id="cineBg"></canvas>
   </div>
+  <!-- #region -->
   <?php include 'includes/sidebar_admin.php'; ?>
   <div class="main">
     <header class="topbar">
       <h1>Usuarios</h1>
     </header>
 
+<!--Vista principal para el admin-->
     <div class="feed">
         <div class="feed-inner">
           <main class="admin-main">
             <h1>Gestión de Usuarios</h1>
             <table class="admin-table">
+              <!-- Tabla para mostrar los usuarios registrados, con columnas para ID, nombre, correo y rol -->
               <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead>
               <tbody>
                 <?php while($row = $result->fetch_assoc()): ?>

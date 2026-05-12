@@ -1,7 +1,9 @@
 <?php
 session_start();
+// Conexión a la base de datos
 include 'includes/conexion.php';
 
+// Se agregó el uso de PHPMailer para enviar correos de recuperación de contraseña
 require 'vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -40,14 +42,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email'])) {
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
 
+            // Configuración del correo
             $mail->setFrom('cinebloguser@gmail.com', 'CineBlog');
             $mail->addAddress($email);
 
+            // Contenido del correo
             $mail->isHTML(true);
             $mail->Subject = 'Recuperar contraseña CineBlog';
             $mail->Body    = "Haz clic en el siguiente enlace para restablecer tu contraseña: 
                               <a href='$enlace'>$enlace</a>";
 
+            // Enviar el correo
             $mail->send();
             $mensaje = "Se ha enviado un correo con instrucciones para recuperar tu contraseña.";
         } catch (Exception $e) {

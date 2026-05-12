@@ -11,6 +11,7 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
+// Función para formatear fechas sin mostrar los segundos
 function format_fecha_sin_segundos(?string $value): string
 {
     $value = (string)$value;
@@ -22,6 +23,7 @@ function format_fecha_sin_segundos(?string $value): string
 //conexión a la base de datos para obtener la información del usuario
 include 'includes/conexion.php';
 
+// Obtiene el ID del usuario desde la sesión y luego su foto de perfil, si existe, para mostrarla en la página de perfil
 $id_usuario = $_SESSION['usuario_id'];
 $foto = "uploads/default.png";
 
@@ -31,6 +33,7 @@ $colRes = $conn->query("SHOW COLUMNS FROM usuarios LIKE 'foto_perfil'");
 if ($colRes && $colRes->num_rows > 0) $hasFotoCol = true;
 if ($colRes) $colRes->free();
 
+// Si la columna de foto de perfil existe, intenta obtener la foto del usuario, si no tiene una foto personalizada se mostrará la imagen por defecto
 if ($hasFotoCol) {
     $stmt = $conn->prepare("SELECT foto_perfil FROM usuarios WHERE id_usuario = ?");
     $stmt->bind_param("i", $id_usuario);
@@ -64,6 +67,7 @@ $stmtPosts = $conn->prepare("
     ORDER BY p.fecha DESC
     LIMIT 50
 ");
+// Se obtiene la información de las publicaciones del usuario, incluyendo categorías, imágenes asociadas y datos de TMDB si están disponibles, para mostrar en su perfil
 $stmtPosts->bind_param("i", $id_usuario);
 $stmtPosts->execute();
 $resPosts = $stmtPosts->get_result();
@@ -75,10 +79,11 @@ $stmtPosts->close();
 
 $likedPosts = [];
 $commentsByPost = [];
-
+// Si el usuario tiene publicaciones, se obtienen los IDs de esas publicaciones y los comentarios asociados a esas publicaciones
 if (count($misPosts)) {
     $postIds = array_map(fn ($r) => (int)$r['id_post'], $misPosts);
     $postIds = array_values(array_filter($postIds, fn ($v) => $v > 0));
+    // Si el usuario tiene publicaciones, se obtienen los IDs de esas publicaciones y los comentarios asociados a esas publicaciones, así como qué publicaciones ha marcado como "me gusta" el usuario para mostrar esa información en su perfil
     if (count($postIds)) {
         $idList = implode(',', $postIds);
 
@@ -139,6 +144,7 @@ $conn->close();
 
     <div class="page-shell">
         <nav class="head">
+            <!-- Logo y navegación principal del sitio, con enlaces a secciones como tendencias, estrenos y recomendado (por el momento no añadido), para facilitar la navegación desde el perfil -->
             <div class="logo">
                 <a href="index.php" aria-label="CineBlog">
                     <img class="logo-c" src="css/cineBlog_Logo.png" alt="C">
@@ -152,6 +158,7 @@ $conn->close();
             </div>
         </nav>
 
+        <!-- Contenedor principal del perfil, con una sección para mostrar la foto de perfil y acciones relacionadas (cambiar foto, eliminar foto) -->
         <header class="header-container">
             <div class="profile-picture-panel">
                 <div class="profile-header-section">
@@ -187,6 +194,7 @@ $conn->close();
             </div>
         </header>
 
+        <!-- Navegación secundaria dentro del perfil para acceder a secciones como "Mis reseñas", "Likes" y "Configuración", para organizar mejor la información dentro del perfil -->
         <nav class="tab-nav" aria-label="Secciones del perfil">
             <a href="#" class="tab">My Reviews</a>
             <a href="#" class="tab">Likes</a>
@@ -194,16 +202,18 @@ $conn->close();
         </nav>
 
         <main class="main-layout">
-
+            <!-- Sección principal del perfil donde se muestran las publicaciones del usuario, con información relevante como título, fecha, categorías, imágenes asociadas, y acciones para interactuar con cada publicación (me gusta, comentar) -->
             <section class="left-column">
                 <h2 class="section-title">Mis publicaciones</h2>
 
+                <!-- Si el usuario no tiene publicaciones, se muestra un mensaje indicando que todavía no ha publicado nada, para informar al usuario sobre el estado de su perfil -->
                 <?php if (!count($misPosts)) : ?>
                     <div class="sidebar-box">
                         <p style="color: var(--muted); font-weight: 600;">Todavía no has publicado nada.</p>
                     </div>
                 <?php endif; ?>
-
+                
+                <!-- Se muestran las publicaciones del usuario en tarjetas, cada tarjeta muestra información relevante de la publicación como título, fecha, categorías, imágenes asociadas, y acciones para interactuar con cada publicación (me gusta, comentar) -->
                 <?php foreach ($misPosts as $p) : ?>
                     <?php
                         $cats = [];
@@ -227,16 +237,20 @@ $conn->close();
                         $comments = $pid && isset($commentsByPost[$pid]) ? $commentsByPost[$pid] : [];
                     ?>
                     <article class="card">
+                        <!-- Enlace que envuelve la imagen de la publicación, lleva a la página de la publicación, se muestra el poster de TMDB si está disponible, si no se muestra la primera imagen asociada a la publicación, y si no hay imágenes se muestra una imagen por defecto -->
                         <a class="card-media" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>" aria-label="Ver publicación">
                             <img src="<?php echo htmlspecialchars($img, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($tmdbTitle !== '' ? ('Poster de ' . $tmdbTitle) : 'Publicación', ENT_QUOTES, 'UTF-8'); ?>">
                         </a>
                         <div class="card-content">
+                            <!-- Título de la publicación, es un enlace que lleva a la página de la publicación -->
                             <h3><a class="card-title-link" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($p['titulo'], ENT_QUOTES, 'UTF-8'); ?></a></h3>
 
                             <div style="color: var(--muted); font-weight: 600; margin-bottom: 10px;">
+                                <!-- Fecha de la publicación, es un enlace que lleva a la página de la publicación -->
                                 <a class="card-date-link" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></a>
                             </div>
 
+                            <!-- Categorías asociadas a la publicación, mostradas como chips, solo si hay categorías -->
                             <?php if (count($cats)) : ?>
                                 <div class="tags" style="margin-bottom: 10px;">
                                     <?php foreach ($cats as $c) : ?>
@@ -244,10 +258,13 @@ $conn->close();
                                     <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
-
+                            
+                            <!-- Contenido de la publicación, se muestra limitado a 300 caracteres para evitar sobrecargar la tarjeta, se escapa para evitar problemas de seguridad -->
                             <p class="review-copy collapsed"><?php echo nl2br(htmlspecialchars($p['contenido'], ENT_QUOTES, 'UTF-8')); ?></p>
                             <div class="card-footer">
+                                <!-- Botón para mostrar más o menos del contenido de la publicación, cambia su texto dependiendo de si el contenido está expandido o no -->
                                 <button type="button" class="toggle-review">Mostrar más</button>
+                                <!-- Acciones para interactuar con la publicación: me gusta, comentar, y un enlace para ver la publicación, el botón de me gusta cambia su apariencia si el usuario ya ha marcado la publicación como "me gusta" -->
                                 <div class="card-icons" aria-label="Acciones">
                                     <button type="button" class="icon-btn icon-heart like-btn <?php echo $isLiked ? 'liked' : ''; ?>" data-post-id="<?php echo $pid; ?>" aria-label="Me gusta" aria-pressed="<?php echo $isLiked ? 'true' : 'false'; ?>">
                                         <svg class="heart-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -258,7 +275,8 @@ $conn->close();
                                     <a class="icon-btn" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>" aria-label="Ver publicación">↗</a>
                                 </div>
                             </div>
-
+                            
+                            <!-- Sección de comentarios, inicialmente oculta, se muestra al hacer clic en el botón de comentar, muestra un formulario para agregar un nuevo comentario y una lista de comentarios existentes asociados a la publicación -->
                             <section class="comments" data-post-id="<?php echo $pid; ?>" hidden>
                                 <form class="comment-form" data-post-id="<?php echo $pid; ?>">
                                     <textarea class="comment-input" name="contenido" maxlength="400" placeholder="Escribe un comentario..." required></textarea>
@@ -284,6 +302,7 @@ $conn->close();
                 <?php endforeach; ?>
             </section>
 
+            <!-- Barra lateral derecha del perfil, muestra información adicional como las películas mejor valoradas por el usuario y sus géneros favoritos (posible implementación)-->
             <aside class="right-column">
                 <div class="sidebar-box">
                     <h3>Best Reviewed</h3>

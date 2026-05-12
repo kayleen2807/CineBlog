@@ -1,11 +1,12 @@
 <?php
 session_start();
+// Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION['usuario_id'])) {
     header("Location: inicioSesion.php");
     exit();
 }
-
-$targetDir = "uploads/";
+$targetDir = "uploads/"; // Directorio donde se guardarán las fotos de perfil
+// Asegurarse de que el directorio exista
 if (!file_exists($targetDir)) {
     mkdir($targetDir, 0755, true); // Permisos más seguros
 }
@@ -23,9 +24,10 @@ function redirectWithMessage($message, $type = 'error') {
     exit();
 }
 
+// Procesar la subida de foto o eliminación
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['delete_photo'])) {
-        // Eliminar foto: volver a la predeterminada
+        // Eliminar foto para volver a la predeterminada
         $conn = new mysqli("localhost", "root", "", "cineblog_db");
         $stmt = $conn->prepare("UPDATE usuarios SET foto_perfil = 'default.png' WHERE id_usuario = ?");
         $stmt->bind_param("i", $_SESSION['usuario_id']);
@@ -33,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
         $conn->close();
         redirectWithMessage("Foto eliminada exitosamente.", "success");
-    } elseif (isset($_FILES['foto'])) {
+    } elseif (isset($_FILES['foto'])) { // Subir nueva foto
         $foto = $_FILES['foto'];
         $maxSize = 2 * 1024 * 1024; // 2MB
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
