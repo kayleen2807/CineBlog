@@ -65,6 +65,7 @@ try {
         $dbError = "Error de conexión: " . $conn->connect_error;
     } else { // Si la conexión es exitosa, continúa con la consulta de publicaciones
         $conn->set_charset("utf8mb4");
+        $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS editado_por_admin TINYINT(1) NOT NULL DEFAULT 0");
         // Obtiene la foto de perfil del usuario para mostrarla en el sidebar
         $fotoPerfil = "uploads/default.png";
         $stmt = $conn->prepare("SELECT foto_perfil FROM usuarios WHERE id_usuario = ?");
@@ -241,7 +242,7 @@ try {
       <div class="sb-item">📊 <span><a href="dashboard.php">Administracion</a></span></div>
     <?php endif; ?>
     <!-- Culaquier rol puede cerrar sesion y tener un panel de configuracion-->
-    <div class="sb-item">⚙️ Configuración</div>
+    <div class="sb-item">⚙️ <a href="ajustes.php">Configuración</a></div>
     <div class="sb-item">🚪<a href="cerrarSesion.php">Cerrar sesión</a></div>
   </div>
 </aside>
@@ -265,9 +266,9 @@ try {
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
       <!-- Si el rol es editor o admin se muestra un boton para crear publicaciones -->
             <?php if ($rol == "editor") : ?>
-                <button class="create-post" type="button" aria-label="Crear publicación" onclick="window.location.href='publicarsubir.php'">+</button>
+                <a class="create-post" aria-label="Crear publicación" href="publicarsubir.php">+</a>
             <?php elseif ($rol == "admin") : ?>
-                <button class="create-post" type="button" aria-label="Crear publicación" onclick="window.location.href='publicarsubir.php'">+</button>
+                <a class="create-post" aria-label="Crear publicación" href="publicarsubir.php">+</a>
             <?php endif; ?>
             <!-- Logica para el feed de publicaciones, en caso de no haber publicaciones muestra un mensaje-->
             <div class="feed-inner" data-initial-type="<?php echo htmlspecialchars($initialType, ENT_QUOTES, 'UTF-8'); ?>" data-initial-cat="<?php echo htmlspecialchars($initialCat, ENT_QUOTES, 'UTF-8'); ?>">

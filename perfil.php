@@ -152,6 +152,9 @@ $conn->close();
                     <span class="logo-rest">CineBlog</span>
                 </a>
             </div>
+            <?php if ($esPropio): ?>
+                <a class="profile-settings-link" href="ajustes.php" aria-label="Abrir ajustes de cuenta">⚙️ Ajustes</a>
+            <?php endif; ?>
         </nav>
         <!-- Contenedor principal del perfil, con una sección para mostrar la foto de perfil y acciones relacionadas (cambiar foto, eliminar foto) -->
         <header class="header-container">
