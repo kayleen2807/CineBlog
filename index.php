@@ -184,6 +184,7 @@ try {
   <canvas id="cineBg"></canvas>
 </div>
 
+<!-- Sidebar de navegación lateral -->
 <aside class="sidebar">
   <div style="display:flex;flex-direction:column;gap:15px;">
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
@@ -241,9 +242,11 @@ try {
     <?php endif; ?>
     <!-- Culaquier rol puede cerrar sesion y tener un panel de configuracion-->
     <div class="sb-item">⚙️ Configuración</div>
-    <div class="sb-item">🚪<span><a href="cerrarSesion.php">Cerrar sesión</a></span></div>
+    <div class="sb-item">🚪<a href="cerrarSesion.php">Cerrar sesión</a></div>
   </div>
 </aside>
+<!-- Termina Sidebar -->
+
 
 <!-- Apartado principal (feed para posts y comentarios)-->
 <div class="main">

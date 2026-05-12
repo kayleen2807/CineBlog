@@ -1,9 +1,18 @@
 <?php
-session_start();
-// Archivo para cerrar sesión, destruye la sesión actual y redirige a la página de inicio de sesión
-session_unset(); // Elimina todas las variables de sesión
-session_destroy(); // Destruye la sesión
+session_start(); // Archivo para cerrar sesión, destruye la sesión actual y redirige a la pantalla de selección
 
-header("Location: seleccion.php?mensaje=sesion_cerrada"); // Redirige a la página de inicio de sesión
+// 🔹 Eliminar todas las variables de sesión
+session_unset();
+
+// 🔹 Destruir la sesión en el servidor
+session_destroy();
+
+// 🔹 Evitar que el navegador guarde en caché esta página
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0"); // HTTP 1.1
+header("Pragma: no-cache"); // HTTP 1.0
+header("Expires: 0"); // Proxies
+
+// 🔹 Redirigir al usuario a la pantalla de selección
+header("Location: inicioSesion.php?mensaje=sesion_cerrada");
 exit();
 ?>

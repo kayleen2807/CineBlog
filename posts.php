@@ -1,10 +1,20 @@
 <?php
 session_start();
-// Conexion a la base datos
+
+// 🔹 Evitar cache
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+// 🔹 Validar sesión
+if (!isset($_SESSION['usuario_id'])) {
+    header("Location: inicioSesion.php");
+    exit();
+}
+
 include 'includes/conexion.php';
 
-// Verifica que el usuario es admin, si no lo es redirige al inicio de sesión
-if ($_SESSION['rol'] !== 'admin') { header("Location: inicioSesion.php"); exit(); }
+if ($_SESSION['rol'] !== 'admin') { header("Location: inicioSesion.php"); exit(); } // Verificar que el usuario es admin
 
 // Consulta para obtener los posts junto con el nombre del autor y su categoría
 $result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nombre AS autor, c.categoria
@@ -94,6 +104,13 @@ $result = $conn->query("SELECT p.id_post, p.titulo, p.contenido, p.fecha, u.nomb
 
 <script src="js/cinedbg.js"></script>
 <script src="js/app.js?v=3"></script>
-
+<!-- 🔹 Script para forzar recarga al volver atrás -->
+<script>
+window.addEventListener("pageshow", function(event) {
+    if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+        window.location.href = window.location.href;
+    }
+});
+</script>
 </body>
 </html>

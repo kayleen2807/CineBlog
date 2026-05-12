@@ -1,5 +1,9 @@
 <?php
 session_start();
+// Evitar caché
+header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION['usuario_id'])) {
@@ -7,10 +11,10 @@ if (!isset($_SESSION['usuario_id'])) {
     exit();
 }
 
-// Verificar rol de usuario
+// 🔹 Solo editores y admins pueden publicar
 $rol = $_SESSION['rol'] ?? 'visitante';
 if ($rol !== 'editor' && $rol !== 'admin') {
-    header("Location: index.php");
+    header("Location: inicioSesion.php");
     exit();
 }
 
@@ -572,5 +576,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <script src="js/publicarsubir.js?v=6"></script>
+    <!-- 🔹 Script para forzar recarga al volver atrás -->
+    <script>
+    window.addEventListener("pageshow", function(event) {
+        // Detecta si la página viene de caché (persisted)
+        // o si el usuario llegó con la flecha atrás/adelante (back_forward)
+        if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
+            window.location.href = window.location.href;
+        }
+    });
+</script>
 </body>
 </html>
