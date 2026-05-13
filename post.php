@@ -46,6 +46,7 @@ try {
         $dbError = "Error de conexión.";
     } else {
         $conn->set_charset("utf8mb4");
+        $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS editado_por_admin TINYINT(1) NOT NULL DEFAULT 0");
         // Consulta para obtener los detalles del post, incluyendo su título, contenido, fecha, autor, categorías asociadas, imágenes asociadas, y datos de TMDB si están disponibles. Se usa GROUP_CONCAT para obtener todas las categorías e imágenes asociadas al post en una sola fila.
         $sql = "
             SELECT

@@ -428,7 +428,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     //Mensajes de exito y redirección a la página principal después de publicar
                     $mensajeTipo = 'ok';
                     $mensaje = 'Publicación guardada.';
-                    header("Location: index.php");
+                    $redirectType = in_array('Serie', $cats, true) ? 'series' : 'movies';
+                    header("Location: index.php?tipo=" . $redirectType);
                     exit();
                 }
             }

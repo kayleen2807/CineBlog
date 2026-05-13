@@ -6,6 +6,7 @@
           <div class="sb-item">📌<span><a href="dashboard.php" class="sb-item active"> Dashboard</a></span></div>
           <div class="sb-item">👤<span><a href="usuarios.php" class="sb-item"> Usuarios</a></span></div>
           <div class="sb-item">🎞️<span><a href="posts.php" class="sb-item"> Publicaciones</a></span></div>
+          <div class="sb-item">⚙️<span><a href="ajustes.php" class="sb-item"> Ajustes</a></span></div>
           <div class="sb-item">🔙<span><a href="index.php" class="sb-item"> Regresar</a></span></div>
     </div>
 </aside>

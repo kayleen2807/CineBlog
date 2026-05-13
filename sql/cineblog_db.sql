@@ -72,6 +72,30 @@ CREATE TABLE `notificaciones` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `ajustes_usuario`
+--
+
+CREATE TABLE `ajustes_usuario` (
+  `usuario_id` int(11) NOT NULL,
+  `bio` text DEFAULT NULL,
+  `cuenta_privada` tinyint(1) NOT NULL DEFAULT 0,
+  `mostrar_actividad` tinyint(1) NOT NULL DEFAULT 1,
+  `quien_comenta` varchar(30) NOT NULL DEFAULT 'todos',
+  `bloqueados` text DEFAULT NULL,
+  `notif_likes` tinyint(1) NOT NULL DEFAULT 1,
+  `notif_comentarios` tinyint(1) NOT NULL DEFAULT 1,
+  `notif_respuestas` tinyint(1) NOT NULL DEFAULT 1,
+  `notif_seguidores` tinyint(1) NOT NULL DEFAULT 1,
+  `notif_estrenos` tinyint(1) NOT NULL DEFAULT 1,
+  `idioma` varchar(10) NOT NULL DEFAULT 'es',
+  `autoplay` tinyint(1) NOT NULL DEFAULT 0,
+  `two_factor` tinyint(1) NOT NULL DEFAULT 0,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla `posts`
 --
 
@@ -82,7 +106,8 @@ CREATE TABLE `posts` (
   `fecha` datetime DEFAULT current_timestamp(),
   `autor_id` int(11) NOT NULL,
   `imagen` varchar(255) DEFAULT NULL,
-  `video` varchar(255) DEFAULT NULL
+  `video` varchar(255) DEFAULT NULL,
+  `editado_por_admin` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -251,6 +276,12 @@ ALTER TABLE `usuarios`
   ADD UNIQUE KEY `email` (`email`);
 
 --
+-- Indices de la tabla `ajustes_usuario`
+--
+ALTER TABLE `ajustes_usuario`
+  ADD PRIMARY KEY (`usuario_id`);
+
+--
 -- AUTO_INCREMENT de las tablas volcadas
 --
 
@@ -319,6 +350,12 @@ ALTER TABLE `likes`
 --
 ALTER TABLE `notificaciones`
   ADD CONSTRAINT `notificaciones_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`);
+
+--
+-- Filtros para la tabla `ajustes_usuario`
+--
+ALTER TABLE `ajustes_usuario`
+  ADD CONSTRAINT `ajustes_usuario_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id_usuario`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `posts`
