@@ -377,6 +377,10 @@ body.light-theme .hero-main h1{
   color: white;
 }
 
+body.light-theme .hero-main {
+  color: #d9e7fb;
+}
+
 body.light-theme .stat{
   color: white;
 }
@@ -581,4 +585,77 @@ body.light-theme .form-title{
 
 body.light-theme .edit-form label{
   color: #333;
+}
+
+body.light-theme .sidebar-box{
+  background: var(--page-shell-light);
+  color: var(--text-light);
+  border: 1px solid #6687be;
+}
+
+body.light-theme .options-btn{
+  background: none;
+  border: none;
+  color: #ccc;
+}
+
+body.light-theme .options-btn:hover{
+  color: var(--text-light);
+}
+
+body.light-theme .options-menu{
+  background-color: #4f89c7;
+  border: 1px solid #6687be;
+}
+
+body.light-theme .option-item:hover {
+  background-color: #487cb4;
+}
+
+body.light-theme .option-item{
+  color: var(--text-light)
+}
+
+body.light-theme .edit-form input{
+  border: 1px solid #6687be;
+  background-color: #b9cbdd;
+  color: #333;
+}
+
+body.light-theme .edit-form textarea{
+  border: 1px solid #6687be;
+  background-color: #b9cbdd;
+  color: #333;
+}
+
+body.light-theme .btn-secondary {
+  background: #b9cbdd;
+  color: var(--text-light);
+}
+
+body.light-theme .btn-secondary:hover {
+  background: #9eadbd;
+}
+
+body.light-theme .overview{
+  color: #d9e7fb;
+}
+
+body.light-theme .btn-back {
+  background: var(--perfil-bt-light);
+  color: var(--text-light);
+}
+
+body.light-theme .btn-back:hover {
+  background: #4da6ff;
+  color: #fff;
+}
+
+body.light-theme .form-group label{
+  color: #333;
+}
+
+body.light-theme .form-group textarea{
+  color: #333;
+  background: #b2c6de;
 }

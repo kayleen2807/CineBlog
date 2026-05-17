@@ -15,9 +15,19 @@ if ($id_usuario === 0) {
 <meta charset="UTF-8">
 <title>Reportar publicación</title>
 <link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/style_switch.css">
 <link rel="stylesheet" href="css/reportes.css">
+<!-- 🔹 Estilos globales de tema -->
+<link rel="stylesheet" href="css/temas.css">
+<!-- 🔹 Script global de tema -->
+<script src="js/temas.js" defer></script>
 </head>
 <body>
+  <!-- 🔹 Switch de tema (arriba a la derecha) -->
+      <div class="theme-toggle" style="margin-top: 10px">
+          <input type="checkbox" id="theme-switch">
+          <label for="theme-switch" class="switch"></label>
+      </div>
   <div class="form-container">
     <h2>🚩 Reportar publicación</h2>
     <form method="post" action="guardar_reporte.php">

@@ -836,6 +836,8 @@ body {
     border-radius: 14px;
     padding: 14px;
     margin-bottom: 14px;
+    color: var(--muted); 
+    font-weight: 600;
 }
 
 .sidebar-box h3 {

@@ -19,7 +19,7 @@ if (!$postData) {
 $autorId = (int)$postData['autor_id'];
 
 // Validar acceso: admin o autor
-if ($_SESSION['rol'] !== 'admin' && $_SESSION['usuario_id'] != $autorId) {
+if ($_SESSION['rol'] !== 'admin' && $_SESSION['usuario_id'] != $autorId && $_SESSION['rol'] !== 'moderador') {
     die("Acceso denegado");
 }
 
@@ -38,9 +38,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
     $stmt->close();
 
+    //Redireccion segun rol y origen
+    $from = $_GET['from'] ?? null;
+
     if ($_SESSION['rol'] === 'admin') {
-    header("Location: dashboard.php?msg=editado");
+        if ($from === 'posts') {
+            header("Location: posts.php?msg=editado");
+        } else {
+            header("Location: index.php?msg=editado");
+        }
     } else {
+        // Autor/editor
         header("Location: index.php?msg=editado");
     }
     exit();
@@ -88,8 +96,21 @@ $post = $res->fetch_assoc();
         </div>
 
         <div class="form-actions">
-        <button type="submit" class="btn btn-primary"> Guardar cambios</button>
-        <a href="index.php" class="btn btn-secondary">↩ Cancelar</a>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <?php
+            $from = $_GET['from'] ?? null;
+
+            if ($_SESSION['rol'] === 'admin') {
+                if ($from === 'posts') {
+                    echo '<a href="posts.php" class="btn btn-secondary">↩ Cancelar</a>';
+                } else {
+                    echo '<a href="index.php" class="btn btn-secondary">↩ Cancelar</a>';
+                }
+            } else {
+                // Autor/editor
+                echo '<a href="index.php" class="btn btn-secondary">↩ Cancelar</a>';
+            }
+            ?>
         </div>
     </form>
     </div>
