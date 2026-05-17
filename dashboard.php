@@ -123,7 +123,7 @@ $conn->close();
           </div>
         </div>
         <div class="chart-container" >
-          <canvas id="postsPorCategoria"></canvas>
+          <canvas id="postsPorCategoria" style="width:600px; margin-top:30px; margin-left: auto; margin-right: auto;"></canvas>></canvas>
         </div>
 
         <div class="chart-container" style="width:400px; margin-top:30px; margin-left: auto; margin-right: auto;">

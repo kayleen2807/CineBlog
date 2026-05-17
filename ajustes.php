@@ -378,11 +378,6 @@ $loginTime = $_SESSION['login_time'] ?? time();
 
             <section class="settings-card settings-card-wide reveal" id="perfil">
                 <div class="settings-card-head">
-                    <!-- 🔹 Switch de tema (arriba a la derecha) -->
-                    <div class="theme-toggle">
-                        <input type="checkbox" id="theme-switch">
-                        <label for="theme-switch" class="switch"></label>
-                    </div>
                     <span class="section-icon"><svg><use href="#icon-user"></use></svg></span>
                     <div>
                         <h2>Perfil</h2>

@@ -149,13 +149,13 @@ $conn->close();
                 </a>
             </div>
             <!-- 🔹 Switch de tema (arriba a la derecha) -->
-            <div class="theme-toggle" style="margin-right: 170px; margin-top: 60px;">
+            <div class="theme-toggle" style="margin-right: 85px; margin-top: 60px;">
                 <input type="checkbox" id="theme-switch">
                 <label for="theme-switch" class="switch"></label>
             </div>
              <!-- Enlace a los ajustes de cuenta, solo visible si el usuario está viendo su propio perfil, para permitir al usuario acceder a la configuración de su cuenta desde su perfil -->
             <?php if ($esPropio): ?>
-                <a class="profile-settings-link" href="ajustes.php" aria-label="Abrir ajustes de cuenta">⚙️ Ajustes</a>
+                <a class="profile-settings-link" href="ajustes.php" aria-label="Abrir ajustes de cuenta" style="margin-right: 170px; margin-top: 60px;">⚙️ Ajustes</a>
             <?php endif; ?>
         </nav>
         <!-- Contenedor principal del perfil, con una sección para mostrar la foto de perfil y acciones relacionadas (cambiar foto, eliminar foto) -->
@@ -181,7 +181,7 @@ $conn->close();
                 <!-- Si el usuario no tiene publicaciones, se muestra un mensaje indicando que todavía no ha publicado nada, para informar al usuario sobre el estado de su perfil -->
                 <?php if (!count($misPosts)) : ?>
                     <div class="sidebar-box">
-                        <p style="color: var(--muted); font-weight: 600;">Todavía no has publicado nada.</p>
+                        Todavía no has publicado nada.
                     </div>
                 <?php endif; ?>
                 
