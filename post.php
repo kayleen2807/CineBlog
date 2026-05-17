@@ -26,7 +26,7 @@ function format_fecha_sin_segundos(?string $value): string
 }
 
 // Validación de entrada: se espera un parámetro "id_post" en la URL que indique el ID del post a mostrar, debe ser un entero positivo
-$postId = filter_input(INPUT_GET, 'id_post', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
+$postId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
 if ($postId <= 0) {
     http_response_code(400);
     echo "ID de publicación inválido.";
