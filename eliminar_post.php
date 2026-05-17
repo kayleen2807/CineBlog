@@ -2,7 +2,7 @@
 session_start();
 include 'includes/conexion.php';
 
-if ($_SESSION['rol'] !== 'admin') {
+if ($_SESSION['rol'] !== 'admin' && $_SESSION['rol'] !== 'moderador') {
     die("Acceso denegado");
 }
 
@@ -12,5 +12,5 @@ $stmt->bind_param("i", $id);
 $stmt->execute();
 $stmt->close();
 
-header("Location: dashboard.php?msg=eliminado");
+header("Location: posts.php?msg=eliminado");
 exit();

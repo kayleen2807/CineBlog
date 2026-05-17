@@ -104,6 +104,7 @@ if ($conn) $conn->close();
         <meta charset="UTF-8">
         <title>CineBlog - Recuperar contraseña</title>
         <link rel="stylesheet" href="css/styles_inicioSesion.css">
+        <link rel="stylesheet" href="css/style_switch.css">
         <!-- 🔹 Estilos globales de tema -->
         <link rel="stylesheet" href="css/temas.css">
         <!-- 🔹 Script global de tema -->
@@ -135,7 +136,7 @@ if ($conn) $conn->close();
             </form>
 
             <?php if (!empty($mensaje)) : ?>
-                <p style="color: yellow; margin-top: 15px;"><?php echo $mensaje; ?></p>
+                <p class="form-message1"><?php echo $mensaje; ?></p>
             <?php endif; ?>
         </div>
     </body>

@@ -306,8 +306,13 @@ $loginTime = $_SESSION['login_time'] ?? time();
     <title>Ajustes - CineBlog</title>
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/style_switch.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="js/settings.js" defer></script>
+    <!-- 🔹 Estilos globales de tema -->
+    <link rel="stylesheet" href="css/temas.css">
+    <!-- 🔹 Script global de tema -->
+     <script src="js/temas.js" defer></script>
 </head>
 <body class="settings-body">
 <svg class="settings-sprite" aria-hidden="true">
@@ -373,6 +378,11 @@ $loginTime = $_SESSION['login_time'] ?? time();
 
             <section class="settings-card settings-card-wide reveal" id="perfil">
                 <div class="settings-card-head">
+                    <!-- 🔹 Switch de tema (arriba a la derecha) -->
+                    <div class="theme-toggle">
+                        <input type="checkbox" id="theme-switch">
+                        <label for="theme-switch" class="switch"></label>
+                    </div>
                     <span class="section-icon"><svg><use href="#icon-user"></use></svg></span>
                     <div>
                         <h2>Perfil</h2>

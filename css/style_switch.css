@@ -1,0 +1,36 @@
+.theme-toggle {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+}
+
+.switch {
+  width: 50px;
+  height: 25px;
+  background: #444;
+  border-radius: 25px;
+  display: block;
+  position: relative;
+  cursor: pointer;
+}
+
+.switch::after {
+  content: '';
+  width: 21px;
+  height: 21px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: 0.3s;
+}
+
+#theme-switch:checked + .switch::after {
+  left: 27px;
+  background: #007bff;
+}
+/* Ocultar el checkbox real */
+#theme-switch {
+  display: none;
+}

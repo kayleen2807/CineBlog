@@ -41,6 +41,7 @@ $result = $conn->query($sql);
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles_dashboard.css">
   <link rel="stylesheet" href="css/styles_inicio.css">
+  <link rel="stylesheet" href="css/style_switch.css">
   <!-- 🔹 Estilos globales de tema -->
   <link rel="stylesheet" href="css/temas.css">
   <!-- 🔹 Script global de tema -->
@@ -57,11 +58,6 @@ $result = $conn->query($sql);
   }
 </style>
 <body>
-  <!-- 🔹 Switch de tema (arriba a la derecha) -->
-  <div class="theme-toggle">
-    <input type="checkbox" id="theme-switch">
-    <label for="theme-switch" class="switch"></label>
-    </div>
   <div class="cine-bg">
     <canvas id="cineBg"></canvas>
   </div>
@@ -69,7 +65,12 @@ $result = $conn->query($sql);
   <?php include 'includes/sidebar_admin.php'; ?>
   <div class="main">
     <header class="topbar">
-      <h1>Usuarios</h1>
+      <h1>Publicaciones</h1>
+      <!-- 🔹 Switch de tema (arriba a la derecha) -->
+      <div class="theme-toggle">
+          <input type="checkbox" id="theme-switch">
+          <label for="theme-switch" class="switch"></label>
+      </div>
     </header>
 
 <!--Vista principal para el admin-->

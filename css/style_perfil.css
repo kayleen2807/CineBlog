@@ -7,6 +7,11 @@ a:hover{
     color: white;
 }
 
+.card {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
 .profile-settings-link {
     display: inline-flex;
     align-items: center;
@@ -81,7 +86,7 @@ a:hover{
     font-size: 2rem;
     margin: 0;
     font-weight: 800;
-    color: var(--text);
+    color: #edf1f7;
 }
 
 .current-picture {

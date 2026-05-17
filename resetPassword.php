@@ -49,8 +49,14 @@ $conn->close();
     <meta charset="UTF-8">
     <title>CineBlog - Restablecer contraseña</title>
     <link rel="stylesheet" href="css/styles_inicioSesion.css">
+    <link rel="stylesheet" href="css/style_switch.css">
+    <!-- 🔹 Estilos globales de tema -->
+    <link rel="stylesheet" href="css/temas.css">
+    <!-- 🔹 Script global de tema -->
+    <script src="js/temas.js" defer></script>
 </head>
 <body>
+
     <!-- Contenedor principal para el formulario de restablecimiento de contraseña -->
     <div class="container">
         <h2>Restablecer contraseña</h2>
@@ -63,13 +69,13 @@ $conn->close();
         <?php endif; ?>
 
         <!-- Botón para regresar al inicio de sesión -->
-        <form action="inicioSesion.php" method="get" style="margin-top: 15px;">
+        <form action="inicioSesion.php" method="get" class="margin-top-12">
             <button type="submit" class="btn-small">Regresar al inicio de sesión</button>
         </form>
 
         <!-- Mensaje de resultado -->
         <?php if (!empty($mensaje)) : ?>
-            <p style="color: yellow; margin-top: 15px;"><?php echo $mensaje; ?></p>
+            <p class="form-message"><?php echo $mensaje; ?></p>
         <?php endif; ?>
     </div>
 </body>

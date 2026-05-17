@@ -81,6 +81,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <meta charset="UTF-8">
         <title>CineBlog - Registro</title>
         <link rel="stylesheet" href="css/styles_registro.css">
+        <link rel="stylesheet" href="css/style_switch.css">
         <!-- Librería de Bootstrap Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"> <!-- Librería de bootstrap icons -->
         <!-- 🔹 Estilos globales de tema -->
@@ -95,6 +96,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <label for="theme-switch" class="switch"></label>
         </div>
         <div class="container">
+            <a href="inicioSesion.php" class="btn-regresar">
+                <i class="bi bi-arrow-left-circle"></i> Regresar
+            </a>
             <div class="logo">
                 <img src="css/cineBlog_Logo.png" alt="Logo CineBlog">
                 <h1>CineBlog</h1>
@@ -140,7 +144,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             <!-- Mensaje de error o exito-->
             <?php if (!empty($mensaje)) : ?>
-                <p style="color: yellow; margin-top: 15px;"><?php echo $mensaje; ?></p>
+                <p class="form-message"><?php echo $mensaje; ?></p>
             <?php endif; ?>
         </div>
 

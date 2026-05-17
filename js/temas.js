@@ -1,13 +1,22 @@
-// Lógica del botón para cambiar entre temas oscuro y claro:
 const themeSwitch = document.getElementById('theme-switch');
 
-// Mantener preferencia en localStorage:
-if (localStorage.getItem('theme') === 'light') {
-    document.body.classList.add('light-theme');
-    themeSwitch.checked = true;
+function applyTheme(isLight){
+  document.body.classList.toggle('light-theme', isLight);
+  try{ localStorage.setItem('theme', isLight ? 'light' : 'dark'); }catch(e){}
 }
-// Evento para cambiar el tema y guardar la preferencia:
-themeSwitch.addEventListener('change', () => {
-    document.body.classList.toggle('light-theme', themeSwitch.checked);
-    localStorage.setItem('theme', themeSwitch.checked ? 'light' : 'dark');
-});
+
+// Inicializar: preferencia guardada > prefers-color-scheme > default dark
+const saved = (function(){ try{ return localStorage.getItem('theme'); }catch(e){ return null; } })();
+const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+const useLight = saved ? saved === 'light' : prefersLight;
+applyTheme(useLight);
+if(themeSwitch) themeSwitch.checked = useLight;
+
+if(themeSwitch){
+  themeSwitch.addEventListener('change', () => applyTheme(themeSwitch.checked));
+}
+
+// Exponer método para otros scripts que necesiten leer variables
+window.getThemeColor = function(varName){
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}

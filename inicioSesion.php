@@ -188,6 +188,7 @@ $conn->close();
     <head>
         <meta charset="UTF-8"> <!-- Esto es para que se muestren correctamente los caracteres especiales -->
         <title>CineBlog - Inicio de sesión</title>
+        <link rel="stylesheet" href="css/style_switch.css">
         <link rel="stylesheet" href="css/styles_inicioSesion.css"> <!-- Enlaza con tu archivo CSS para estilos personalizados -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"> <!-- Librería de bootstrap icons -->
         <!-- 🔹 Estilos globales de tema -->
@@ -204,9 +205,9 @@ $conn->close();
         </div>
         <div class="container">
 
-        <a href="seleccion.php" class="btn-regresar">
-    <i class="bi bi-arrow-left-circle"></i> Regresar
-</a>
+            <a href="seleccion.php" class="btn-regresar">
+                <i class="bi bi-arrow-left-circle"></i> Regresar
+            </a>
         
             <div class="logo">
                 <img src="css/cineBlog_Logo.png" alt="Logo CineBlog"> <!-- Tener un logo.png en el proyecto -->
@@ -252,7 +253,7 @@ $conn->close();
 
             <!-- Mensaje para saber si puede iniciar sesión -->
              <?php if (!empty($mensaje)) : ?>
-                <p style="color: red; margin-top: 15px;"><?php echo $mensaje; ?></p>
+                <p class="form-message"><?php echo $mensaje; ?></p>
             <?php endif; ?>
             
         </div>

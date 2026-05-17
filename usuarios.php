@@ -23,7 +23,12 @@ $result = $conn->query("SELECT id_usuario, nombre, email, rol FROM usuarios");
   <title>Usuarios - CineBlog</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles_dashboard.css">
+  <link rel="stylesheet" href="css/style_switch.css">
   <link rel="stylesheet" href="css/styles_inicio.css">
+  <!-- 🔹 Estilos globales de tema -->
+  <link rel="stylesheet" href="css/temas.css">
+    <!-- 🔹 Script global de tema -->
+  <script src="js/temas.js" defer></script>
 </head>
 <style>
   a {
@@ -44,6 +49,11 @@ $result = $conn->query("SELECT id_usuario, nombre, email, rol FROM usuarios");
   <div class="main">
     <header class="topbar">
       <h1>Usuarios</h1>
+      <!-- 🔹 Switch de tema (arriba a la derecha) -->
+      <div class="theme-toggle">
+          <input type="checkbox" id="theme-switch">
+          <label for="theme-switch" class="switch"></label>
+      </div>
     </header>
 
 <!--Vista principal para el admin-->

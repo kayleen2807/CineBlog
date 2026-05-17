@@ -32,6 +32,7 @@ $post = $res->fetch_assoc();
 <link rel="stylesheet" href="css/main.css">
 <link rel="stylesheet" href="css/styles_editpost.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style_switch.css">
 <!-- 🔹 Estilos globales de tema -->
 <link rel="stylesheet" href="css/temas.css">
 <!-- 🔹 Script global de tema -->
@@ -40,6 +41,11 @@ $post = $res->fetch_assoc();
 <body>
     <div class="form-container">
     <h2 class="form-title"> Editar publicación</h2>
+    <!-- 🔹 Switch de tema (arriba a la derecha) -->
+    <div class="theme-toggle">
+        <input type="checkbox" id="theme-switch">
+        <label for="theme-switch" class="switch"></label>
+    </div>
     
     <form method="post" class="edit-form">
         <div class="form-group">

@@ -160,6 +160,7 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/style_post.css?v=1">
     <link rel="stylesheet" href="css/styles_media.css">
+    <link rel="stylesheet" href="css/style_switch.css">
     <title><?php echo htmlspecialchars((string)($post['titulo'] ?? 'Publicación'), ENT_QUOTES, 'UTF-8'); ?> - CineBlog</title>
     <!-- 🔹 Estilos globales de tema -->
     <link rel="stylesheet" href="css/temas.css">
@@ -168,7 +169,7 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
 </head>
 <body>
     <!-- 🔹 Switch de tema (arriba a la derecha) -->
-    <div class="theme-toggle">
+    <div class="theme-toggle" style="margin-right: 50px; margin-top: 30px">
         <input type="checkbox" id="theme-switch">
         <label for="theme-switch" class="switch"></label>
     </div>
