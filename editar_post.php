@@ -2,27 +2,55 @@
 session_start();
 include 'includes/conexion.php';
 
-if ($_SESSION['rol'] !== 'admin') {
+$id = (int)($_GET['id'] ?? 0);
+
+// Verificar que el post existe
+$stmt = $conn->prepare("SELECT autor_id FROM posts WHERE id_post=?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$res = $stmt->get_result();
+$postData = $res->fetch_assoc();
+$stmt->close();
+
+if (!$postData) {
+    die("Publicación no encontrada");
+}
+
+$autorId = (int)$postData['autor_id'];
+
+// Validar acceso: admin o autor
+if ($_SESSION['rol'] !== 'admin' && $_SESSION['usuario_id'] != $autorId) {
     die("Acceso denegado");
 }
 
-$id = (int)$_GET['id'];
+// Procesar edición
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titulo = $_POST['titulo'];
     $contenido = $_POST['contenido'];
 
-    $stmt = $conn->prepare("UPDATE posts SET titulo=?, contenido=?, editado_por_admin=1 WHERE id_post=?");
+    if ($_SESSION['rol'] === 'admin') {
+        $stmt = $conn->prepare("UPDATE posts SET titulo=?, contenido=?, editado_por_admin=1 WHERE id_post=?");
+    } else {
+        $stmt = $conn->prepare("UPDATE posts SET titulo=?, contenido=? WHERE id_post=?");
+    }
+
     $stmt->bind_param("ssi", $titulo, $contenido, $id);
     $stmt->execute();
     $stmt->close();
 
+    if ($_SESSION['rol'] === 'admin') {
     header("Location: dashboard.php?msg=editado");
+    } else {
+        header("Location: index.php?msg=editado");
+    }
     exit();
 }
 
+// Cargar datos del post
 $res = $conn->query("SELECT * FROM posts WHERE id_post=$id");
 $post = $res->fetch_assoc();
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -61,7 +89,7 @@ $post = $res->fetch_assoc();
 
         <div class="form-actions">
         <button type="submit" class="btn btn-primary"> Guardar cambios</button>
-        <a href="dashboard.php" class="btn btn-secondary">↩ Cancelar</a>
+        <a href="index.php" class="btn btn-secondary">↩ Cancelar</a>
         </div>
     </form>
     </div>

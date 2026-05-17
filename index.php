@@ -243,7 +243,6 @@ try {
 </aside>
 <!-- Termina Sidebar -->
 
-
 <!-- Apartado principal (feed para posts y comentarios)-->
 <div class="main">
   <header class="topbar">
@@ -263,6 +262,13 @@ try {
     </div>
   </header>
   
+
+
+
+
+
+
+
   <!-- Feed de publicaciones -->
   <div class="feed">
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
@@ -320,6 +326,7 @@ try {
                           <?php endif; ?>
                           <div class="post-date"><?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
                         </header>
+
                         <!-- Título de la publicación / post -->
                         <div class="post-title"><?php echo htmlspecialchars($p['titulo'], ENT_QUOTES, 'UTF-8'); ?></div>
                         <!-- Contenido de la publicación / post -->
@@ -397,11 +404,35 @@ try {
                                   <?php endforeach; ?>
                               </div>
                           </section>
+
+                          <!-- 🔹 Botón de opciones del post -->
+                          <?php if ($rol !== "visitante") : ?>
+                            <div class="post-options">
+                              <button class="options-btn">⋯</button>
+                              <div class="options-menu">
+                                <?php if ($p['autor_id'] == $_SESSION['usuario_id']) : ?>
+                                  <!-- Opciones para publicaciones propias -->
+                                  <a href="editar_post.php?id=<?= $p['id_post'] ?>" class="option-item">✏️ Editar publicación</a>
+                                  <a href="eliminar_post.php?id=<?= $p['id_post'] ?>" class="option-item" onclick="return confirm('¿Seguro que quieres borrar esta publicación?')">🗑️ Borrar publicación</a>
+                                <?php else : ?>
+                                  <!-- Opción para publicaciones ajenas -->
+                                  <a href="reportar_post.php?id=<?= $p['id_post'] ?>" class="option-item">🚩 Reportar publicación</a>
+                                <?php endif; ?>
+                              </div>
+                            </div>
+                          <?php endif; ?>
+
+
                         <?php endif; ?>
                     </article>
                 <?php endforeach; ?>
   </div>
 </div>
+
+
+
+
+
 <script src="js/cinedbg.js"></script>
 <script src="js/app.js?v=3"></script>
 </body>

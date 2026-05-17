@@ -320,6 +320,7 @@ color:#ffd0d0;
   background:rgba(59,130,246,.14);
 }
 
+/* Posible cambio: */
 .post-media{
   display:flex;
   align-items:center;
@@ -389,6 +390,8 @@ color:#ffd0d0;
   border-radius:10px; cursor:pointer; transition:transform 0.2s;
 }
 .post-img:hover{ transform:scale(1.02); }
+
+/* Posible cambio: */
 .post-actions{
   display:flex; gap:16px; font-size:1.2rem;
   color:var(--muted); cursor:pointer;
@@ -683,4 +686,114 @@ line-height: 1.35;
   .post-actions{
     font-size:1rem;
   }
+}
+
+.feed-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* 🔹 Card de publicación */
+.post-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-self: center;
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--card);
+  border-radius: 12px;
+  padding: 25px 20px 70px; /* 🔹 más espacio inferior para el botón */
+  margin-bottom: 25px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  overflow: visible;
+  min-height: 280px; /* 🔹 altura mínima más natural */
+}
+
+/* 🔹 Botón de opciones abajo a la derecha */
+.post-options {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 5;
+}
+
+/* 🔹 Botón de tres puntos */
+.options-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 22px;
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.options-btn:hover {
+  color: #4da6ff;
+  transform: scale(1.2);
+}
+
+/* 🔹 Menú desplegable */
+.options-menu {
+  display: none;
+  position: absolute;
+  bottom: 40px; /* 🔹 aparece justo encima del botón */
+  right: 0;
+  background-color: #1e1e2f;
+  border: 1px solid #444;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  min-width: 180px;
+  z-index: 10;
+}
+
+/* 🔹 Elementos del menú */
+.option-item {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #ddd;
+  text-align: left;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.option-item:hover {
+  background-color: #2a2a3d;
+}
+
+/* 🔹 Ajuste de acciones */
+.post-actions {
+  display: flex;
+  gap: 16px;
+  font-size: 1.1rem;
+  color: var(--muted);
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.post-actions span {
+  transition: color 0.2s;
+}
+
+.post-actions span:hover {
+  color: var(--primary);
+}
+
+/* 🔹 Ajuste de media */
+.post-media {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(17,24,39,.35);
 }

@@ -117,6 +117,10 @@ $conn->close();
             <h3>Comentarios</h3>
             <p><?php echo $totalComentarios; ?></p>
           </div>
+          <div class="stat-card reportes-card">
+            <h3>🚩 Reportes</h3>
+            <a href="reportes.php" class="reportes-btn">Ver reportes</a>
+          </div>
         </div>
         <div class="chart-container" >
           <canvas id="postsPorCategoria"></canvas>
@@ -131,6 +135,7 @@ $conn->close();
 </div>
 <script src="js/cinedbg.js"></script>
 <script src="js/app.js?v=3"></script>
+
 <script>
   const themeAccent = window.getThemeColor ? window.getThemeColor('--primary') : '#4da6ff';
   const themeText = window.getThemeColor ? window.getThemeColor('--color-text') : '#858585';

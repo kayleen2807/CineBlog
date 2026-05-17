@@ -535,3 +535,25 @@ function setupGlobalTmdbSearch() {
 setupGlobalTmdbSearch();
 setupLikes();
 setupComments();
+
+// ... aquí van tus otras funciones y scripts globales
+
+// 🔹 Script para menú de opciones en publicaciones
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".options-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const menu = btn.nextElementSibling;
+      menu.style.display = menu.style.display === "block" ? "none" : "block";
+    });
+  });
+
+  window.addEventListener("click", e => {
+    document.querySelectorAll(".options-menu").forEach(menu => {
+      if (!menu.contains(e.target) && !menu.previousElementSibling.contains(e.target)) {
+        menu.style.display = "none";
+      }
+    });
+  });
+});
+
+
