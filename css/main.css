@@ -3,7 +3,7 @@
     --bg-alt: #161f2c;
     --panel: #0f2139;
     --panel-soft: #132a47;
-    --line: #263348;
+    --line: oklab(31.929000000000002% -0.00739 -0.04106);
     --text: #edf1f7;
     --muted: #b3c0d1;
     --accent: #6fd3ff;

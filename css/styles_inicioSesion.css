@@ -9,7 +9,10 @@ body {
     align-items: center;
     min-height: 100vh; /* CORREGIDO: Cambiado de height a min-height */
 }
-
+.card {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
 /* Contenedor principal */
 .container {
     background-color: rgba(255, 255, 255, 0.05);
@@ -135,4 +138,14 @@ button:hover {
 
 .btn-regresar i {
     font-size: 1.2rem;
+}
+
+.form-message{
+    color: red; 
+    margin-top: 15px;
+}
+
+.form-message1{
+    color: yellow; 
+    margin-top: 15px;
 }

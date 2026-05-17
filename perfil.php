@@ -121,6 +121,7 @@ $conn->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/style_switch.css">
     <link rel="stylesheet" href="css/style_perfil.css">
     <link rel="stylesheet" href="lib/cropper.min.css">
     <title>Perfil CineBlog</title>
@@ -130,11 +131,6 @@ $conn->close();
     <script src="js/temas.js" defer></script>
 </head>
 <body>
-    <!-- 🔹 Switch de tema (arriba a la derecha) -->
-    <div class="theme-toggle">
-        <input type="checkbox" id="theme-switch">
-        <label for="theme-switch" class="switch"></label>
-    </div>
     <!--Agregar manejo de mensajes al inicio del body o main, muestra mensajes de éxito o error -->
     <?php if (isset($_SESSION['upload_message'])): ?>
         <div class="alert <?php echo $_SESSION['upload_type'] === 'success' ? 'success' : 'error'; ?>">
@@ -152,6 +148,15 @@ $conn->close();
                     <span class="logo-rest">CineBlog</span>
                 </a>
             </div>
+            <!-- 🔹 Switch de tema (arriba a la derecha) -->
+            <div class="theme-toggle" style="margin-right: 170px; margin-top: 60px;">
+                <input type="checkbox" id="theme-switch">
+                <label for="theme-switch" class="switch"></label>
+            </div>
+             <!-- Enlace a los ajustes de cuenta, solo visible si el usuario está viendo su propio perfil, para permitir al usuario acceder a la configuración de su cuenta desde su perfil -->
+            <?php if ($esPropio): ?>
+                <a class="profile-settings-link" href="ajustes.php" aria-label="Abrir ajustes de cuenta">⚙️ Ajustes</a>
+            <?php endif; ?>
         </nav>
         <!-- Contenedor principal del perfil, con una sección para mostrar la foto de perfil y acciones relacionadas (cambiar foto, eliminar foto) -->
         <header class="header-container">
@@ -165,29 +170,6 @@ $conn->close();
                     </div>
                 </div>
 
-                <?php if ($esPropio): ?>
-                <div class="photo-actions">
-                    <label class="btn btn-primary">
-                        Seleccionar foto
-                        <input type="file" id="foto" accept="image/*" hidden>
-                    </label>
-                    <button id="apply-btn" type="button" class="btn btn-outline hidden">Aplicar y subir</button>
-
-                    <form id="delete-form" action="subirFoto.php" method="POST">
-                        <button type="submit" name="delete_photo" class="btn btn-danger">Eliminar foto</button>
-                    </form>
-                </div>
-
-                <div id="crop-container" class="crop-container hidden" style="display: block; !important; visibility: visible; !important;">
-                    <p>Ajusta el recorte arrastrando y zoomando:</p>
-                    <img id="crop-source" src="" alt="Recorte de imagen">
-                </div>
-
-                <div id="preview-container" class="preview-container hidden">
-                    <p>Vista previa del recorte:</p>
-                    <img id="preview-img" src="" alt="Vista previa">
-                </div>
-                <?php endif; ?>
             </div>
         </header>
 

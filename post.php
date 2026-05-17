@@ -46,6 +46,7 @@ try {
         $dbError = "Error de conexión.";
     } else {
         $conn->set_charset("utf8mb4");
+        $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS editado_por_admin TINYINT(1) NOT NULL DEFAULT 0");
         // Consulta para obtener los detalles del post, incluyendo su título, contenido, fecha, autor, categorías asociadas, imágenes asociadas, y datos de TMDB si están disponibles. Se usa GROUP_CONCAT para obtener todas las categorías e imágenes asociadas al post en una sola fila.
         $sql = "
             SELECT
@@ -159,6 +160,7 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/style_post.css?v=1">
     <link rel="stylesheet" href="css/styles_media.css">
+    <link rel="stylesheet" href="css/style_switch.css">
     <title><?php echo htmlspecialchars((string)($post['titulo'] ?? 'Publicación'), ENT_QUOTES, 'UTF-8'); ?> - CineBlog</title>
     <!-- 🔹 Estilos globales de tema -->
     <link rel="stylesheet" href="css/temas.css">
@@ -167,7 +169,7 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
 </head>
 <body>
     <!-- 🔹 Switch de tema (arriba a la derecha) -->
-    <div class="theme-toggle">
+    <div class="theme-toggle" style="margin-right: 50px; margin-top: 30px">
         <input type="checkbox" id="theme-switch">
         <label for="theme-switch" class="switch"></label>
     </div>

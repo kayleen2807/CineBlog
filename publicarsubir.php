@@ -428,7 +428,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     //Mensajes de exito y redirección a la página principal después de publicar
                     $mensajeTipo = 'ok';
                     $mensaje = 'Publicación guardada.';
-                    header("Location: index.php");
+                    $redirectType = in_array('Serie', $cats, true) ? 'series' : 'movies';
+                    header("Location: index.php?tipo=" . $redirectType);
                     exit();
                 }
             }
@@ -447,6 +448,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva publicación - CineBlog</title>
+    <link rel="stylesheet" href="css/style_switch.css">
     <link rel="stylesheet" href="css/style_publicarsubir.css?v=3">
     <!-- 🔹 Estilos globales de tema -->
     <link rel="stylesheet" href="css/temas.css">
@@ -454,16 +456,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="js/temas.js" defer></script>
 </head>
 <body>
-    <!-- 🔹 Switch de tema (arriba a la derecha) -->
-    <div class="theme-toggle">
-        <input type="checkbox" id="theme-switch">
-        <label for="theme-switch" class="switch"></label>
-    </div>
     <main class="ps-overlay">
         <section class="ps-modal" role="dialog" aria-modal="true" aria-label="Nueva publicación">
             <!-- Encabezado del modal -->
             <header class="ps-head">
                 <h1>Nueva publicación</h1>
+                <!-- 🔹 Switch de tema (arriba a la derecha) -->
+                <div class="theme-toggle"style="margin-right: 55px; margin-top: 15px;">
+                    <input type="checkbox" id="theme-switch">
+                    <label for="theme-switch" class="switch"></label>
+                </div>
                 <a class="ps-close" href="index.php" aria-label="Cerrar">×</a>
             </header>
             <!-- Mensajes de alerta -->

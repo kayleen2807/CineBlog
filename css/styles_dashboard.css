@@ -36,6 +36,27 @@
 .admin-table th, .admin-table td { border: 1px solid rgba(255,255,255,0.1); padding: 10px; text-align: left; }
 .admin-table th { background: rgba(59,130,246,0.2); }
 
+.back-container {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.btn-back {
+  display: inline-block;
+  padding: 8px 14px;
+  background: #444;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.btn-back:hover {
+  background: #4da6ff;
+  color: #fff;
+}
+
 /* Media Queries para Responsividad */
 @media(max-width:1024px) {
   .stats-grid {

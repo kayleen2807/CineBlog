@@ -4,7 +4,12 @@ session_start();
 include 'includes/conexion.php';
 
 // Se agregó el uso de PHPMailer para enviar correos de recuperación de contraseña
-require 'vendor/autoload.php';
+$mailerAvailable = false;
+$autoloadPath = __DIR__ . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+if (file_exists($autoloadPath)) {
+    require $autoloadPath;
+    $mailerAvailable = true;
+}
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -16,54 +21,81 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email'])) {
 
     // Verificar si el correo existe
     $stmt = $conn->prepare("SELECT id_usuario FROM usuarios WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $stmt->store_result();
-
-    if ($stmt->num_rows > 0) {
-        $token = bin2hex(random_bytes(32)); // Generar token seguro
-        $expira = date("Y-m-d H:i:s", strtotime("+1 hour"));
-
-        // Guardar token en BD
-        $stmt_token = $conn->prepare("UPDATE usuarios SET reset_token=?, reset_expira=? WHERE email=?");
-        $stmt_token->bind_param("sss", $token, $expira, $email);
-        $stmt_token->execute();
-
-        // Enviar correo con PHPMailer
-        $enlace = "http://localhost/CineBlog/resetPassword.php?token=" . $token;
-
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'cinebloguser@gmail.com'; // correo de la aplicación
-            $mail->Password = 'jfshyqskunichgoh'; // contraseña de aplicación de Gmail
-            $mail->SMTPSecure = 'tls';
-            $mail->Port = 587;
-
-            // Configuración del correo
-            $mail->setFrom('cinebloguser@gmail.com', 'CineBlog');
-            $mail->addAddress($email);
-
-            // Contenido del correo
-            $mail->isHTML(true);
-            $mail->Subject = 'Recuperar contraseña CineBlog';
-            $mail->Body    = "Haz clic en el siguiente enlace para restablecer tu contraseña: 
-                              <a href='$enlace'>$enlace</a>";
-
-            // Enviar el correo
-            $mail->send();
-            $mensaje = "Se ha enviado un correo con instrucciones para recuperar tu contraseña.";
-        } catch (Exception $e) {
-            $mensaje = "Error al enviar el correo: {$mail->ErrorInfo}";
-        }
+    if (!$stmt) {
+        $mensaje = "Error al preparar la consulta: " . $conn->error;
     } else {
-        $mensaje = "El correo no está registrado.";
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->store_result();
+
+        if ($stmt->num_rows > 0) {
+            if (!$mailerAvailable) {
+                $mensaje = "PHPMailer no esta instalado. Ejecuta composer install.";
+            } else {
+                $token = bin2hex(random_bytes(32)); // Generar token seguro
+                $expira = date("Y-m-d H:i:s", strtotime("+1 hour"));
+
+                // Guardar token en BD
+                $stmt_token = $conn->prepare("UPDATE usuarios SET reset_token=?, reset_expira=? WHERE email=?");
+                $stmt_token->bind_param("sss", $token, $expira, $email);
+                $stmt_token->execute();
+
+                // Enviar correo con PHPMailer
+                $enlace = "http://localhost/CineBlog/resetPassword.php?token=" . $token;
+
+                $mail = new PHPMailer(true);
+                try {
+                    $mail->isSMTP();
+                    $mail->Host = 'smtp.gmail.com';
+                    $mail->SMTPAuth = true;
+                    $mail->Username = 'cinebloguser@gmail.com'; // correo de la aplicación
+                    $mail->Password = 'jfshyqskunichgoh'; // contraseña de aplicación de Gmail
+                    $mail->SMTPSecure = 'tls';
+                    $mail->Port = 587;
+
+                    $caFile = 'C:\\xampp\\php\\extras\\ssl\\cacert.pem';
+                    if (file_exists($caFile)) {
+                        $mail->SMTPOptions = [
+                            'ssl' => [
+                                'verify_peer' => true,
+                                'verify_peer_name' => true,
+                                'cafile' => $caFile,
+                            ],
+                        ];
+                    } else {
+                        $mail->SMTPOptions = [
+                            'ssl' => [
+                                'verify_peer' => false,
+                                'verify_peer_name' => false,
+                                'allow_self_signed' => true,
+                            ],
+                        ];
+                    }
+
+                    // Configuración del correo
+                    $mail->setFrom('cinebloguser@gmail.com', 'CineBlog');
+                    $mail->addAddress($email);
+
+                    // Contenido del correo
+                    $mail->isHTML(true);
+                    $mail->Subject = 'Recuperar contraseña CineBlog';
+                    $mail->Body    = "Haz clic en el siguiente enlace para restablecer tu contraseña: 
+                                      <a href='$enlace'>$enlace</a>";
+
+                    // Enviar el correo
+                    $mail->send();
+                    $mensaje = "Se ha enviado un correo con instrucciones para recuperar tu contraseña.";
+                } catch (Exception $e) {
+                    $mensaje = "Error al enviar el correo: {$mail->ErrorInfo}";
+                }
+            }
+        } else {
+            $mensaje = "El correo no está registrado.";
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
-$conn->close();
+if ($conn) $conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -72,6 +104,7 @@ $conn->close();
         <meta charset="UTF-8">
         <title>CineBlog - Recuperar contraseña</title>
         <link rel="stylesheet" href="css/styles_inicioSesion.css">
+        <link rel="stylesheet" href="css/style_switch.css">
         <!-- 🔹 Estilos globales de tema -->
         <link rel="stylesheet" href="css/temas.css">
         <!-- 🔹 Script global de tema -->
@@ -103,7 +136,7 @@ $conn->close();
             </form>
 
             <?php if (!empty($mensaje)) : ?>
-                <p style="color: yellow; margin-top: 15px;"><?php echo $mensaje; ?></p>
+                <p class="form-message1"><?php echo $mensaje; ?></p>
             <?php endif; ?>
         </div>
     </body>

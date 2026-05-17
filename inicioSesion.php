@@ -5,10 +5,101 @@ session_start();
 // Conexión a la base de datos
 include 'includes/conexion.php';
 
+$mailerAvailable = false;
+$autoloadPath = __DIR__ . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
+if (file_exists($autoloadPath)) {
+    require $autoloadPath;
+    $mailerAvailable = true;
+}
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 $mensaje = ""; // Variable para mostrar mensajes en la misma página
+$showTwoFactorForm = isset($_SESSION['pending_2fa']);
+
+function send_two_factor_code(string $email, string $nombre, string $code): array
+{
+    if (!$GLOBALS['mailerAvailable']) {
+        return [false, "PHPMailer no esta instalado."];
+    }
+
+    $mail = new PHPMailer(true);
+
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = 'cinebloguser@gmail.com';
+        $mail->Password = 'jfshyqskunichgoh';
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
+
+        $caFile = 'C:\\xampp\\php\\extras\\ssl\\cacert.pem';
+        if (file_exists($caFile)) {
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer' => true,
+                    'verify_peer_name' => true,
+                    'cafile' => $caFile,
+                ],
+            ];
+        } else {
+            $mail->SMTPOptions = [
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true,
+                ],
+            ];
+        }
+
+        $mail->setFrom('cinebloguser@gmail.com', 'CineBlog');
+        $mail->addAddress($email, $nombre);
+        $mail->isHTML(true);
+        $mail->Subject = 'Codigo de verificacion CineBlog';
+        $mail->Body = "
+            <p>Hola " . htmlspecialchars($nombre, ENT_QUOTES, 'UTF-8') . ",</p>
+            <p>Tu codigo de verificacion para iniciar sesion en CineBlog es:</p>
+            <h2 style='letter-spacing:4px;'>$code</h2>
+            <p>Este codigo vence en 10 minutos.</p>
+        ";
+
+        $mail->send();
+        return [true, ""];
+    } catch (Exception $e) {
+        return [false, $mail->ErrorInfo];
+    }
+}
 
 // Si se envió el formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['verify_2fa'])) {
+        $pending = $_SESSION['pending_2fa'] ?? null;
+        $code = trim((string)($_POST['two_factor_code'] ?? ''));
+
+        if (!$pending || !isset($pending['code_hash'], $pending['expires_at'])) {
+            unset($_SESSION['pending_2fa']);
+            $showTwoFactorForm = false;
+            $mensaje = "La verificacion expiro. Inicia sesion de nuevo.";
+        } elseif (time() > (int)$pending['expires_at']) {
+            unset($_SESSION['pending_2fa']);
+            $showTwoFactorForm = false;
+            $mensaje = "El codigo expiro. Inicia sesion de nuevo.";
+        } elseif (!preg_match('/^\d{6}$/', $code) || !password_verify($code, (string)$pending['code_hash'])) {
+            $showTwoFactorForm = true;
+            $mensaje = "Codigo incorrecto.";
+        } else {
+            session_regenerate_id(true);
+            $_SESSION['usuario_id'] = (int)$pending['usuario_id'];
+            $_SESSION['nombre'] = (string)$pending['nombre'];
+            $_SESSION['rol'] = (string)$pending['rol'];
+            $_SESSION['login_time'] = time();
+            unset($_SESSION['pending_2fa']);
+            header("Location: index.php");
+            exit();
+        }
+    } else {
     $email    = $_POST['email'];
     $password = $_POST['password'];
 
@@ -34,13 +125,45 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Verifica la contraseña usando password_verify
                 if (password_verify($password, $hashed_password)) {
-                    $_SESSION['usuario_id'] = $id_usuario;
-                    $_SESSION['nombre'] = $nombre;
-                    $_SESSION['rol'] = $rol;
-                    $mensaje = "Inicio de sesión exitoso. Bienvenido a CineBlog.";
-                    // Aquí podrías redirigir si quieres (ya implementado):
-                    header("Location: index.php");
-                    exit();
+                    $twoFactor = 0;
+                    $stmt2fa = $conn->prepare("SELECT two_factor FROM ajustes_usuario WHERE usuario_id = ? LIMIT 1");
+                    if ($stmt2fa) {
+                        $stmt2fa->bind_param("i", $id_usuario);
+                        $stmt2fa->execute();
+                        $stmt2fa->bind_result($twoFactor);
+                        $stmt2fa->fetch();
+                        $stmt2fa->close();
+                    }
+
+                    if ((int)$twoFactor === 1) {
+                        $code = (string)random_int(100000, 999999);
+                        [$sent, $mailError] = send_two_factor_code($email, $nombre, $code);
+
+                        if ($sent) {
+                            $_SESSION['pending_2fa'] = [
+                                'usuario_id' => $id_usuario,
+                                'nombre' => $nombre,
+                                'rol' => $rol,
+                                'email' => $email,
+                                'code_hash' => password_hash($code, PASSWORD_DEFAULT),
+                                'expires_at' => time() + 600,
+                            ];
+                            $showTwoFactorForm = true;
+                            $mensaje = "Te enviamos un codigo de 6 digitos a tu correo.";
+                        } else {
+                            $mensaje = "No se pudo enviar el codigo de verificacion: " . $mailError;
+                        }
+                    } else {
+                        session_regenerate_id(true);
+                        $_SESSION['usuario_id'] = $id_usuario;
+                        $_SESSION['nombre'] = $nombre;
+                        $_SESSION['rol'] = $rol;
+                        $_SESSION['login_time'] = time();
+                        $mensaje = "Inicio de sesión exitoso. Bienvenido a CineBlog.";
+                        // Aquí podrías redirigir si quieres (ya implementado):
+                        header("Location: index.php");
+                        exit();
+                    }
                 } else {
                     // Contraseña incorrecta
                     $mensaje = "Contraseña incorrecta.";
@@ -53,6 +176,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->close();
         }
     }
+    }
 }
 
 $conn->close();
@@ -64,6 +188,7 @@ $conn->close();
     <head>
         <meta charset="UTF-8"> <!-- Esto es para que se muestren correctamente los caracteres especiales -->
         <title>CineBlog - Inicio de sesión</title>
+        <link rel="stylesheet" href="css/style_switch.css">
         <link rel="stylesheet" href="css/styles_inicioSesion.css"> <!-- Enlaza con tu archivo CSS para estilos personalizados -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"> <!-- Librería de bootstrap icons -->
         <!-- 🔹 Estilos globales de tema -->
@@ -80,9 +205,9 @@ $conn->close();
         </div>
         <div class="container">
 
-        <a href="seleccion.php" class="btn-regresar">
-    <i class="bi bi-arrow-left-circle"></i> Regresar
-</a>
+            <a href="seleccion.php" class="btn-regresar">
+                <i class="bi bi-arrow-left-circle"></i> Regresar
+            </a>
         
             <div class="logo">
                 <img src="css/cineBlog_Logo.png" alt="Logo CineBlog"> <!-- Tener un logo.png en el proyecto -->
@@ -90,7 +215,17 @@ $conn->close();
             </div>
 
             <!-- Formulario de inicio de sesión -->
-            <h2>Inicio de sesión</h2>
+            <h2><?php echo $showTwoFactorForm ? 'Verificacion en dos pasos' : 'Inicio de sesion'; ?></h2>
+            <?php if ($showTwoFactorForm): ?>
+            <form method="POST">
+                <label for="two_factor_code">Codigo enviado a tu correo:</label>
+                <input type="text" id="two_factor_code" name="two_factor_code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+                <button type="submit" name="verify_2fa" value="1">Verificar codigo</button>
+                <footer>
+                    <p>Si no recibiste el codigo, vuelve a iniciar sesion para generar uno nuevo.</p>
+                </footer>
+            </form>
+            <?php else: ?>
             <form method="POST">
                 <label for="email">Correo electrónico:</label>
                 <!-- CAMBIO EN EL FORMULARIO: type="email" + required + pattern -->
@@ -114,10 +249,11 @@ $conn->close();
                 </footer>
                 
             </form>
+            <?php endif; ?>
 
             <!-- Mensaje para saber si puede iniciar sesión -->
              <?php if (!empty($mensaje)) : ?>
-                <p style="color: red; margin-top: 15px;"><?php echo $mensaje; ?></p>
+                <p class="form-message"><?php echo $mensaje; ?></p>
             <?php endif; ?>
             
         </div>

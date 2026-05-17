@@ -11,12 +11,23 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == "sesion_cerrada") {
 <head>
     <meta charset="UTF-8">
     <title>Cineblog - Acceso</title>
+    <link rel="stylesheet" href="css/style_switch.css">
     <link rel="stylesheet" href="css/styles_seleccion.css">
     <!-- 🔹 Estilos globales de tema -->
     <link rel="stylesheet" href="css/temas.css">
     <!-- 🔹 Script global de tema -->
     <script src="js/temas.js" defer></script>
 </head>
+<style>
+  a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  a:hover{
+    text-decoration: none;
+    color: white;
+  }
+</style>
 <body>
     <!-- 🔹 Switch de tema (arriba a la derecha) -->
     <div class="theme-toggle">
@@ -24,29 +35,7 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == "sesion_cerrada") {
         <label for="theme-switch" class="switch"></label>
     </div>
 
-    <style>
-        a {
-            text-decoration: none;
-            color: #dcd9d9;
-        }
-        .alerta_exito {
-            background-color: #0d1e2f;   
-            color: #dcd9d9;              
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px solid #130f31;
-            font-weight: bold;
-            margin-bottom: 20px;
-            animation: fadeOut 4s forwards; 
-            
-
-            @keyframes fadeOut {
-            0% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; display: none; }
-            }
-        }
-    </style>
+    <!-- Estilos de enlace y alerta movidos a css/styles_seleccion.css -->
     <!-- Mensaje de sesión cerrada -->
     <div class="alerta_exito">
             <?php echo $mensaje; ?>

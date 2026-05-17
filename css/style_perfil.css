@@ -7,6 +7,32 @@ a:hover{
     color: white;
 }
 
+.card {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.profile-settings-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(111, 211, 255, 0.24);
+    background: rgba(111, 211, 255, 0.08);
+    color: #d9ecff;
+    font-weight: 800;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-settings-link:hover {
+    transform: translateY(-1px);
+    border-color: rgba(111, 211, 255, 0.48);
+    background: rgba(111, 211, 255, 0.14);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.24);
+}
+
 .alert {
         padding: 10px;
         margin: 10px;
@@ -60,7 +86,7 @@ a:hover{
     font-size: 2rem;
     margin: 0;
     font-weight: 800;
-    color: var(--text);
+    color: #edf1f7;
 }
 
 .current-picture {

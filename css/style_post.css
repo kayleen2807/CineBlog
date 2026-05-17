@@ -2,7 +2,10 @@
   --post-border: rgba(88,211,255,.38);
   --post-panel: rgba(16,28,45,.92);
 }
-
+.card {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
 .post-wrap{
   width: min(1040px, 100%);
   margin: 0 auto;

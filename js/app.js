@@ -236,8 +236,85 @@ setupFlash(".tab", { preventDefault: true, durationMs: 1600 });
 setupFlash(".stat[data-stat]");
 setupFlash(".metric-btn", { durationMs: 1600 });
 setupExclusiveActive(".tags .tag");
+function normalizeFilterValue(value) {
+    return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function applyFeedFilters() {
+    const feed = document.querySelector(".feed-inner");
+    const cards = Array.from(document.querySelectorAll(".post-card"));
+    if (!feed || !cards.length) return;
+
+    const activeType = feed.dataset.activeType || feed.dataset.initialType || "movies";
+    const activeCat = normalizeFilterValue(feed.dataset.activeCat || feed.dataset.initialCat || "");
+
+    cards.forEach((card) => {
+        const cardType = card.dataset.type || "movie";
+        const typeMatches = activeType === "series" ? cardType === "series" : cardType !== "series";
+        const cats = String(card.dataset.cats || "").split("|").map(normalizeFilterValue).filter(Boolean);
+        const catMatches = activeCat === "" || cats.includes(activeCat);
+        card.hidden = !(typeMatches && catMatches);
+    });
+
+    const visibleCount = cards.filter((card) => !card.hidden).length;
+    let empty = feed.querySelector(".feed-filter-empty");
+    if (!empty) {
+        empty = document.createElement("div");
+        empty.className = "feed-empty feed-filter-empty";
+        empty.textContent = "No hay publicaciones para este filtro.";
+        feed.appendChild(empty);
+    }
+    empty.hidden = visibleCount > 0;
+}
+
+window.selType = function selType(button, type) {
+    const feed = document.querySelector(".feed-inner");
+    if (!feed) return;
+    feed.dataset.activeType = type === "series" ? "series" : "movies";
+    document.querySelectorAll(".type-btn").forEach((item) => item.classList.remove("active"));
+    if (button) button.classList.add("active");
+    applyFeedFilters();
+};
+
+window.selPill = function selPill(pill) {
+    const feed = document.querySelector(".feed-inner");
+    if (!feed || !pill) return;
+    const wasOn = pill.classList.contains("on");
+    document.querySelectorAll(".pill").forEach((item) => item.classList.remove("on"));
+    if (wasOn) {
+        feed.dataset.activeCat = "";
+    } else {
+        pill.classList.add("on");
+        feed.dataset.activeCat = normalizeFilterValue(pill.textContent);
+    }
+    applyFeedFilters();
+};
+
+function setupFeedFilters() {
+    const feed = document.querySelector(".feed-inner");
+    if (!feed) return;
+    feed.dataset.activeType = feed.dataset.initialType || "movies";
+    feed.dataset.activeCat = feed.dataset.initialCat || "";
+
+    document.addEventListener("click", (event) => {
+        const cat = event.target.closest(".post-cat[data-cat]");
+        if (!cat) return;
+        const value = normalizeFilterValue(cat.dataset.cat || cat.textContent);
+        const pill = Array.from(document.querySelectorAll(".pill")).find((item) => normalizeFilterValue(item.textContent) === value);
+        if (pill) window.selPill(pill);
+    });
+
+    applyFeedFilters();
+}
+
 setupImageFallback();
 setupShowMore();
+setupFeedFilters();
 
 // Funcion para configurar la funcionalidad de "Me gusta" en las publicaciones/posts
 function setupLikes() {

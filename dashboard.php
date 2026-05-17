@@ -57,6 +57,7 @@ $conn->close();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Admin - CineBlog</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style_switch.css">
   <link rel="stylesheet" href="css/styles_dashboard.css">
   <link rel="stylesheet" href="css/styles_inicio.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -80,11 +81,6 @@ $conn->close();
   }
 </style>
 <body>
-<!-- 🔹 Switch de tema (arriba a la derecha) -->
-  <div class="theme-toggle">
-    <input type="checkbox" id="theme-switch">
-    <label for="theme-switch" class="switch"></label>
-  </div>
 <div class="cine-bg">
   <canvas id="cineBg"></canvas>
 </div>
@@ -95,6 +91,11 @@ $conn->close();
 <div class="main">
     <header class="topbar">
       <h1>Dashboard CineBlog</h1>
+      <!-- 🔹 Switch de tema (arriba a la derecha) -->
+      <div class="theme-toggle">
+          <input type="checkbox" id="theme-switch">
+          <label for="theme-switch" class="switch"></label>
+      </div>
     </header>
 
     <div class="feed">
@@ -136,6 +137,12 @@ $conn->close();
 <script src="js/app.js?v=3"></script>
 
 <script>
+  const themeAccent = window.getThemeColor ? window.getThemeColor('--primary') : '#4da6ff';
+  const themeText = window.getThemeColor ? window.getThemeColor('--color-text') : '#858585';
+  const themeLine = window.getThemeColor ? window.getThemeColor('--line') : 'rgba(255,255,255,0.06)';
+  const themeSuccess = window.getThemeColor ? window.getThemeColor('--success') : 'rgba(29,148,73,0.6)';
+  const themeDanger = window.getThemeColor ? window.getThemeColor('--danger') : 'rgba(191,42,42,0.6)';
+
   // Datos para el gráfico de posts por categoría
   const categorias = <?php echo json_encode($categorias); ?>;
   const totales = <?php echo json_encode($totales); ?>;
@@ -148,8 +155,8 @@ $conn->close();
       datasets: [{
         label: 'Posts por categoría',
         data: totales,
-        backgroundColor: 'rgba(50, 54, 161, 0.74)',
-        borderColor: 'rgb(9, 20, 39)',
+        backgroundColor: themeAccent,
+        borderColor: themeLine,
         borderWidth: 1
       }]
     },
@@ -157,7 +164,7 @@ $conn->close();
       responsive: true,
       plugins: {
         legend: { display: false },
-        title: { display: true, color: 'white', text: 'Distribución de publicaciones por categoría' }
+        title: { display: true, color: themeText, text: 'Distribución de publicaciones por categoría' }
       }
     }
   });
@@ -176,18 +183,18 @@ $conn->close();
         label: 'Usuarios por rol',
         data: totalesRoles,
         backgroundColor: [
-          'rgba(16, 66, 147, 0.6)', // azul para admin
-          'rgba(29, 148, 73, 0.6)',  // verde para user
-          'rgba(191, 42, 42, 0.6)'   // rojo si hubiera otro rol
+          themeAccent,
+          themeSuccess,
+          themeDanger
         ],
-        borderColor: 'rgba(198, 196, 196, 0.43)',
+        borderColor: themeLine,
         borderWidth: 1
       }]
     },
     options: {
       responsive: true,
       plugins: {
-        title: { display: true, color: 'white', text: 'Distribución de usuarios por rol' }
+        title: { display: true, color: themeText, text: 'Distribución de usuarios por rol' }
       }
     }
   });

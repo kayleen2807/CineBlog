@@ -6,6 +6,10 @@
   --primary:#3b82f6;
   --muted:#bac1cc;
 }
+.card {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
 
 a{
     text-decoration: none;
@@ -135,7 +139,6 @@ body{
 }
 .logo-text{ font-family:'Space Grotesk', sans-serif; font-size:2rem; font-weight:700; letter-spacing:2px; min-width:fit-content; }
 .logo-text span{ color:var(--primary); }
-.tendencies{ font-family:'Anton', sans-serif; letter-spacing:1.5px; font-size:1rem; color:var(--muted); text-decoration:underline; flex:0; cursor:pointer; }
 .search-wrap{
   display:flex; align-items:center; gap:8px;
   background:var(--card); padding:10px 12px;
