@@ -99,9 +99,9 @@ $result = $conn->query($sql);
                         <td><?= htmlspecialchars($row['categorias']) ?></td>
                         <td><?= $row['fecha'] ?></td>
                         <td>
-                            <a href="editar_post.php?id=<?= $row['id_post'] ?>">Editar</a> |
+                            <a href="editar_post.php?id=<?= $row['id_post'] ?>&from=posts">Editar</a> |
                             <a href="eliminar_post.php?id=<?= $row['id_post'] ?>" onclick="return confirm('¿Seguro que quieres eliminar este post?')">Eliminar</a> |
-                            <a href="post.php?id_post=<?= $row['id_post'] ?>">Ver publicación</a>
+                            <a href="post.php?id=<?= $row['id_post'] ?>">Ver publicación</a>
                         </tr>
                     <?php endwhile; ?>
                     </tbody>

@@ -155,7 +155,7 @@ $conn->close();
             </div>
              <!-- Enlace a los ajustes de cuenta, solo visible si el usuario está viendo su propio perfil, para permitir al usuario acceder a la configuración de su cuenta desde su perfil -->
             <?php if ($esPropio): ?>
-                <a class="profile-settings-link" href="ajustes.php" aria-label="Abrir ajustes de cuenta" style="margin-right: 170px; margin-top: 60px;">⚙️ Ajustes</a>
+                <a class="profile-settings-link" href="ajustes.php" aria-label="Abrir ajustes de cuenta" style="margin-right: 100px;">⚙️ Ajustes</a>
             <?php endif; ?>
         </nav>
         <!-- Contenedor principal del perfil, con una sección para mostrar la foto de perfil y acciones relacionadas (cambiar foto, eliminar foto) -->
@@ -204,7 +204,7 @@ $conn->close();
                             $img = $imgs[0];
                         }
                         $pid = (int)($p['id_post'] ?? 0);
-                        $postUrl = "post.php?id_post=" . $pid . "&perfil=" . $idPerfil;
+                        $postUrl = "post.php?id=" . $pid . "&perfil=" . $idPerfil;
                         $isLiked = $pid && isset($likedPosts[$pid]);
                         $comments = $pid && isset($commentsByPost[$pid]) ? $commentsByPost[$pid] : [];
                     ?>

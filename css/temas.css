@@ -377,6 +377,10 @@ body.light-theme .hero-main h1{
   color: white;
 }
 
+body.light-theme .hero-main {
+  color: #d9e7fb;
+}
+
 body.light-theme .stat{
   color: white;
 }
@@ -631,4 +635,27 @@ body.light-theme .btn-secondary {
 
 body.light-theme .btn-secondary:hover {
   background: #9eadbd;
+}
+
+body.light-theme .overview{
+  color: #d9e7fb;
+}
+
+body.light-theme .btn-back {
+  background: var(--perfil-bt-light);
+  color: var(--text-light);
+}
+
+body.light-theme .btn-back:hover {
+  background: #4da6ff;
+  color: #fff;
+}
+
+body.light-theme .form-group label{
+  color: #333;
+}
+
+body.light-theme .form-group textarea{
+  color: #333;
+  background: #b2c6de;
 }

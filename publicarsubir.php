@@ -13,7 +13,7 @@ if (!isset($_SESSION['usuario_id'])) {
 
 // 🔹 Solo editores y admins pueden publicar
 $rol = $_SESSION['rol'] ?? 'visitante';
-if ($rol !== 'editor' && $rol !== 'admin') {
+if ($rol !== 'editor' && $rol !== 'admin' && $rol !== 'moderador') {
     header("Location: inicioSesion.php");
     exit();
 }

@@ -234,7 +234,7 @@ try {
       <div class="sb-item">⚙️ <a href="ajustes.php">Configuración</a></div>
       <?php elseif ($rol == "moderador") : ?>
         <div class="sb-item">🔔 <span>Notificaciones</span></div>
-        <div class="sb-item">🕹️ <span><a href="moderador.php">Moderación</a></span></div>
+        <div class="sb-item">🕹️ <span><a href="reportes.php">Moderación</a></span></div>
         <div class="sb-item">⚙️ <a href="ajustes.php">Configuración</a></div>
     <?php endif; ?>
     <!-- Culaquier rol puede cerrar sesion-->
@@ -313,7 +313,7 @@ try {
                             <!-- Encabezado de la publicación / post , contiene foto de perfil, nombre del autor y fecha -->
                             <img src="uploads/<?= $p['autor_foto'] ?: 'default.png' ?>" alt="Foto de <?= $p['autor'] ?>" class="avatar">
                             <div class="post-author"><?php echo htmlspecialchars($p['autor'] ?? '', ENT_QUOTES, 'UTF-8'); ?></div>
-                            <?php if ($rol == "editor" || $rol == "admin") : ?>
+                            <?php if ($rol == "editor" || $rol == "admin" || $rol == "moderador") : ?>
                               <a href="perfil.php?id= <?= $p['autor_id'] ?>" class="btn-perfil">Ver Perfil</a>
                             <?php endif; ?>
                             <div class="post-date"><?php echo htmlspecialchars(format_fecha_sin_segundos($p['fecha'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
@@ -405,8 +405,8 @@ try {
                                 <div class="options-menu">
                                   <?php if ($p['autor_id'] == $_SESSION['usuario_id']) : ?>
                                     <!-- Opciones para publicaciones propias -->
-                                    <a href="editar_post.php?id=<?= $p['id_post'] ?>" class="option-item">✏️ Editar publicación</a>
-                                    <a href="eliminar_post.php?id=<?= $p['id_post'] ?>" class="option-item" onclick="return confirm('¿Seguro que quieres borrar esta publicación?')">🗑️ Borrar publicación</a>
+                                    <a href="editar_post.php?id=<?= $p['id_post'] ?>&from=index" class="option-item">✏️ Editar publicación</a>
+                                    <a href="eliminar_post.php?id=<?= $p['id_post'] ?>&from=index" class="option-item" onclick="return confirm('¿Seguro que quieres borrar esta publicación?')">🗑️ Borrar publicación</a>
                                   <?php else : ?>
                                     <!-- Opción para publicaciones ajenas -->
                                     <a href="reportar_post.php?id=<?= $p['id_post'] ?>" class="option-item">🚩 Reportar publicación</a>

@@ -178,12 +178,19 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
         <main class="post-wrap">
             <?php if ($rol == "editor") : ?>
                 <a class="back-link" href="perfil.php?id=<?= $idPerfil ?>">← Volver al perfil</a>
-            <!-- Si el rol es admin lo regresa a su dashboard/panel dependiendo si entro desde su pnale o desde el perfil -->
             <?php elseif ($rol == "admin") : ?>
                 <?php if (isset($_GET['perfil'])): ?>
                     <a class="back-link" href="perfil.php?id=<?= $idPerfil ?>">← Volver al perfil</a>
+                <?php elseif (isset($_GET['from']) && $_GET['from'] === 'reportes'): ?>
+                    <a class="back-link" href="reportes.php">← Volver a reportes</a>
                 <?php else: ?>
                     <a class="back-link" href="posts.php">← Volver al panel de administración</a>
+                <?php endif; ?>
+            <?php elseif ($rol == "moderador") : ?>
+                <?php if (isset($_GET['perfil'])): ?>
+                    <a class="back-link" href="perfil.php?id=<?= $idPerfil ?>">← Volver al perfil</a>
+                <?php else: ?>
+                    <a class="back-link" href="reportes.php">← Volver a reportes</a>
                 <?php endif; ?>
             <?php endif; ?>
             <!-- Si hubo un error al cargar los datos del post, se muestra un mensaje de error en lugar del contenido del post -->
