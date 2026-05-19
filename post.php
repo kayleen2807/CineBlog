@@ -171,7 +171,10 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
     <!-- 🔹 Switch de tema (arriba a la derecha) -->
     <div class="theme-toggle" style="margin-right: 50px; margin-top: 30px">
         <input type="checkbox" id="theme-switch">
-        <label for="theme-switch" class="switch"></label>
+        <label for="theme-switch" class="switch">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+        </label>
     </div>
     <div class="page-shell">
         <!-- Cabecera del sitio, con el logo y un enlace al perfil del usuario -->
