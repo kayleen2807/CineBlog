@@ -153,8 +153,8 @@ body{
 }
 
 .topbar{
-  display:flex;
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns:auto minmax(0, 1fr) auto;
   align-items:center;
   padding:20px;
   border-bottom:1px solid rgba(9, 82, 201, 0.15);
@@ -164,7 +164,8 @@ body{
   position: relative;
   z-index: 30;
 }
-.logo-stack{ display:flex; align-items:center; gap:12px; }
+
+.logo-stack{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
 .logo-mark{
   width:48px;
   height:48px;
@@ -176,19 +177,23 @@ body{
 .search-wrap{
   display:flex; align-items:center; gap:8px;
   background:var(--card); padding:10px 12px;
-  border-radius:8px; flex:1; max-width:300px;
+  border-radius:8px; width:min(100%, 520px);
+  min-width:0;
+  flex:0 1 auto;
   position:relative;
   z-index: 40;
+  justify-self:center;
+}
+
+.theme-icon-toggle{
+  justify-self:end;
+  position: relative;
 }
 .search-wrap input{
   background:transparent; border:none; padding:0;
   color:white; width:100%; font-size:0.9rem; outline:none;
 }
 .search-wrap input::placeholder{ color:var(--muted); }
-
-.theme-icon-toggle {
-  position: relative;
-}
 
 .theme-toggle-btn {
   display: inline-flex;

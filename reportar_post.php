@@ -26,7 +26,10 @@ if ($id_usuario === 0) {
   <!-- 🔹 Switch de tema (arriba a la derecha) -->
       <div class="theme-toggle" style="margin-top: 10px">
           <input type="checkbox" id="theme-switch">
-          <label for="theme-switch" class="switch"></label>
+          <label for="theme-switch" class="switch">
+              <span class="icon-sun">☀️</span>
+              <span class="icon-moon">🌙</span>
+          </label>
       </div>
   <div class="form-container">
     <h2>🚩 Reportar publicación</h2>

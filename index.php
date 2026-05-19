@@ -177,6 +177,15 @@ try {
   }
 </style>
 <body>
+<!-- 🔹 Switch de tema (arriba a la derecha) -->
+<div class="theme-toggle">
+    <input type="checkbox" id="theme-switch">
+    <label for="theme-switch" class="switch">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+    </label>
+</div>
+
 <div class="cine-bg">
   <canvas id="cineBg"></canvas>
 </div>
@@ -258,6 +267,12 @@ try {
         <img class="logo-mark" src="css/cineBlog_Logo.png" alt="Logo CineBlog">
         <div class="logo-text">CineBlog</div>
       </div>
+      <!-- Barra de búsqueda-->
+      <div class="search-wrap">
+        <!-- El buscador utiliza la API de TMDB para buscar películas o series -->
+        🔍 <input type="text" id="tmdbGlobalSearch" placeholder="Busca peliculas o series...">
+        <div class="search-results" id="tmdbGlobalResults" aria-live="polite"></div>
+      </div>
 
       <!-- 🔹 Toggle de tema con sol/luna -->
       <div class="theme-toggle theme-icon-toggle">
@@ -266,13 +281,6 @@ try {
           <span class="theme-icon sun" aria-hidden="true">☀</span>
           <span class="theme-icon moon" aria-hidden="true">🌙</span>
         </label>
-      </div>
-      <!-- Barra de búsqueda-->
-      <div class="search-wrap" style="margin-right: 70px;">
-        <!-- El buscador utiliza la API de TMDB para buscar películas o series -->
-        🔍 <input type="text" id="tmdbGlobalSearch" placeholder="Busca peliculas o series...">
-        <div class="search-results" id="tmdbGlobalResults" aria-live="polite"></div>
-        
       </div>
     </header>
     <!-- Feed de publicaciones -->

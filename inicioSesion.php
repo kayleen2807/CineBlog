@@ -27,6 +27,8 @@ $mailConfig = null;
 $mailConfigPath = 'C:\\xampp\\config\\cineblog_mail.php';
 if (file_exists($mailConfigPath)) {
     $mailConfig = require $mailConfigPath;
+    $GLOBALS['mailConfig'] = $mailConfig;
+    $GLOBALS['mailerAvailable'] = $mailerAvailable;
 }
 
 if (isset($_GET['debug_db'])) {
@@ -58,8 +60,22 @@ function send_two_factor_code(string $email, string $nombre, string $code): arra
         $mail->SMTPSecure = (string)($mailConfig['secure'] ?? 'tls');
         $mail->Port = (int)($mailConfig['port'] ?? 587);
 
-        $caFile = 'C:\\xampp\\php\\extras\\ssl\\cacert.pem';
-        if (file_exists($caFile)) {
+        // Buscar el archivo de certificados CA en ubicaciones comunes de XAMPP
+        $possiblePaths = [
+            'C:\\xampp\\php\\extras\\ssl\\cacert.pem',
+            __DIR__ . '\\..\\..\\php\\extras\\ssl\\cacert.pem',
+        ];
+        
+        $caFile = null;
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                $caFile = $path;
+                break;
+            }
+        }
+        
+        $verifySsl = (bool)($mailConfig['verify_ssl'] ?? false);
+        if ($verifySsl && $caFile) {
             $mail->SMTPOptions = [
                 'ssl' => [
                     'verify_peer' => true,
@@ -68,6 +84,7 @@ function send_two_factor_code(string $email, string $nombre, string $code): arra
                 ],
             ];
         } else {
+            // En desarrollo o sin certificado, desactiva la verificación
             $mail->SMTPOptions = [
                 'ssl' => [
                     'verify_peer' => false,
@@ -225,7 +242,10 @@ $conn->close();
         <!-- 🔹 Switch de tema (arriba a la derecha) -->
         <div class="theme-toggle">
             <input type="checkbox" id="theme-switch">
-            <label for="theme-switch" class="switch"></label>
+            <label for="theme-switch" class="switch">
+                <span class="icon-sun">☀️</span>
+                <span class="icon-moon">🌙</span>
+            </label>
         </div>
         <div class="container">
 

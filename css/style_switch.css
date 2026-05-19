@@ -2,34 +2,67 @@
   position: absolute;
   top: 15px;
   right: 20px;
+  z-index: 1000;
 }
 
 .switch {
-  width: 50px;
-  height: 25px;
+  width: 70px;
+  height: 36px;
   background: #444;
   border-radius: 25px;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   position: relative;
   cursor: pointer;
+  padding: 2px 6px;
+  transition: background 0.3s;
+  box-sizing: border-box;
 }
 
 .switch::after {
   content: '';
-  width: 21px;
-  height: 21px;
+  width: 28px;
+  height: 28px;
   background: #fff;
   border-radius: 50%;
   position: absolute;
-  top: 2px;
-  left: 2px;
-  transition: 0.3s;
+  top: 4px;
+  left: 4px;
+  transition: left 0.3s ease;
+  z-index: 10;
+}
+
+#theme-switch:checked + .switch {
+  background: #1a5f99;
 }
 
 #theme-switch:checked + .switch::after {
-  left: 27px;
-  background: #007bff;
+  left: 38px;
 }
+
+.icon-sun {
+  font-size: 16px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+}
+
+.icon-moon {
+  font-size: 16px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+}
+
 /* Ocultar el checkbox real */
 #theme-switch {
   display: none;

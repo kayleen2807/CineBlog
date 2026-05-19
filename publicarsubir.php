@@ -619,7 +619,10 @@ $existingImagesJson = htmlspecialchars(json_encode($existingImages), ENT_QUOTES,
                 <!-- 🔹 Switch de tema (arriba a la derecha) -->
                 <div class="theme-toggle"style="margin-right: 55px; margin-top: 15px;">
                     <input type="checkbox" id="theme-switch">
-                    <label for="theme-switch" class="switch"></label>
+                    <label for="theme-switch" class="switch">
+                        <span class="icon-sun">☀️</span>
+                        <span class="icon-moon">🌙</span>
+                    </label>
                 </div>
                 <a class="ps-close" href="<?php echo htmlspecialchars($cancelHref, ENT_QUOTES, 'UTF-8'); ?>" aria-label="Cerrar">×</a>
             </header>

@@ -32,7 +32,10 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == "sesion_cerrada") {
     <!-- 🔹 Switch de tema (arriba a la derecha) -->
     <div class="theme-toggle">
         <input type="checkbox" id="theme-switch">
-        <label for="theme-switch" class="switch"></label>
+        <label for="theme-switch" class="switch">
+            <span class="icon-sun">☀️</span>
+            <span class="icon-moon">🌙</span>
+        </label>
     </div>
 
     <!-- Estilos de enlace y alerta movidos a css/styles_seleccion.css -->
@@ -57,20 +60,16 @@ if (isset($_GET['mensaje']) && $_GET['mensaje'] == "sesion_cerrada") {
         
         <!--Botones de acceso (usuario y visitante) -->
         <div class="options">
-            <div class="container1">
+            <a href="visitante.php" class="container1">
                 <div class="icon">👤</div>
                 <h3>Visitante</h3>
-                <a href="visitante.php">
                 <p>Acceso limitado sin registro</p>
-                </a>
-            </div>
-            <div class="container1">
+            </a>
+            <a href="inicioSesion.php" class="container1">
                 <div class="icon">👥</div>
                 <h3>Usuario</h3>
-                <a href="inicioSesion.php">
-                    <p>Usuarios ya registrados</p>
-                </a>
-            </div>
+                <p>Usuarios ya registrados</p>
+            </a>
         </div>
     </div>
 </body>
