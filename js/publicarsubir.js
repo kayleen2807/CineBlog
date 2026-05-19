@@ -25,6 +25,14 @@
 
   const MAX = 4;
   const MAX_CATS = 3;
+  const existingImages = (() => {
+    try {
+      return JSON.parse(thumbs?.dataset.existingImages || "[]");
+    } catch {
+      return [];
+    }
+  })();
+  const existingCount = Array.isArray(existingImages) ? existingImages.length : 0;
 
   // Función para actualizar el contador de caracteres del campo de contenido, mostrando la cantidad actual de caracteres y el límite máximo permitido
   function updateCount() {
@@ -68,10 +76,21 @@
     return wrap;
   }
 
+  function buildExistingThumb(src, idx) {
+    const wrap = document.createElement("div");
+    wrap.className = "ps-thumb is-existing";
+    const img = document.createElement("img");
+    img.alt = `Imagen existente ${idx + 1}`;
+    img.src = src;
+    wrap.appendChild(img);
+    return wrap;
+  }
+
   // Función para sincronizar la selección de archivos con el input de archivos
   function syncFromFiles(files) {
     if (!fileInput) return;
-    const list = Array.from(files || []).slice(0, MAX);
+    const maxNew = Math.max(MAX - existingCount, 0);
+    const list = Array.from(files || []).slice(0, maxNew);
     const dt = new DataTransfer();
     list.forEach((f) => dt.items.add(f));
     fileInput.files = dt.files;
@@ -83,9 +102,13 @@
     if (!fileInput || !thumbs) return;
     const files = Array.from(fileInput.files || []);
     clearThumbs();
-    setImagesCount(files.length);
+    existingImages.forEach((src, idx) => {
+      thumbs.appendChild(buildExistingThumb(src, idx));
+    });
+    setImagesCount(existingCount + files.length);
 
-    files.slice(0, MAX).forEach((file, idx) => {
+    const maxNew = Math.max(MAX - existingCount, 0);
+    files.slice(0, maxNew).forEach((file, idx) => {
       thumbs.appendChild(
         buildThumb(file, idx, (removeIdx) => {
           const next = files.filter((_, i) => i !== removeIdx);
@@ -135,16 +158,17 @@
       );
       if (!files.length) return;
 
+      const maxNew = Math.max(MAX - existingCount, 0);
       const merged = [
         ...Array.from(fileInput.files || []),
         ...files,
-      ].slice(0, MAX);
+      ].slice(0, maxNew);
       syncFromFiles(merged);
     });
   }
 
   // Inicializar el contador de imágenes seleccionadas y renderizar las miniaturas correspondientes a los archivos seleccionados inicialmente (si los hay)
-  setImagesCount(0);
+  setImagesCount(existingCount);
   renderThumbs();
 
   // Categorías que deja seleccionar 8solo 3()
@@ -159,6 +183,34 @@
     });
 
     if (catCount) catCount.textContent = `Categorías: ${selected.length} / ${MAX_CATS}`;
+  }
+
+  function enforceTypeCategory(mediaType) {
+    if (!catGrid) return;
+    const boxes = Array.from(catGrid.querySelectorAll('input[type="checkbox"]'));
+    const serieBox = boxes.find((b) => b.value === "Serie");
+    const peliBox = boxes.find((b) => b.value === "Película");
+    if (!serieBox || !peliBox) return;
+
+    let required = null;
+    if (mediaType === "tv") required = serieBox;
+    if (mediaType === "movie") required = peliBox;
+    if (!required) return;
+
+    const other = required === serieBox ? peliBox : serieBox;
+    if (other.checked) other.checked = false;
+    if (!required.checked) required.checked = true;
+
+    let checkedCount = boxes.filter((b) => b.checked).length;
+    if (checkedCount > MAX_CATS) {
+      const removable = boxes.filter((b) => b.checked && b !== required);
+      for (let i = 0; i < removable.length && checkedCount > MAX_CATS; i++) {
+        removable[i].checked = false;
+        checkedCount--;
+      }
+    }
+
+    updateCatsUI();
   }
 
   if (catGrid) {
@@ -182,6 +234,7 @@
       if (tmdbPosterField) tmdbPosterField.value = "";
       if (tmdbReleaseDateField) tmdbReleaseDateField.value = "";
       if (tmdbOverviewField) tmdbOverviewField.value = "";
+      if (tmdbTypeFilter) tmdbTypeFilter.value = "multi";
       return;
     }
 
@@ -191,6 +244,9 @@
     if (tmdbPosterField) tmdbPosterField.value = String(item.poster_url || "");
     if (tmdbReleaseDateField) tmdbReleaseDateField.value = String(item.release_date || "");
     if (tmdbOverviewField) tmdbOverviewField.value = String(item.overview || "");
+    if (tmdbTypeFilter && (item.media_type === "movie" || item.media_type === "tv")) {
+      tmdbTypeFilter.value = item.media_type;
+    }
   }
 
   function readSelectedTmdb() {
@@ -232,6 +288,8 @@
       setResultsVisible(true);
       return;
     }
+
+    enforceTypeCategory(item.media_type);
 
     const labelType = item.media_type === "tv" ? "Serie" : "Pelicula";
     const year = yearFromDate(item.release_date);

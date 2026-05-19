@@ -6,20 +6,39 @@ session_start();
 include 'includes/conexion.php';
 
 $mensaje = "";
+$debugDbInfo = '';
+
+if (isset($_GET['debug_db'])) {
+    $res = $conn->query("SELECT DATABASE() AS db, @@hostname AS host, @@port AS port");
+    if ($res && ($row = $res->fetch_assoc())) {
+        $debugDbInfo = "DB: " . $row['db'] . " @ " . $row['host'] . ":" . $row['port'];
+    }
+}
+
+$serverHost = (string)($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? '');
+$isLocalHost = in_array($serverHost, ['localhost', '127.0.0.1'], true);
+$shouldCheckMx = !$isLocalHost;
 
 // Validar que el formulario se haya enviado
 if($_SERVER["REQUEST_METHOD"] == "POST"){
-    $nombre = $_POST['nombre'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-    $fecha_nacimiento = $_POST['fecha_nacimiento'];
+    $nombre = trim((string)($_POST['nombre'] ?? ''));
+    $email = trim((string)($_POST['email'] ?? ''));
+    $email = strtolower($email);
+    $password = (string)($_POST['password'] ?? '');
+    $confirm_password = (string)($_POST['confirm_password'] ?? '');
+    $fecha_nacimiento = (string)($_POST['fecha_nacimiento'] ?? '');
 
     // Validación de fecha de nacimiento
     $fecha_actual = new DateTime();
-    $fecha_nac = new DateTime($fecha_nacimiento);
+    try {
+        $fecha_nac = new DateTime($fecha_nacimiento);
+    } catch (Exception $e) {
+        $fecha_nac = null;
+    }
 
-    if ($fecha_nac > $fecha_actual) {
+    if (!$fecha_nac) {
+        $mensaje = "La fecha de nacimiento no es valida.";
+    } elseif ($fecha_nac > $fecha_actual) {
         $mensaje = "La fecha de nacimiento no puede ser posterior a la actual."; // Agregado.
     } else {
         $edad = $fecha_actual->diff($fecha_nac)->y;
@@ -32,7 +51,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             } else {
                 // VALIDACIÓN DE DOMINIO DEL CORREO (MX records)
                 $dominio = substr(strrchr($email, "@"), 1);
-                if (!checkdnsrr($dominio, "MX")) {
+                if ($shouldCheckMx && function_exists('checkdnsrr') && !checkdnsrr($dominio, "MX")) {
                     $mensaje = "El dominio del correo no existe.";
                 } else {
                     // Validar que la contraseña cumpla requisitos de seguridad
@@ -43,31 +62,46 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                         $mensaje = "Las contraseñas no coinciden.";
                     } else {
                         // Verificar si el correo ya está registrado
-                        $stmt = $conn->prepare("SELECT id_usuario FROM usuarios WHERE email = ?");
-                        $stmt->bind_param("s", $email);
-                        $stmt->execute();
-                        $stmt->store_result();
-
-                        if($stmt->num_rows > 0){
-                            $mensaje = "El correo ya está registrado.";
-                        } else {
-                            // Insertar nuevo usuario con contraseña hasheada
-                            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-                            $rol = 'editor';
-                            
-                            $stmt_insert = $conn->prepare("INSERT INTO usuarios (nombre, email, contraseña, fecha_nac, rol) VALUES (?, ?, ?, ?, ?)");
-                            $stmt_insert->bind_param("sssss", $nombre, $email, $hashed_password, $fecha_nacimiento, $rol);
-
-                            if($stmt_insert->execute()){
-                                $mensaje = "Registro exitoso. Ahora puedes iniciar sesión.";
-                                header("Location: inicioSesion.php");
-                                exit();
+                            $stmt_check = $conn->prepare("SELECT id_usuario FROM usuarios WHERE email = ? LIMIT 1");
+                            if (!$stmt_check) {
+                                $mensaje = "Error al validar el correo: " . $conn->error;
                             } else {
-                                $mensaje = "Error al registrar: " . $stmt_insert->error;
+                                $stmt_check->bind_param("s", $email);
+                                $stmt_check->execute();
+                                $stmt_check->store_result();
+
+                                if ($stmt_check->num_rows > 0) {
+                                    $mensaje = "La cuenta ya esta registrada.";
+                                } else {
+                                    // Insertar usuario con contraseña hasheada
+                                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                                    $rol = 'editor';
+
+                                    $stmt_insert = $conn->prepare(
+                                        "INSERT INTO usuarios (nombre, email, `contraseña`, fecha_nac, rol) 
+                                         VALUES (?, ?, ?, ?, ?)"
+                                    );
+                                    if (!$stmt_insert) {
+                                        $mensaje = "Error al preparar el registro: " . $conn->error;
+                                    } else {
+                                        $stmt_insert->bind_param("sssss", $nombre, $email, $hashed_password, $fecha_nacimiento, $rol);
+
+                                        if ($stmt_insert->execute()) {
+                                            $mensaje = "Registro exitoso. Ahora puedes iniciar sesion.";
+                                            header("Location: inicioSesion.php");
+                                            exit();
+                                        } else {
+                                            if ((int)$conn->errno === 1062) {
+                                                $mensaje = "La cuenta ya esta registrada.";
+                                            } else {
+                                                $mensaje = "Error al registrar: " . $stmt_insert->error;
+                                            }
+                                        }
+                                        $stmt_insert->close();
+                                    }
+                                }
+                                $stmt_check->close();
                             }
-                            $stmt_insert->close();
-                        }
-                        $stmt->close();
                     }
                 }
             }
@@ -108,15 +142,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             <form method='POST'>
             <!-- Formulario de registro con validación HTML5 y un botón para mostrar/ocultar contraseña -->
                 <label for="nombre">Nombre completo:</label>
-                <input type="text" id="nombre" name="nombre" required>
+                <input type="text" id="nombre" name="nombre" autocomplete="name" required>
 
                 <label for="email">Correo electrónico:</label>
-                <input type="email" id="email" name="email" required
+                <input type="email" id="email" name="email" autocomplete="email" required
                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
 
                 <label for="password">Contraseña (mínimo 8 caracteres, mayúscula, número y carácter especial):</label>
                 <div class="password-container">
-                    <input type="password" id="password" name="password" 
+                    <input type="password" id="password" name="password" autocomplete="new-password"
                         minlength="8" 
                         pattern="^(?=.*[A-Z])(?=.*[0-9])(?=.*[\W_]).{8,}$" 
                         title="Debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial" 
@@ -128,7 +162,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                 <label for="confirm_password">Confirmar contraseña:</label>
                 <div class="password-container">
-                    <input type="password" id="confirm_password" name="confirm_password" minlength="8" required>
+                    <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" minlength="8" required>
                     <span class="toggle-password" onclick="togglePassword('confirm_password')">
                         <i class="bi bi-eye"></i>
                     </span>
@@ -136,7 +170,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                 <label for="fecha_nacimiento">Fecha de nacimiento:</label>
                 <!-- 🔹 Evitar poner fechas futuras -->
-                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" 
+                  <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" autocomplete="bday"
                        max="<?php echo date('Y-m-d'); ?>" required>
 
                 <button type="submit">Registrarse</button>
@@ -145,6 +179,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             <!-- Mensaje de error o exito-->
             <?php if (!empty($mensaje)) : ?>
                 <p class="form-message"><?php echo $mensaje; ?></p>
+            <?php endif; ?>
+            <?php if (!empty($debugDbInfo)) : ?>
+                <p class="form-message"><?php echo htmlspecialchars($debugDbInfo, ENT_QUOTES, 'UTF-8'); ?></p>
             <?php endif; ?>
         </div>
 

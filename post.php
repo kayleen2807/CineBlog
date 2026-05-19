@@ -280,7 +280,7 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
                     </div>
                 </section>
             </article>
-        </main>
+                        </main>
     </div>
 
     <script src="js/app.js?v=5"></script>

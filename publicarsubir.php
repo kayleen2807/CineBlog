@@ -219,6 +219,59 @@ function safe_filename(string $name): string
     return trim($name, '._-') ?: 'archivo';
 }
 
+$editId = filter_var($_GET['edit'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
+$isEdit = $editId > 0;
+$returnTo = ($_GET['from'] ?? '') === 'perfil' ? 'perfil' : 'index';
+
+$editPost = null;
+$existingCats = [];
+$existingImages = [];
+$existingTmdb = null;
+
+if ($isEdit) {
+    $conn = db_connect();
+    ensure_post_tables($conn);
+
+    $stmt = $conn->prepare("SELECT id_post, titulo, contenido, autor_id FROM posts WHERE id_post = ?");
+    $stmt->bind_param("i", $editId);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $editPost = $res ? $res->fetch_assoc() : null;
+    $stmt->close();
+
+    if (!$editPost) {
+        $conn->close();
+        die("Publicacion no encontrada");
+    }
+
+    $autorId = (int)($editPost['autor_id'] ?? 0);
+    $canEdit = $rol === 'admin' || $rol === 'moderador' || (int)$_SESSION['usuario_id'] === $autorId;
+    if (!$canEdit) {
+        $conn->close();
+        die("Acceso denegado");
+    }
+
+    $resCats = $conn->query("SELECT categoria FROM post_categorias WHERE post_id = " . (int)$editId);
+    if ($resCats) {
+        while ($row = $resCats->fetch_assoc()) $existingCats[] = (string)$row['categoria'];
+        $resCats->free();
+    }
+
+    $resImgs = $conn->query("SELECT ruta FROM post_imagenes WHERE post_id = " . (int)$editId . " ORDER BY id_imagen ASC");
+    if ($resImgs) {
+        while ($row = $resImgs->fetch_assoc()) $existingImages[] = (string)$row['ruta'];
+        $resImgs->free();
+    }
+
+    $resTmdb = $conn->query("SELECT tmdb_id, media_type, titulo, poster_url, release_date, overview FROM post_tmdb WHERE post_id = " . (int)$editId . " LIMIT 1");
+    if ($resTmdb) {
+        $existingTmdb = $resTmdb->fetch_assoc() ?: null;
+        $resTmdb->free();
+    }
+
+    $conn->close();
+}
+
 #Lista de categorías permitidas para publicaciones
 $categorias = [
     'Película',
@@ -250,8 +303,54 @@ $oldTmdbPoster = trim((string)($_POST['tmdb_poster'] ?? ''));
 $oldTmdbRelease = trim((string)($_POST['tmdb_release_date'] ?? ''));
 $oldTmdbOverview = trim((string)($_POST['tmdb_overview'] ?? ''));
 
+if ($isEdit && $_SERVER['REQUEST_METHOD'] !== 'POST' && $existingTmdb) {
+    $oldTmdbId = (string)($existingTmdb['tmdb_id'] ?? '');
+    $oldTmdbType = (string)($existingTmdb['media_type'] ?? '');
+    $oldTmdbTitle = (string)($existingTmdb['titulo'] ?? '');
+    $oldTmdbPoster = (string)($existingTmdb['poster_url'] ?? '');
+    $oldTmdbRelease = (string)($existingTmdb['release_date'] ?? '');
+    $oldTmdbOverview = (string)($existingTmdb['overview'] ?? '');
+}
+
 // Manejo del formulario al enviar la publicación
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $editId = filter_var($_POST['edit_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
+    $isEdit = $editId > 0;
+    $returnTo = ($_POST['return_to'] ?? '') === 'perfil' ? 'perfil' : $returnTo;
+
+    if ($isEdit) {
+        $conn = db_connect();
+        ensure_post_tables($conn);
+
+        $stmt = $conn->prepare("SELECT autor_id, imagen FROM posts WHERE id_post = ?");
+        $stmt->bind_param("i", $editId);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $editPost = $res ? $res->fetch_assoc() : null;
+        $stmt->close();
+
+        if (!$editPost) {
+            $conn->close();
+            die("Publicacion no encontrada");
+        }
+
+        $autorId = (int)($editPost['autor_id'] ?? 0);
+        $canEdit = $rol === 'admin' || $rol === 'moderador' || (int)$_SESSION['usuario_id'] === $autorId;
+        if (!$canEdit) {
+            $conn->close();
+            die("Acceso denegado");
+        }
+
+        $existingImages = [];
+        $resImgs = $conn->query("SELECT ruta FROM post_imagenes WHERE post_id = " . (int)$editId);
+        if ($resImgs) {
+            while ($row = $resImgs->fetch_assoc()) $existingImages[] = (string)$row['ruta'];
+            $resImgs->free();
+        }
+
+        $conn->close();
+    }
+
     // Validación de campos de texto
     $titulo = trim((string)($_POST['titulo'] ?? ''));
     $contenido = trim((string)($_POST['contenido'] ?? ''));
@@ -307,22 +406,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Validar cantidad de imágenes seleccionadas
-        if ($selectedCount > $maxImages) {
+        $existingCount = $isEdit ? count($existingImages) : 0;
+        if ($selectedCount + $existingCount > $maxImages) {
             $mensaje = 'Solo puedes subir hasta 4 imágenes.';
         } else {
             $conn = db_connect();
             ensure_post_tables($conn);
-            // Insertar post sin imagen (se actualiza después) y sin categorías (se insertan después) para obtener el ID del post.
-            $stmt = $conn->prepare("INSERT INTO posts (titulo, contenido, autor_id, imagen) VALUES (?, ?, ?, NULL)");
-            $autorId = (int)$_SESSION['usuario_id'];
-            $stmt->bind_param("ssi", $titulo, $contenido, $autorId);
-            $ok = $stmt->execute();
+            // Insertar o actualizar post principal
+            if ($isEdit) {
+                if ($rol === 'admin') {
+                    $stmt = $conn->prepare("UPDATE posts SET titulo = ?, contenido = ?, editado_por_admin = 1 WHERE id_post = ?");
+                    $stmt->bind_param("ssi", $titulo, $contenido, $editId);
+                } else {
+                    $stmt = $conn->prepare("UPDATE posts SET titulo = ?, contenido = ? WHERE id_post = ?");
+                    $stmt->bind_param("ssi", $titulo, $contenido, $editId);
+                }
+                $ok = $stmt->execute();
+                $stmt->close();
+                $postId = $editId;
+            } else {
+                $stmt = $conn->prepare("INSERT INTO posts (titulo, contenido, autor_id, imagen) VALUES (?, ?, ?, NULL)");
+                $autorId = (int)$_SESSION['usuario_id'];
+                $stmt->bind_param("ssi", $titulo, $contenido, $autorId);
+                $ok = $stmt->execute();
+                $postId = (int)$conn->insert_id;
+                $stmt->close();
+            }
 
-            // Si no se pudo insertar el post, no se procede con imágenes ni categorías.
+            // Si no se pudo guardar, no se procede con imágenes ni categorías.
             if (!$ok) {
                 $mensaje = 'Error al guardar la publicación.';
             } else {
-                $postId = (int)$conn->insert_id;
 
                 // Normaliza categorías: máximo 3, solo de lista permitida.
                 $allowed = array_flip($categorias);
@@ -334,12 +448,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (in_array($c, $cats, true)) continue;
                     $cats[] = $c;
                 }
+                $requiredCat = null;
+                if ($tmdbType === 'tv') $requiredCat = 'Serie';
+                if ($tmdbType === 'movie') $requiredCat = 'Película';
+
+                if ($requiredCat !== null) {
+                    $remove = $requiredCat === 'Serie' ? 'Película' : 'Serie';
+                    $cats = array_values(array_filter($cats, fn ($c) => $c !== $remove));
+                    if (!in_array($requiredCat, $cats, true)) $cats[] = $requiredCat;
+                }
                 // Si no se selecciona ninguna categoría válida, se asigna "Película" por defecto.
                 if (count($cats) > 3) {
-                    $mensaje = 'Puedes escoger máximo 3 categorías.';
-                } else {
+                    if ($requiredCat !== null) {
+                        $trimmed = [$requiredCat];
+                        foreach ($cats as $c) {
+                            if ($c === $requiredCat) continue;
+                            $trimmed[] = $c;
+                            if (count($trimmed) >= 3) break;
+                        }
+                        $cats = $trimmed;
+                    } else {
+                        $mensaje = 'Puedes escoger máximo 3 categorías.';
+                    }
+                }
+
+                if ($mensaje === '') {
                     // Insertar categorías seleccionadas
                     if (!count($cats)) $cats = ['Película'];
+                    $conn->query("DELETE FROM post_categorias WHERE post_id = " . (int)$postId);
                     $insertCat = $conn->prepare("INSERT INTO post_categorias (post_id, categoria) VALUES (?, ?)");
                     foreach ($cats as $cat) {
                         $insertCat->bind_param("is", $postId, $cat);
@@ -417,28 +553,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $stmtTmdb->bind_param("iisssss", $postId, $tmdbId, $tmdbType, $tmdbTitle, $tmdbPoster, $tmdbReleaseDate, $tmdbOverview);
                         $stmtTmdb->execute();
                         $stmtTmdb->close();
+                    } elseif ($isEdit) {
+                        $conn->query("DELETE FROM post_tmdb WHERE post_id = " . (int)$postId);
                     }
-                    // Si esta todo correcto y se subió al menos una imagen, se actualiza el campo "imagen" del post principal con la ruta de la primera imagen subida, para que sirva como imagen representativa del post.
-                    if ($firstImagePath !== null) {
+
+                    // Si se subió al menos una imagen y no existe imagen principal, se actualiza imagen
+                    if ($firstImagePath !== null && (!$isEdit || $existingCount === 0)) {
                         $stmtUp = $conn->prepare("UPDATE posts SET imagen = ? WHERE id_post = ?");
                         $stmtUp->bind_param("si", $firstImagePath, $postId);
                         $stmtUp->execute();
                         $stmtUp->close();
                     }
-                    //Mensajes de exito y redirección a la página principal después de publicar
+                    // Mensajes de exito y redirección
                     $mensajeTipo = 'ok';
-                    $mensaje = 'Publicación guardada.';
-                    $redirectType = in_array('Serie', $cats, true) ? 'series' : 'movies';
-                    header("Location: index.php?tipo=" . $redirectType);
+                    $mensaje = $isEdit ? 'Publicación actualizada.' : 'Publicación guardada.';
+                    if ($returnTo === 'perfil') {
+                        header("Location: perfil.php");
+                    } else {
+                        $redirectType = in_array('Serie', $cats, true) ? 'series' : 'movies';
+                        header("Location: index.php?tipo=" . $redirectType);
+                    }
                     exit();
                 }
             }
-
-            $stmt->close();
             $conn->close();
         }
     }
 }
+
+$pageTitle = $isEdit ? 'Editar publicacion - CineBlog' : 'Nueva publicacion - CineBlog';
+$formTitle = $isEdit ? 'Editar publicacion' : 'Nueva publicacion';
+$submitLabel = $isEdit ? 'Guardar cambios' : 'Publicar ✨';
+$cancelHref = $returnTo === 'perfil' ? 'perfil.php' : 'index.php';
+
+$defaultTitulo = $_POST['titulo'] ?? ($editPost['titulo'] ?? '');
+$defaultContenido = $_POST['contenido'] ?? ($editPost['contenido'] ?? '');
+
+$selectedCats = $_POST['categorias'] ?? ($existingCats ?: ['Película']);
+if (!is_array($selectedCats)) $selectedCats = ['Película'];
+$selectedCats = array_values(array_unique(array_filter(array_map('strval', $selectedCats))));
+
+$existingImagesJson = htmlspecialchars(json_encode($existingImages), ENT_QUOTES, 'UTF-8');
 
 ?>
 
@@ -447,7 +602,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva publicación - CineBlog</title>
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></title>
     <link rel="stylesheet" href="css/style_switch.css">
     <link rel="stylesheet" href="css/style_publicarsubir.css?v=3">
     <!-- 🔹 Estilos globales de tema -->
@@ -457,16 +612,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <main class="ps-overlay">
-        <section class="ps-modal" role="dialog" aria-modal="true" aria-label="Nueva publicación">
+        <section class="ps-modal" role="dialog" aria-modal="true" aria-label="<?php echo htmlspecialchars($formTitle, ENT_QUOTES, 'UTF-8'); ?>">
             <!-- Encabezado del modal -->
             <header class="ps-head">
-                <h1>Nueva publicación</h1>
+                <h1><?php echo htmlspecialchars($formTitle, ENT_QUOTES, 'UTF-8'); ?></h1>
                 <!-- 🔹 Switch de tema (arriba a la derecha) -->
                 <div class="theme-toggle"style="margin-right: 55px; margin-top: 15px;">
                     <input type="checkbox" id="theme-switch">
                     <label for="theme-switch" class="switch"></label>
                 </div>
-                <a class="ps-close" href="index.php" aria-label="Cerrar">×</a>
+                <a class="ps-close" href="<?php echo htmlspecialchars($cancelHref, ENT_QUOTES, 'UTF-8'); ?>" aria-label="Cerrar">×</a>
             </header>
             <!-- Mensajes de alerta -->
             <?php if ($mensaje !== '') : ?>
@@ -476,6 +631,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
             <!-- Formulario de publicación / post -->
             <form class="ps-form" method="POST" enctype="multipart/form-data" novalidate>
+                <?php if ($isEdit): ?>
+                    <input type="hidden" name="edit_id" value="<?php echo (int)$editId; ?>">
+                <?php endif; ?>
+                <input type="hidden" name="return_to" value="<?php echo htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="ps-grid">
                     <div class="ps-left">
                         <!-- Campo del Titulo-->
@@ -487,11 +646,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             type="text"
                             maxlength="120"
                             placeholder="Ej. ¿Qué película recomiendas?"
-                            value="<?php echo htmlspecialchars($_POST['titulo'] ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                            value="<?php echo htmlspecialchars($defaultTitulo, ENT_QUOTES, 'UTF-8'); ?>"
                             required
                         >
                         <!-- Campo de búsqueda de películas o series (TMDB, opcional) -->
-                        <label class="ps-label" for="psTmdbSearch">Pelicula o serie (TMDB, opcional)</label>
+                        <label class="ps-label" for="psTmdbSearch">Pelicula o serie (opcional)</label>
                         <div class="ps-tmdb" id="psTmdb">
                             <div class="ps-tmdb-controls">
                                 <input
@@ -528,7 +687,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             maxlength="500"
                             placeholder="¿Qué quieres compartir?"
                             required
-                        ><?php echo htmlspecialchars($_POST['contenido'] ?? '', ENT_QUOTES, 'UTF-8'); ?></textarea> 
+                        ><?php echo htmlspecialchars($defaultContenido, ENT_QUOTES, 'UTF-8'); ?></textarea> 
                          <!-- Contadores de caracteres e imágenes, y selección de categorías -->
                         <div class="ps-meta">
                             <span id="psCount">0 / 500</span>
@@ -542,9 +701,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="ps-catgrid" id="psCatGrid">
                             <!-- Opciones de categoría -->
                             <?php
-                            $selectedCats = $_POST['categorias'] ?? ['Película'];
-                            if (!is_array($selectedCats)) $selectedCats = ['Película'];
-                            $selectedCats = array_values(array_unique(array_filter(array_map('strval', $selectedCats))));
                             foreach ($categorias as $cat) {
                                 $isOn = in_array($cat, $selectedCats, true) ? 'checked' : '';
                                 echo '<label class="ps-cat">';
@@ -565,13 +721,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                             <input class="ps-file" id="imagenes" name="imagenes[]" type="file" accept="image/png,image/jpeg" multiple>
                         </div>
-                        <div class="ps-thumbs" id="psThumbs" aria-label="Vista previa de imágenes"></div>
+                        <div class="ps-thumbs" id="psThumbs" aria-label="Vista previa de imágenes" data-existing-images="<?php echo $existingImagesJson; ?>"></div>
                     </div>
                 </div>
                 <!-- Botones de acción, cancelar la publicacion/post o publicarla-->
                 <footer class="ps-actions">
-                    <a class="ps-btn ghost" href="index.php">Cancelar</a>
-                    <button class="ps-btn primary" type="submit">Publicar ✨</button>
+                    <a class="ps-btn ghost" href="<?php echo htmlspecialchars($cancelHref, ENT_QUOTES, 'UTF-8'); ?>">Cancelar</a>
+                    <button class="ps-btn primary" type="submit"><?php echo htmlspecialchars($submitLabel, ENT_QUOTES, 'UTF-8'); ?></button>
                 </footer>
             </form>
         </section>

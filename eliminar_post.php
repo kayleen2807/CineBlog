@@ -17,6 +17,9 @@ if (!in_array($_SESSION['rol'], ['admin','moderador','editor'])) {
 
 // Verifica que el post exista
 $sqlCheck = $conn->prepare("SELECT id_post, autor_id FROM posts WHERE id_post = ?");
+if (!$sqlCheck) {
+    die("Error en consulta: " . $conn->error);
+}
 $sqlCheck->bind_param("i", $id_post);
 $sqlCheck->execute();
 $res = $sqlCheck->get_result();
@@ -31,6 +34,7 @@ if ($_SESSION['rol'] === 'editor' && $_SESSION['usuario_id'] != $post['autor_id'
     die("Acceso denegado. Solo puedes borrar tus publicaciones.");
 }
 
+// 🔹 Borrar el post
 // Borrar reportes asociados primero
 $sqlRep = $conn->prepare("DELETE FROM reportes WHERE id_post = ?");
 $sqlRep->bind_param("i", $id_post);
@@ -51,6 +55,9 @@ $sqlLikes->close();
 
 // Borrar el post
 $sqlDel = $conn->prepare("DELETE FROM posts WHERE id_post = ?");
+if (!$sqlDel) {
+    die("Error en consulta: " . $conn->error);
+}
 $sqlDel->bind_param("i", $id_post);
 if ($sqlDel->execute()) {
     // Redirección según rol y origen
@@ -67,7 +74,11 @@ if ($sqlDel->execute()) {
             header("Location: reportes.php?msg=eliminado");
         }
     } elseif ($_SESSION['rol'] === 'editor') {
-        header("Location: index.php?msg=eliminado");
+        if (isset($_GET['from']) && $_GET['from'] === 'perfil') {
+            header("Location: perfil.php?msg=eliminado");
+        } else {
+            header("Location: index.php?msg=eliminado");
+        }
     }
     exit();
 } else {
