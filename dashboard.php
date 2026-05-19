@@ -58,8 +58,8 @@ $conn->close();
   <title>Dashboard Admin - CineBlog</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style_switch.css">
-  <link rel="stylesheet" href="css/styles_dashboard.css">
   <link rel="stylesheet" href="css/styles_inicio.css">
+  <link rel="stylesheet" href="css/styles_dashboard.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- 🔹 Estilos globales de tema -->
   <link rel="stylesheet" href="css/temas.css">
@@ -100,37 +100,36 @@ $conn->close();
 
     <div class="feed">
         <div class="feed-inner">
-           <section class="admin-content">
-            <p>Bienvenid@, <?php echo $_SESSION['nombre']; ?> 👋  Selecciona una sección del menú lateral para comenzar.</p>
-          </section>
-        <!-- Tarjetas de estadísticas -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>Usuarios</h3>
-            <p><?php echo $totalUsuarios; ?></p>
+            <section class="admin-content">
+              <p>Bienvenid@, <?php echo $_SESSION['nombre']; ?> 👋  Selecciona una sección del menú lateral para comenzar.</p>
+            </section>
+          <!-- Tarjetas de estadísticas -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>Usuarios</h3>
+              <p><?php echo $totalUsuarios; ?></p>
+            </div>
+            <div class="stat-card">
+              <h3>Publicaciones</h3>
+              <p><?php echo $totalPosts; ?></p>
+            </div>
+            <div class="stat-card">
+              <h3>Comentarios</h3>
+              <p><?php echo $totalComentarios; ?></p>
+            </div>
+            <div class="stat-card reportes-card">
+              <h3>🚩 Reportes</h3>
+              <a href="reportes.php" class="reportes-btn">Ver reportes</a>
+            </div>
           </div>
-          <div class="stat-card">
-            <h3>Publicaciones</h3>
-            <p><?php echo $totalPosts; ?></p>
+          <div class="chart-container" >
+            <canvas id="postsPorCategoria" style="width:600px; margin-top:30px; margin-left: auto; margin-right: auto;"></canvas>>
           </div>
-          <div class="stat-card">
-            <h3>Comentarios</h3>
-            <p><?php echo $totalComentarios; ?></p>
-          </div>
-          <div class="stat-card reportes-card">
-            <h3>🚩 Reportes</h3>
-            <a href="reportes.php" class="reportes-btn">Ver reportes</a>
-          </div>
-        </div>
-        <div class="chart-container" >
-          <canvas id="postsPorCategoria" style="width:600px; margin-top:30px; margin-left: auto; margin-right: auto;"></canvas>></canvas>
-        </div>
 
-        <div class="chart-container" style="width:400px; margin-top:30px; margin-left: auto; margin-right: auto;">
-          <canvas id="usuariosPorRol"></canvas>
+          <div class="chart-container" style="width:400px; margin-top:30px; margin-left: auto; margin-right: auto;">
+            <canvas id="usuariosPorRol"></canvas>
+          </div>
         </div>
-
-      </div>
     </div>
 </div>
 <script src="js/cinedbg.js"></script>

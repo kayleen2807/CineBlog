@@ -10,7 +10,7 @@ if (!$id_post) {
     die("ID inválido.");
 }
 
-// 🔹 Roles permitidos: admin, moderador, editor
+// Roles permitidos: admin, moderador, editor
 if (!in_array($_SESSION['rol'], ['admin','moderador','editor'])) {
     die("Acceso denegado.");
 }
@@ -29,12 +29,31 @@ if ($res->num_rows === 0) {
 $post = $res->fetch_assoc();
 $sqlCheck->close();
 
-// 🔹 Validar que el editor solo pueda borrar sus propios posts
+// Validar que el editor solo pueda borrar sus propios posts
 if ($_SESSION['rol'] === 'editor' && $_SESSION['usuario_id'] != $post['autor_id']) {
     die("Acceso denegado. Solo puedes borrar tus publicaciones.");
 }
 
 // 🔹 Borrar el post
+// Borrar reportes asociados primero
+$sqlRep = $conn->prepare("DELETE FROM reportes WHERE id_post = ?");
+$sqlRep->bind_param("i", $id_post);
+$sqlRep->execute();
+$sqlRep->close();
+
+// Borrar comentarios asociados
+$sqlCom = $conn->prepare("DELETE FROM comentarios WHERE post_id = ?");
+$sqlCom->bind_param("i", $id_post);
+$sqlCom->execute();
+$sqlCom->close();
+
+// Borrar likes asociados al post
+$sqlLikes = $conn->prepare("DELETE FROM likes WHERE post_id = ?");
+$sqlLikes->bind_param("i", $id_post);
+$sqlLikes->execute();
+$sqlLikes->close();
+
+// Borrar el post
 $sqlDel = $conn->prepare("DELETE FROM posts WHERE id_post = ?");
 if (!$sqlDel) {
     die("Error en consulta: " . $conn->error);

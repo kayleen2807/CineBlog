@@ -236,15 +236,12 @@ try {
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
      <!-- Si el rol es editor o admin tendran apartado de notificaciones -->
     <?php if ($rol == "editor") : ?>
-      <div class="sb-item">🔔 <span>Notificaciones</span></div>
       <div class="sb-item">⚙️ <a href="ajustes.php">Configuración</a></div>
     <!-- Si el rol es admin, este tendra un apartado unico de administracion -->
     <?php elseif ($rol == "admin") : ?>
-      <div class="sb-item">🔔 <span>Notificaciones</span></div>
       <div class="sb-item">📊 <span><a href="dashboard.php">Administracion</a></span></div>
       <div class="sb-item">⚙️ <a href="ajustes.php">Configuración</a></div>
       <?php elseif ($rol == "moderador") : ?>
-        <div class="sb-item">🔔 <span>Notificaciones</span></div>
         <div class="sb-item">🕹️ <span><a href="reportes.php">Moderación</a></span></div>
         <div class="sb-item">⚙️ <a href="ajustes.php">Configuración</a></div>
     <?php endif; ?>

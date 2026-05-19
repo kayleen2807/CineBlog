@@ -424,7 +424,6 @@ $loginTime = $_SESSION['login_time'] ?? time();
         <nav class="settings-nav">
             <a href="#perfil" class="settings-nav-link active"><svg><use href="#icon-user"></use></svg><span>Perfil</span></a>
             <a href="#privacidad" class="settings-nav-link"><svg><use href="#icon-lock"></use></svg><span>Privacidad</span></a>
-            <a href="#notificaciones" class="settings-nav-link"><svg><use href="#icon-bell"></use></svg><span>Notificaciones</span></a>
             <a href="#preferencias" class="settings-nav-link"><svg><use href="#icon-sliders"></use></svg><span>Preferencias</span></a>
             <a href="#seguridad" class="settings-nav-link"><svg><use href="#icon-shield"></use></svg><span>Seguridad</span></a>
         </nav>
@@ -576,23 +575,7 @@ $loginTime = $_SESSION['login_time'] ?? time();
                     <?php endif; ?>
                 </div>
             </section>
-
-            <section class="settings-card reveal" id="notificaciones">
-                <div class="settings-card-head">
-                    <span class="section-icon"><svg><use href="#icon-bell"></use></svg></span>
-                    <div>
-                        <h2>Notificaciones</h2>
-                        <p>Elige que momentos de la comunidad llegan a ti.</p>
-                    </div>
-                </div>
-
-                <label class="toggle-row compact"><span><strong>Likes</strong><small>Cuando alguien marque una reseña.</small></span><input type="checkbox" name="notif_likes" <?php echo checked_value($user['notif_likes'] ?? 1); ?>><i></i></label>
-                <label class="toggle-row compact"><span><strong>Comentarios</strong><small>Nuevas conversaciones en tus posts.</small></span><input type="checkbox" name="notif_comentarios" <?php echo checked_value($user['notif_comentarios'] ?? 1); ?>><i></i></label>
-                <label class="toggle-row compact"><span><strong>Respuestas</strong><small>Cuando te respondan directamente.</small></span><input type="checkbox" name="notif_respuestas" <?php echo checked_value($user['notif_respuestas'] ?? 1); ?>><i></i></label>
-                <label class="toggle-row compact"><span><strong>Nuevos seguidores</strong><small>Alertas de nuevos cinéfilos siguiéndote.</small></span><input type="checkbox" name="notif_seguidores" <?php echo checked_value($user['notif_seguidores'] ?? 1); ?>><i></i></label>
-                <label class="toggle-row compact"><span><strong>Estrenos y noticias</strong><small>Recomendaciones y novedades relevantes.</small></span><input type="checkbox" name="notif_estrenos" <?php echo checked_value($user['notif_estrenos'] ?? 1); ?>><i></i></label>
-            </section>
-
+            
             <section class="settings-card reveal" id="preferencias">
                 <div class="settings-card-head">
                     <span class="section-icon"><svg><use href="#icon-sliders"></use></svg></span>
