@@ -15,6 +15,12 @@ use PHPMailer\PHPMailer\Exception;
 
 $mensaje = "";
 
+$mailConfig = null;
+$mailConfigPath = 'C:\\xampp\\config\\cineblog_mail.php';
+if (file_exists($mailConfigPath)) {
+    $mailConfig = require $mailConfigPath;
+}
+
 // Paso 1: Usuario solicita recuperación
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email'])) {
     $email = $_POST['email'];
@@ -37,24 +43,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email'])) {
 
                 // Guardar token en BD
                 $stmt_token = $conn->prepare("UPDATE usuarios SET reset_token=?, reset_expira=? WHERE email=?");
-                $stmt_token->bind_param("sss", $token, $expira, $email);
-                $stmt_token->execute();
+                if (!$stmt_token) {
+                    $mensaje = "Error al preparar la actualizacion del token: " . $conn->error;
+                } else {
+                    $stmt_token->bind_param("sss", $token, $expira, $email);
+                    $stmt_token->execute();
+                    $stmt_token->close();
+                }
 
                 // Enviar correo con PHPMailer
                 $enlace = "http://localhost/CineBlog/resetPassword.php?token=" . $token;
 
                 $mail = new PHPMailer(true);
                 try {
+                    if (!$mailConfig || empty($mailConfig['host']) || empty($mailConfig['username']) || empty($mailConfig['password'])) {
+                        $mensaje = "Configuracion SMTP incompleta.";
+                        throw new Exception($mensaje);
+                    }
+
                     $mail->isSMTP();
-                    $mail->Host = 'smtp.gmail.com';
+                    $mail->Host = (string)$mailConfig['host'];
                     $mail->SMTPAuth = true;
-                    $mail->Username = 'cinebloguser@gmail.com'; // correo de la aplicación
-                    $mail->Password = 'jfshyqskunichgoh'; // contraseña de aplicación de Gmail
-                    $mail->SMTPSecure = 'tls';
-                    $mail->Port = 587;
+                    $mail->Username = (string)$mailConfig['username'];
+                    $mail->Password = (string)$mailConfig['password'];
+                    $mail->SMTPSecure = (string)($mailConfig['secure'] ?? 'tls');
+                    $mail->Port = (int)($mailConfig['port'] ?? 587);
 
                     $caFile = 'C:\\xampp\\php\\extras\\ssl\\cacert.pem';
-                    if (file_exists($caFile)) {
+                    $verifySsl = (bool)($mailConfig['verify_ssl'] ?? false);
+                    if ($verifySsl && file_exists($caFile)) {
                         $mail->SMTPOptions = [
                             'ssl' => [
                                 'verify_peer' => true,
@@ -73,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email'])) {
                     }
 
                     // Configuración del correo
-                    $mail->setFrom('cinebloguser@gmail.com', 'CineBlog');
+                    $mail->setFrom((string)$mailConfig['from_email'], (string)$mailConfig['from_name']);
                     $mail->addAddress($email);
 
                     // Contenido del correo
@@ -83,8 +100,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['email'])) {
                                       <a href='$enlace'>$enlace</a>";
 
                     // Enviar el correo
-                    $mail->send();
-                    $mensaje = "Se ha enviado un correo con instrucciones para recuperar tu contraseña.";
+                    if (empty($mensaje)) {
+                        $mail->send();
+                        $mensaje = "Se ha enviado un correo con instrucciones para recuperar tu contraseña.";
+                    }
                 } catch (Exception $e) {
                     $mensaje = "Error al enviar el correo: {$mail->ErrorInfo}";
                 }

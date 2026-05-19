@@ -64,6 +64,74 @@ $conn->query("ALTER TABLE ajustes_usuario DROP COLUMN IF EXISTS trailer_calidad"
 
 $stmtDefaults = $conn->prepare("INSERT IGNORE INTO ajustes_usuario (usuario_id) VALUES (?)");
 $stmtDefaults->bind_param("i", $userId);
+function normalize_for_moderation_spaces(string $text): string
+{
+    $value = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+    if (function_exists('iconv')) {
+        $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+        if ($converted !== false) $value = $converted;
+    }
+
+    $map = [
+        '@' => 'a',
+        '4' => 'a',
+        '€' => 'e',
+        '3' => 'e',
+        '1' => 'i',
+        '!' => 'i',
+        '|' => 'i',
+        '0' => 'o',
+        '$' => 's',
+        '5' => 's',
+        '§' => 's',
+        '7' => 't',
+        '+' => 't',
+        '2' => 'z',
+        'ñ' => 'n',
+        'ç' => 'c',
+    ];
+
+    $value = strtr($value, $map);
+    $value = preg_replace('/[^a-z]+/i', ' ', $value) ?? '';
+    $value = preg_replace('/\s+/', ' ', $value) ?? '';
+    return trim($value);
+}
+
+function contains_profanity(string $text): bool
+{
+    $normalized = normalize_for_moderation_spaces($text);
+    if ($normalized === '') return false;
+
+    $tokens = preg_split('/\s+/', $normalized) ?: [];
+    $badWords = [
+        'puta', 'puto', 'puts', 'pt', 'mierda', 'pendejo', 'pendeja', 'cabron',
+        'chingar', 'chingada', 'verga', 'culero', 'pinche', 'joder', 'idiota',
+        'imbecil', 'alv', 'alm', 'vtalv', 'ctm', 'putos', 'chingados', 'vergas',
+        'culeros', 'pinches', 'jodidos', 'idiotas', 'imbeciles', 'culo', 'culito',
+        'pene', 'penes', 'pito', 'pitos', 'pija', 'pijas', 'polla', 'pollas',
+        'vagina', 'coño'
+    ];
+
+    foreach ($badWords as $bad) {
+        $chars = preg_split('//u', $bad, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $regex = '(?:^|\s)';
+        $total = count($chars);
+        foreach ($chars as $i => $ch) {
+            $regex .= preg_quote($ch, '/') . '+';
+            if ($i < $total - 1) $regex .= '\s*';
+        }
+        $regex .= '(?:\s|$)';
+        if (preg_match('/' . $regex . '/i', $normalized)) return true;
+
+        $len = strlen($bad);
+        foreach ($tokens as $token) {
+            if ($token === $bad) return true;
+            if ($len >= 5 && (str_starts_with($token, $bad) || str_ends_with($token, $bad))) return true;
+        }
+    }
+
+    return false;
+}
 $stmtDefaults->execute();
 $stmtDefaults->close();
 
@@ -77,6 +145,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $currentPassword = (string)($_POST['current_password'] ?? '');
         $newPassword = (string)($_POST['new_password'] ?? '');
         $confirmPassword = (string)($_POST['confirm_password'] ?? '');
+
+        if (contains_profanity($bio)) {
+            flash_settings("La biografia contiene lenguaje inapropiado.", "error");
+            header("Location: ajustes.php#perfil");
+            exit();
+        }
 
         $nombreLength = function_exists('mb_strlen') ? mb_strlen($nombre, 'UTF-8') : strlen($nombre);
         if ($nombre === '' || $nombreLength > 100) {

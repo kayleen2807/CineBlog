@@ -17,9 +17,28 @@ use PHPMailer\PHPMailer\Exception;
 
 $mensaje = ""; // Variable para mostrar mensajes en la misma página
 $showTwoFactorForm = isset($_SESSION['pending_2fa']);
+$debugDbInfo = '';
+
+$serverHost = (string)($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? '');
+$isLocalHost = in_array($serverHost, ['localhost', '127.0.0.1'], true);
+$shouldCheckMx = !$isLocalHost;
+
+$mailConfig = null;
+$mailConfigPath = 'C:\\xampp\\config\\cineblog_mail.php';
+if (file_exists($mailConfigPath)) {
+    $mailConfig = require $mailConfigPath;
+}
+
+if (isset($_GET['debug_db'])) {
+    $res = $conn->query("SELECT DATABASE() AS db, @@hostname AS host, @@port AS port");
+    if ($res && ($row = $res->fetch_assoc())) {
+        $debugDbInfo = "DB: " . $row['db'] . " @ " . $row['host'] . ":" . $row['port'];
+    }
+}
 
 function send_two_factor_code(string $email, string $nombre, string $code): array
 {
+    $mailConfig = $GLOBALS['mailConfig'] ?? null;
     if (!$GLOBALS['mailerAvailable']) {
         return [false, "PHPMailer no esta instalado."];
     }
@@ -27,13 +46,17 @@ function send_two_factor_code(string $email, string $nombre, string $code): arra
     $mail = new PHPMailer(true);
 
     try {
+        if (!$mailConfig || empty($mailConfig['host']) || empty($mailConfig['username']) || empty($mailConfig['password'])) {
+            return [false, "Configuracion SMTP incompleta."];
+        }
+
         $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
+        $mail->Host = (string)$mailConfig['host'];
         $mail->SMTPAuth = true;
-        $mail->Username = 'cinebloguser@gmail.com';
-        $mail->Password = 'jfshyqskunichgoh';
-        $mail->SMTPSecure = 'tls';
-        $mail->Port = 587;
+        $mail->Username = (string)$mailConfig['username'];
+        $mail->Password = (string)$mailConfig['password'];
+        $mail->SMTPSecure = (string)($mailConfig['secure'] ?? 'tls');
+        $mail->Port = (int)($mailConfig['port'] ?? 587);
 
         $caFile = 'C:\\xampp\\php\\extras\\ssl\\cacert.pem';
         if (file_exists($caFile)) {
@@ -54,7 +77,7 @@ function send_two_factor_code(string $email, string $nombre, string $code): arra
             ];
         }
 
-        $mail->setFrom('cinebloguser@gmail.com', 'CineBlog');
+        $mail->setFrom((string)$mailConfig['from_email'], (string)$mailConfig['from_name']);
         $mail->addAddress($email, $nombre);
         $mail->isHTML(true);
         $mail->Subject = 'Codigo de verificacion CineBlog';
@@ -100,8 +123,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         }
     } else {
-    $email    = $_POST['email'];
-    $password = $_POST['password'];
+    $email    = trim((string)($_POST['email'] ?? ''));
+    $email    = strtolower($email);
+    $password = (string)($_POST['password'] ?? '');
 
     // VALIDACIÓN DE FORMATO DE CORREO
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -109,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         // VALIDACIÓN DE DOMINIO DEL CORREO (MX records)
         $dominio = substr(strrchr($email, "@"), 1);
-        if (!checkdnsrr($dominio, "MX")) {
+        if ($shouldCheckMx && function_exists('checkdnsrr') && !checkdnsrr($dominio, "MX")) {
             $mensaje = "El dominio del correo no existe.";
         } else {
             // Consulta segura (se agregó lo del rol también para que solo puedan iniciar sesión los usuarios registrados, no los visitantes)
@@ -229,12 +253,12 @@ $conn->close();
             <form method="POST">
                 <label for="email">Correo electrónico:</label>
                 <!-- CAMBIO EN EL FORMULARIO: type="email" + required + pattern -->
-                <input type="email" id="email" name="email" required 
+                  <input type="email" id="email" name="email" autocomplete="email" required 
                        pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">
 
                 <label for="password">Contraseña:</label>
                 <div class="password-container">
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
                     <span class="toggle-password" onclick="togglePassword('password')">
                         <i class="bi bi-eye"></i> <!-- Ícono de ojo -->
                     </span>
@@ -254,6 +278,9 @@ $conn->close();
             <!-- Mensaje para saber si puede iniciar sesión -->
              <?php if (!empty($mensaje)) : ?>
                 <p class="form-message"><?php echo $mensaje; ?></p>
+            <?php endif; ?>
+            <?php if (!empty($debugDbInfo)) : ?>
+                <p class="form-message"><?php echo htmlspecialchars($debugDbInfo, ENT_QUOTES, 'UTF-8'); ?></p>
             <?php endif; ?>
             
         </div>

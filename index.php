@@ -40,8 +40,8 @@ function normalize_filter_value(string $value): string
     return trim($value);
   }
   // Normaliza el valor inicial del filtro de tipo y categoría desde la URL para que coincida con el formato esperado en los botones y las publicaciones
-  $initialType = trim((string)($_GET['tipo'] ?? 'movies'));
-  if ($initialType !== 'series') $initialType = 'movies';
+  $initialType = trim((string)($_GET['tipo'] ?? ''));
+  if ($initialType !== 'series' && $initialType !== 'movies') $initialType = '';
 
   // Normaliza el valor inicial del filtro de categoría desde la URL para que coincida con el formato esperado en las publicaciones
   $initialCat = normalize_filter_value((string)($_GET['categoria'] ?? ''));
@@ -160,7 +160,7 @@ try {
 <title>CineBlog</title>
 <link rel="stylesheet" href="css/styles_inicio.css">
 <link rel="stylesheet" href="css/style_switch.css">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- 🔹 Estilos globales de tema -->
 <link rel="stylesheet" href="css/temas.css">
 <!-- 🔹 Script global de tema -->
@@ -187,18 +187,26 @@ try {
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
             <!-- Si el rol es editor, moderador o admin se muestra el avatar y su nombre de usuario en la side bar y lo lleva a su perfil (perfil.php)-->
             <?php if ($rol == "editor" || $rol == "moderador" || $rol == "admin") : ?>
-                <button class="perfil-btn">
-                    <div><img src="<?= htmlspecialchars($fotoPerfil, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($_SESSION['nombre'], ENT_QUOTES, 'UTF-8') ?>" class="avatar"></div>
-                        <span><a href="perfil.php"><?php echo $_SESSION['nombre']; ?></a></span>
-                </button>  
+              <a class="perfil-btn" href="perfil.php">
+                <div><img src="<?= htmlspecialchars($fotoPerfil, ENT_QUOTES, 'UTF-8') ?>" alt="Foto de <?= htmlspecialchars($_SESSION['nombre'], ENT_QUOTES, 'UTF-8') ?>" class="avatar"></div>
+                <span>Mi perfil</span>
+              </a>  
               <!-- Si el rol es visitante solo muestra un icono y en vez de llevarlo aun perfil, lo lleve a registrarse -->
              <?php else : ?>
-                <button class="perfil-btn">
-                      <h2><span><a href="registro.php">¿Registrarse?</a></span></h2>
-                </button>
+              <a class="perfil-btn" href="registro.php">
+                  <h2><span>¿Registrarse?</span></h2>
+              </a>
             <?php endif; ?>
+
+    <a class="sb-item sb-discover <?php echo basename($_SERVER['PHP_SELF']) === 'index.php' ? 'active' : ''; ?>" href="index.php">
+      <svg class="sb-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M3 10.5L12 3l9 7.5"></path>
+        <path d="M5 9.5V21h14V9.5"></path>
+      </svg>
+      <span>Inicio</span>
+    </a>
     <!-- Sidebar principal  -->
-    <div class="sb-section">
+    <div class="sb-section type-section">
       <div class="sb-section-title">TIPO</div>
       <div class="type-filter">
         <button class="type-btn <?php echo $initialType === 'movies' ? 'active' : ''; ?>" onclick="selType(this,'movies')">Películas</button>
@@ -214,7 +222,10 @@ try {
           // Normaliza las categorías del sidebar para que coincidan con el formato esperado en las publicaciones y los filtros 
           foreach ($sidebarCats as $sidebarCat) : ?>
           <?php $sidebarCatNorm = normalize_filter_value($sidebarCat); ?>
-          <span class="pill <?php echo $initialCat !== '' && $initialCat === $sidebarCatNorm ? 'on' : ''; ?>" onclick="selPill(this)"><?php echo htmlspecialchars($sidebarCat, ENT_QUOTES, 'UTF-8'); ?></span>
+          <span
+            class="pill <?php echo $initialCat !== '' && $initialCat === $sidebarCatNorm ? 'on' : ''; ?>"
+            data-cat="<?php echo htmlspecialchars($sidebarCatNorm, ENT_QUOTES, 'UTF-8'); ?>"
+          ><?php echo htmlspecialchars($sidebarCat, ENT_QUOTES, 'UTF-8'); ?></span>
         <?php endforeach; ?>
       </div>
     </div>
@@ -246,17 +257,23 @@ try {
   <!-- Apartado principal (feed para posts y comentarios)-->
   <div class="main">
     <header class="topbar">
-      <div class="logo-text"><span>C</span>ineBlog</div>
+      <div class="logo-stack">
+        <img class="logo-mark" src="css/cineBlog_Logo.png" alt="Logo CineBlog">
+        <div class="logo-text">CineBlog</div>
+      </div>
 
-      <!-- 🔹 Switch de tema (arriba a la derecha) -->
-      <div class="theme-toggle">
-          <input type="checkbox" id="theme-switch">
-          <label for="theme-switch" class="switch"></label>
+      <!-- 🔹 Toggle de tema con sol/luna -->
+      <div class="theme-toggle theme-icon-toggle">
+        <input type="checkbox" id="theme-switch" aria-label="Cambiar tema">
+        <label for="theme-switch" class="theme-toggle-btn">
+          <span class="theme-icon sun" aria-hidden="true">☀</span>
+          <span class="theme-icon moon" aria-hidden="true">🌙</span>
+        </label>
       </div>
       <!-- Barra de búsqueda-->
       <div class="search-wrap" style="margin-right: 70px;">
         <!-- El buscador utiliza la API de TMDB para buscar películas o series -->
-        🔍 <input type="text" id="tmdbGlobalSearch" placeholder="Busca peliculas o series en TMDB...">
+        🔍 <input type="text" id="tmdbGlobalSearch" placeholder="Busca peliculas o series...">
         <div class="search-results" id="tmdbGlobalResults" aria-live="polite"></div>
         
       </div>
@@ -422,6 +439,6 @@ try {
     </div>
   </div>
 <script src="js/cinedbg.js"></script>
-<script src="js/app.js?v=3"></script>
+<script src="js/app.js?v=6"></script>
 </body>
 </html>

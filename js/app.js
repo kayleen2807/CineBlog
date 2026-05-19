@@ -237,9 +237,11 @@ setupFlash(".stat[data-stat]");
 setupFlash(".metric-btn", { durationMs: 1600 });
 setupExclusiveActive(".tags .tag");
 function normalizeFilterValue(value) {
-    return String(value || "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
+    const raw = String(value || "");
+    const normalized = typeof raw.normalize === "function"
+        ? raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        : raw;
+    return normalized
         .toLowerCase()
         .replace(/\s+/g, " ")
         .trim();
@@ -250,15 +252,21 @@ function applyFeedFilters() {
     const cards = Array.from(document.querySelectorAll(".post-card"));
     if (!feed || !cards.length) return;
 
-    const activeType = feed.dataset.activeType || feed.dataset.initialType || "movies";
+    const activeType = feed.dataset.activeType || feed.dataset.initialType || "";
     const activeCat = normalizeFilterValue(feed.dataset.activeCat || feed.dataset.initialCat || "");
 
     cards.forEach((card) => {
         const cardType = card.dataset.type || "movie";
-        const typeMatches = activeType === "series" ? cardType === "series" : cardType !== "series";
+        const typeMatches = activeType === ""
+            ? true
+            : activeType === "series"
+                ? cardType === "series"
+                : cardType !== "series";
         const cats = String(card.dataset.cats || "").split("|").map(normalizeFilterValue).filter(Boolean);
         const catMatches = activeCat === "" || cats.includes(activeCat);
-        card.hidden = !(typeMatches && catMatches);
+        const shouldShow = typeMatches && catMatches;
+        card.hidden = !shouldShow;
+        card.style.display = shouldShow ? "" : "none";
     });
 
     const visibleCount = cards.filter((card) => !card.hidden).length;
@@ -290,7 +298,8 @@ window.selPill = function selPill(pill) {
         feed.dataset.activeCat = "";
     } else {
         pill.classList.add("on");
-        feed.dataset.activeCat = normalizeFilterValue(pill.textContent);
+        const raw = pill.dataset.cat || pill.textContent;
+        feed.dataset.activeCat = normalizeFilterValue(raw);
     }
     applyFeedFilters();
 };
@@ -298,15 +307,30 @@ window.selPill = function selPill(pill) {
 function setupFeedFilters() {
     const feed = document.querySelector(".feed-inner");
     if (!feed) return;
-    feed.dataset.activeType = feed.dataset.initialType || "movies";
+    feed.dataset.activeType = feed.dataset.initialType || "";
     feed.dataset.activeCat = feed.dataset.initialCat || "";
 
     document.addEventListener("click", (event) => {
+        const pill = event.target.closest(".pill");
+        if (pill) {
+            window.selPill(pill);
+            return;
+        }
         const cat = event.target.closest(".post-cat[data-cat]");
         if (!cat) return;
         const value = normalizeFilterValue(cat.dataset.cat || cat.textContent);
-        const pill = Array.from(document.querySelectorAll(".pill")).find((item) => normalizeFilterValue(item.textContent) === value);
-        if (pill) window.selPill(pill);
+        const pills = Array.from(document.querySelectorAll(".pill"));
+        const matchedPill = pills.find((item) => {
+            const pillValue = item.dataset.cat || item.textContent;
+            return normalizeFilterValue(pillValue) === value;
+        });
+        if (matchedPill) {
+            window.selPill(matchedPill);
+            return;
+        }
+        pills.forEach((item) => item.classList.remove("on"));
+        feed.dataset.activeCat = value;
+        applyFeedFilters();
     });
 
     applyFeedFilters();
@@ -315,6 +339,83 @@ function setupFeedFilters() {
 setupImageFallback();
 setupShowMore();
 setupFeedFilters();
+
+function setupUserMenu() {
+    const trigger = document.querySelector(".user-menu-trigger");
+    const menu = document.querySelector(".user-menu");
+    if (!trigger || !menu) return;
+
+    const closeMenu = () => {
+        menu.classList.remove("open");
+        trigger.setAttribute("aria-expanded", "false");
+    };
+
+    trigger.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const isOpen = menu.classList.toggle("open");
+        trigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    document.addEventListener("click", (event) => {
+        if (menu.contains(event.target) || trigger.contains(event.target)) return;
+        closeMenu();
+    });
+
+    menu.addEventListener("click", (event) => {
+        const item = event.target.closest(".user-menu-item");
+        if (item) closeMenu();
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeMenu();
+    });
+}
+
+function setupProfileShare() {
+    const button = document.querySelector(".profile-share");
+    if (!button) return;
+
+    button.addEventListener("click", async () => {
+        const url = window.location.href;
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: "CineBlog", url });
+                return;
+            }
+            await navigator.clipboard.writeText(url);
+            showInlineToast("Enlace copiado al portapapeles.");
+        } catch {
+            window.prompt("Copia este enlace:", url);
+        }
+    });
+}
+
+function showInlineToast(message) {
+    const toast = document.createElement("div");
+    toast.className = "ui-toast";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3200);
+}
+
+setupUserMenu();
+setupProfileShare();
+
+function setupBackButton() {
+    const button = document.querySelector("[data-back]");
+    if (!button) return;
+
+    button.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = "index.php";
+        }
+    });
+}
+
+setupBackButton();
 
 // Funcion para configurar la funcionalidad de "Me gusta" en las publicaciones/posts
 function setupLikes() {
