@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'includes/conexion.php';
+$conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS rating TINYINT UNSIGNED DEFAULT NULL");
 
 $id = (int)($_GET['id'] ?? 0);
 
@@ -27,14 +28,15 @@ if ($_SESSION['rol'] !== 'admin' && $_SESSION['usuario_id'] != $autorId && $_SES
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $titulo = $_POST['titulo'];
     $contenido = $_POST['contenido'];
+    $rating = filter_var($_POST['rating'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 5]]) ?: 3;
 
     if ($_SESSION['rol'] === 'admin') {
-        $stmt = $conn->prepare("UPDATE posts SET titulo=?, contenido=?, editado_por_admin=1 WHERE id_post=?");
+        $stmt = $conn->prepare("UPDATE posts SET titulo=?, contenido=?, rating=?, editado_por_admin=1 WHERE id_post=?");
     } else {
-        $stmt = $conn->prepare("UPDATE posts SET titulo=?, contenido=? WHERE id_post=?");
+        $stmt = $conn->prepare("UPDATE posts SET titulo=?, contenido=?, rating=? WHERE id_post=?");
     }
 
-    $stmt->bind_param("ssi", $titulo, $contenido, $id);
+    $stmt->bind_param("ssii", $titulo, $contenido, $rating, $id);
     $stmt->execute();
     $stmt->close();
 
@@ -70,7 +72,7 @@ $post = $res->fetch_assoc();
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style_switch.css">
 <!-- 🔹 Estilos globales de tema -->
-<link rel="stylesheet" href="css/temas.css">
+<link rel="stylesheet" href="css/temas.css?v=2">
 <!-- 🔹 Script global de tema -->
 <script src="js/temas.js" defer></script>
 </head>
@@ -96,6 +98,19 @@ $post = $res->fetch_assoc();
         <div class="form-group">
         <label for="contenido">Contenido</label>
         <textarea id="contenido" name="contenido" rows="6" required><?= htmlspecialchars($post['contenido']) ?></textarea>
+        </div>
+
+        <div class="form-group">
+        <label>Calificación</label>
+        <div class="rating-pill">
+            <?php $postRating = isset($post['rating']) ? (int)$post['rating'] : 3; ?>
+            <?php for ($i = 1; $i <= 5; $i++) : ?>
+                <label style="cursor:pointer;">
+                    <input type="radio" name="rating" value="<?= $i ?>" <?= $postRating === $i ? 'checked' : '' ?> required>
+                    <span class="rating-star">★</span>
+                </label>
+            <?php endfor; ?>
+        </div>
         </div>
 
         <div class="form-actions">

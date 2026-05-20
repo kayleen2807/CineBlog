@@ -66,6 +66,7 @@ try {
     } else { // Si la conexión es exitosa, continúa con la consulta de publicaciones
         $conn->set_charset("utf8mb4");
         $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS editado_por_admin TINYINT(1) NOT NULL DEFAULT 0");
+        $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS rating TINYINT UNSIGNED DEFAULT NULL");
         // Obtiene la foto de perfil del usuario para mostrarla en el sidebar
         $fotoPerfil = "uploads/default.png";
         $stmt = $conn->prepare("SELECT foto_perfil FROM usuarios WHERE id_usuario = ?");
@@ -85,9 +86,11 @@ try {
                 p.contenido,
                 p.fecha,
                 p.editado_por_admin,
+                p.rating,
                 u.nombre AS autor,
                 u.foto_perfil AS autor_foto,
                 u.id_usuario AS autor_id,
+                COALESCE(lk.likes_count, 0) AS likes_count,
                 GROUP_CONCAT(DISTINCT pc.categoria SEPARATOR '||') AS categorias,
                 GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes,
                 MAX(pt.tmdb_id) AS tmdb_id,
@@ -100,7 +103,12 @@ try {
             LEFT JOIN post_categorias pc ON pc.post_id = p.id_post
             LEFT JOIN post_imagenes pi ON pi.post_id = p.id_post
             LEFT JOIN post_tmdb pt ON pt.post_id = p.id_post
-            GROUP BY p.id_post, p.titulo, p.contenido, p.fecha, u.nombre, u.foto_perfil, u.id_usuario
+            LEFT JOIN (
+                SELECT post_id, COUNT(*) AS likes_count
+                FROM likes
+                GROUP BY post_id
+            ) lk ON lk.post_id = p.id_post
+            GROUP BY p.id_post, p.titulo, p.contenido, p.fecha, p.editado_por_admin, p.rating, u.nombre, u.foto_perfil, u.id_usuario, lk.likes_count
             ORDER BY p.fecha DESC
             LIMIT 50
         ";
@@ -162,7 +170,7 @@ try {
 <link rel="stylesheet" href="css/style_switch.css">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- 🔹 Estilos globales de tema -->
-<link rel="stylesheet" href="css/temas.css">
+<link rel="stylesheet" href="css/temas.css?v=2">
 <!-- 🔹 Script global de tema -->
 <script src="js/temas.js" defer></script>
 </head>
@@ -310,6 +318,9 @@ try {
                           // Limita a 4 imágenes por publicación para evitar sobrecargar el diseño y la experiencia de usuario, si hay más de 4 imágenes se muestran las primeras 4 y se ignoran las demás
                           $imgs = array_slice($imgs, 0, 4);
                           $pid = (int)($p['id_post'] ?? 0); // Id de la publicación para manejar likes y comentarios
+                          $likesCount = (int)($p['likes_count'] ?? 0);
+                          $rating = isset($p['rating']) ? (int)$p['rating'] : 0;
+                          if ($rating < 1 || $rating > 5) $rating = 0;
                           $isLiked = $pid && isset($likedPosts[$pid]); // Si el usuario ha dado like a esta publicación, se marca como liked para mostrar el corazón relleno
                           $comments = $pid && isset($commentsByPost[$pid]) ? $commentsByPost[$pid] : []; // Comentarios de esta publicación para mostrarlos debajo de la publicación
                           // Datos de TMDB para mostrar el enlace a la película o serie relacionada si existe
@@ -345,6 +356,10 @@ try {
                           <div class="post-title"><?php echo htmlspecialchars($p['titulo'], ENT_QUOTES, 'UTF-8'); ?></div>
                           <!-- Contenido de la publicación / post -->
                           <p class="post-body"><?php echo nl2br(htmlspecialchars($p['contenido'], ENT_QUOTES, 'UTF-8')); ?></p>
+                          <div class="rating-pill" aria-label="Calificación de la reseña">
+                            <span class="rating-stars" aria-hidden="true"><?php echo str_repeat('<span class="rating-star">★</span>', $rating) . str_repeat('<span class="rating-star empty">★</span>', 5 - $rating); ?></span>
+                            <span><?php echo $rating > 0 ? $rating . '/5' : 'Sin calificar'; ?></span>
+                          </div>
                           <!-- Imágenes de la publicación / post -->
                           <?php if (count($imgs)) : ?>
                               <div class="post-imgs">
@@ -397,6 +412,7 @@ try {
                                     </svg>
                                 </button>
                                 <button type="button" class="icon-btn comment-btn" data-post-id="<?php echo $pid; ?>" aria-label="Comentar">💬</button>
+                                <span class="post-likecount" data-post-id="<?php echo $pid; ?>">❤ <?php echo $likesCount; ?></span>
                             </div>
                             <!-- Sección de comentarios, inicialmente oculta, se muestra al hacer clic en el botón de comentar-->  
                             <section class="comments" data-post-id="<?php echo $pid; ?>" hidden>
@@ -444,6 +460,6 @@ try {
     </div>
   </div>
 <script src="js/cinedbg.js"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/app.js?v=7"></script>
 </body>
 </html>

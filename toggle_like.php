@@ -66,7 +66,13 @@ if ($already) {
     $liked = $ok ? true : false;
 }
 
+$stmtCount = $conn->prepare("SELECT COUNT(*) AS c FROM likes WHERE post_id = ?");
+$stmtCount->bind_param("i", $postId);
+$stmtCount->execute();
+$countRow = $stmtCount->get_result()->fetch_assoc();
+$likesCount = (int)($countRow['c'] ?? 0);
+$stmtCount->close();
+
 $conn->close();
 
-echo json_encode(['ok' => true, 'liked' => $liked]);
-
+echo json_encode(['ok' => true, 'liked' => $liked, 'likes_count' => $likesCount]);
