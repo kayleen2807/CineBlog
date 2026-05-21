@@ -59,13 +59,13 @@ Gestiona usuarios, modera contenido y tiene acceso a funciones extendidas de edi
 
 ## 🖼️ Capturas de pantalla
 
-### Registro
-<img width="1818" alt="Registro" src="https://github.com/user-attachments/assets/e0955364-efef-43a3-bada-6a127672ec83"/>
+### Inicio de sesión
+<img width="1818" alt="Inicio de sesión" src="https://github.com/user-attachments/assets/e0955364-efef-43a3-bada-6a127672ec83"/>
 
 ---
 
-### Inicio de sesión
-<img width="1835" alt="Inicio de sesion" src="https://github.com/user-attachments/assets/872808dd-6639-40e8-9614-6aef1a4e4425"/>
+### Registro
+<img width="1835" alt="Registro" src="https://github.com/user-attachments/assets/872808dd-6639-40e8-9614-6aef1a4e4425"/>
 
 ---
 
@@ -74,8 +74,8 @@ Gestiona usuarios, modera contenido y tiene acceso a funciones extendidas de edi
 
 ---
 
-### Edición de perfil
-<img width="1816" alt="Edicion de perfil" src="https://github.com/user-attachments/assets/851386c0-9635-40ee-a6d0-4a211ec047ba"/>
+### Página de inicio blanco
+<img width="1816" alt="Página de inicio claro" src="https://github.com/user-attachments/assets/851386c0-9635-40ee-a6d0-4a211ec047ba"/>
 
 ---
 
