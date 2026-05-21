@@ -180,6 +180,8 @@ function db_connect(): mysqli
 // Función para asegurar que las tablas necesarias para posts existen (imágenes, categorías, TMDB)
 function ensure_post_tables(mysqli $conn): void
 {
+    $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS rating TINYINT UNSIGNED DEFAULT NULL");
+
     // Tabla principal de posts
     $conn->query("CREATE TABLE IF NOT EXISTS post_imagenes (
         id_imagen INT NOT NULL AUTO_INCREMENT,
@@ -232,7 +234,7 @@ if ($isEdit) {
     $conn = db_connect();
     ensure_post_tables($conn);
 
-    $stmt = $conn->prepare("SELECT id_post, titulo, contenido, autor_id FROM posts WHERE id_post = ?");
+    $stmt = $conn->prepare("SELECT id_post, titulo, contenido, autor_id, rating FROM posts WHERE id_post = ?");
     $stmt->bind_param("i", $editId);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -354,6 +356,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validación de campos de texto
     $titulo = trim((string)($_POST['titulo'] ?? ''));
     $contenido = trim((string)($_POST['contenido'] ?? ''));
+    $rating = filter_var($_POST['rating'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 5]]) ?: 0;
     $categoriasSel = $_POST['categorias'] ?? [];
     if (!is_array($categoriasSel)) $categoriasSel = [];
 
@@ -386,6 +389,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensaje = 'El título debe tener al menos 3 caracteres.';
     } elseif ($contenido === '' || mb_len_safe($contenido) < 1) {
         $mensaje = 'El contenido no puede ir vacío.';
+    } elseif ($rating < 1 || $rating > 5) {
+        $mensaje = 'Selecciona una calificacion de 1 a 5 estrellas.';
     } elseif (mb_len_safe($contenido) > 500) {
         $mensaje = 'El contenido no puede pasar de 500 caracteres.';
     } elseif (contains_profanity($titulo . ' ' . $contenido)) {
@@ -415,19 +420,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Insertar o actualizar post principal
             if ($isEdit) {
                 if ($rol === 'admin') {
-                    $stmt = $conn->prepare("UPDATE posts SET titulo = ?, contenido = ?, editado_por_admin = 1 WHERE id_post = ?");
-                    $stmt->bind_param("ssi", $titulo, $contenido, $editId);
+                    $stmt = $conn->prepare("UPDATE posts SET titulo = ?, contenido = ?, rating = ?, editado_por_admin = 1 WHERE id_post = ?");
+                    $stmt->bind_param("ssii", $titulo, $contenido, $rating, $editId);
                 } else {
-                    $stmt = $conn->prepare("UPDATE posts SET titulo = ?, contenido = ? WHERE id_post = ?");
-                    $stmt->bind_param("ssi", $titulo, $contenido, $editId);
+                    $stmt = $conn->prepare("UPDATE posts SET titulo = ?, contenido = ?, rating = ? WHERE id_post = ?");
+                    $stmt->bind_param("ssii", $titulo, $contenido, $rating, $editId);
                 }
                 $ok = $stmt->execute();
                 $stmt->close();
                 $postId = $editId;
             } else {
-                $stmt = $conn->prepare("INSERT INTO posts (titulo, contenido, autor_id, imagen) VALUES (?, ?, ?, NULL)");
+                $stmt = $conn->prepare("INSERT INTO posts (titulo, contenido, autor_id, imagen, rating) VALUES (?, ?, ?, NULL, ?)");
                 $autorId = (int)$_SESSION['usuario_id'];
-                $stmt->bind_param("ssi", $titulo, $contenido, $autorId);
+                $stmt->bind_param("ssii", $titulo, $contenido, $autorId, $rating);
                 $ok = $stmt->execute();
                 $postId = (int)$conn->insert_id;
                 $stmt->close();
@@ -588,6 +593,7 @@ $cancelHref = $returnTo === 'perfil' ? 'perfil.php' : 'index.php';
 
 $defaultTitulo = $_POST['titulo'] ?? ($editPost['titulo'] ?? '');
 $defaultContenido = $_POST['contenido'] ?? ($editPost['contenido'] ?? '');
+$defaultRating = filter_var($_POST['rating'] ?? ($editPost['rating'] ?? 3), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 5]]) ?: 3;
 
 $selectedCats = $_POST['categorias'] ?? ($existingCats ?: ['Película']);
 if (!is_array($selectedCats)) $selectedCats = ['Película'];
@@ -604,9 +610,9 @@ $existingImagesJson = htmlspecialchars(json_encode($existingImages), ENT_QUOTES,
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></title>
     <link rel="stylesheet" href="css/style_switch.css">
-    <link rel="stylesheet" href="css/style_publicarsubir.css?v=3">
+    <link rel="stylesheet" href="css/style_publicarsubir.css?v=4">
     <!-- 🔹 Estilos globales de tema -->
-    <link rel="stylesheet" href="css/temas.css">
+    <link rel="stylesheet" href="css/temas.css?v=2">
     <!-- 🔹 Script global de tema -->
     <script src="js/temas.js" defer></script>
 </head>
@@ -680,6 +686,16 @@ $existingImagesJson = htmlspecialchars(json_encode($existingImages), ENT_QUOTES,
                             <!-- Área para mostrar la película o serie seleccionada -->
                             <div class="ps-tmdb-selected" id="psTmdbSelected"></div>
                             <div class="ps-tmdb-results" id="psTmdbResults" aria-live="polite"></div>
+                        </div>
+                        <label class="ps-label">Calificación</label>
+                        <div class="ps-rating" aria-label="Calificación de la película o serie">
+                            <?php for ($i = 1; $i <= 5; $i++) : ?>
+                                <label class="ps-star">
+                                    <input type="radio" name="rating" value="<?php echo $i; ?>" <?php echo $defaultRating === $i ? 'checked' : ''; ?> required>
+                                    <span title="<?php echo $i; ?> estrella<?php echo $i === 1 ? '' : 's'; ?>">★</span>
+                                </label>
+                            <?php endfor; ?>
+                            <span class="ps-rating-text">1 mala · 5 excelente</span>
                         </div>
                         <!-- Campo del Contenido-->
                         <label class="ps-label" for="contenido">Contenido</label>

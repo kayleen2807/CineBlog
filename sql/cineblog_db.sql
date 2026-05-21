@@ -107,6 +107,7 @@ CREATE TABLE `posts` (
   `autor_id` int(11) NOT NULL,
   `imagen` varchar(255) DEFAULT NULL,
   `video` varchar(255) DEFAULT NULL,
+  `rating` tinyint(3) UNSIGNED DEFAULT NULL,
   `editado_por_admin` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

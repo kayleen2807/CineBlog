@@ -185,6 +185,7 @@ try {
         $dbError = 'Error de conexion.';
     } else {
         $conn->set_charset('utf8mb4');
+        $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS rating TINYINT UNSIGNED DEFAULT NULL");
         // Consulta para obtener las reseñas de este título, incluyendo el conteo de likes, categorías y imágenes asociadas a cada reseña
         $sql = "
             SELECT
@@ -192,6 +193,7 @@ try {
                 p.titulo,
                 p.contenido,
                 p.fecha,
+                p.rating,
                 u.nombre AS autor,
                 COALESCE(lk.likes_count, 0) AS likes_count,
                 GROUP_CONCAT(DISTINCT pc.categoria SEPARATOR '||') AS categorias,
@@ -207,7 +209,7 @@ try {
                 GROUP BY post_id
             ) lk ON lk.post_id = p.id_post
             WHERE pt.tmdb_id = ? AND pt.media_type = ?
-            GROUP BY p.id_post
+            GROUP BY p.id_post, p.titulo, p.contenido, p.fecha, p.rating, u.nombre, lk.likes_count
             ORDER BY p.fecha DESC
             LIMIT 100
         ";
@@ -230,6 +232,9 @@ try {
 $pageTitle = $title !== '' ? $title : 'Ficha del titulo';
 $subtitleType = $mediaType === 'tv' ? 'Serie' : 'Pelicula';
 $typeFilter = $mediaType === 'tv' ? 'series' : 'movies';
+$ratingValues = array_values(array_filter(array_map(fn ($r) => (int)($r['rating'] ?? 0), $reviews), fn ($v) => $v >= 1 && $v <= 5));
+$ratingCount = count($ratingValues);
+$ratingAverage = $ratingCount ? array_sum($ratingValues) / $ratingCount : 0;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -241,7 +246,7 @@ $typeFilter = $mediaType === 'tv' ? 'series' : 'movies';
     <link rel="stylesheet" href="css/style_switch.css">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- 🔹 Estilos globales de tema -->
-    <link rel="stylesheet" href="css/temas.css">
+    <link rel="stylesheet" href="css/temas.css?v=2">
     <!-- 🔹 Script global de tema -->
     <script src="js/temas.js" defer></script>
 </head>
@@ -297,6 +302,10 @@ $typeFilter = $mediaType === 'tv' ? 'series' : 'movies';
                         <label>Reseñas en CineBlog</label>
                         <strong><?php echo (int)count($reviews); ?></strong>
                     </div>
+                    <div class="stat">
+                        <label>Calificación CineBlog</label>
+                        <strong><?php echo $ratingCount ? number_format($ratingAverage, 1) . '/5' : 'N/D'; ?></strong>
+                    </div>
                 </div>
                 <!-- Sinopsis o descripción del título, se muestra solo si está disponible -->
                 <?php if ($overview !== '') : ?>
@@ -327,6 +336,8 @@ $typeFilter = $mediaType === 'tv' ? 'series' : 'movies';
                         $imgs = [];
                         if (!empty($r['imagenes'])) $imgs = array_values(array_filter(explode('||', (string)$r['imagenes'])));
                         $imgs = array_slice($imgs, 0, 4);
+                        $rating = isset($r['rating']) ? (int)$r['rating'] : 0;
+                        if ($rating < 1 || $rating > 5) $rating = 0;
                     ?>
                     <article class="review-card">
                         <!-- Encabezado de la reseña (titulo y fecha)-->
@@ -338,6 +349,7 @@ $typeFilter = $mediaType === 'tv' ? 'series' : 'movies';
                         <div class="review-meta">
                             <span>Por <?php echo htmlspecialchars($r['autor'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span>
                             <span>❤ <?php echo (int)($r['likes_count'] ?? 0); ?></span>
+                            <span class="rating-inline"><?php echo str_repeat('★', $rating) . str_repeat('☆', 5 - $rating); ?> <?php echo $rating > 0 ? $rating . '/5' : 'Sin calificar'; ?></span>
                         </div>
                         <!-- Contenido de la reseña, se muestra tal cual pero se escapa para evitar problemas de seguridad, no se limita su longitud-->
                         <p><?php echo nl2br(htmlspecialchars($r['contenido'] ?? '', ENT_QUOTES, 'UTF-8')); ?></p>

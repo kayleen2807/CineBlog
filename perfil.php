@@ -22,6 +22,7 @@ function format_fecha_sin_segundos(?string $value): string
 
 //conexión a la base de datos para obtener la información del usuario
 include 'includes/conexion.php';
+$conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS rating TINYINT UNSIGNED DEFAULT NULL");
 
 //Dectectar si se está viendo el propio perfil o el de otro usuario
 $idPerfil = isset($_GET['id']) ? (int)$_GET['id'] : $_SESSION['usuario_id'];
@@ -75,6 +76,8 @@ $stmtPosts = $conn->prepare("
         p.titulo,
         p.contenido,
         p.fecha,
+        p.rating,
+        COALESCE(lk.likes_count, 0) AS likes_count,
         GROUP_CONCAT(DISTINCT pc.categoria SEPARATOR '||') AS categorias,
         GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes,
         MAX(pt.tmdb_id) AS tmdb_id,
@@ -85,8 +88,13 @@ $stmtPosts = $conn->prepare("
     LEFT JOIN post_categorias pc ON pc.post_id = p.id_post
     LEFT JOIN post_imagenes pi ON pi.post_id = p.id_post
     LEFT JOIN post_tmdb pt ON pt.post_id = p.id_post
+    LEFT JOIN (
+        SELECT post_id, COUNT(*) AS likes_count
+        FROM likes
+        GROUP BY post_id
+    ) lk ON lk.post_id = p.id_post
     WHERE p.autor_id = ?
-    GROUP BY p.id_post
+    GROUP BY p.id_post, p.titulo, p.contenido, p.fecha, p.rating, lk.likes_count
     ORDER BY p.fecha DESC
     LIMIT 50
 ");
@@ -110,7 +118,7 @@ if (count($misPosts)) {
     if (count($postIds)) {
         $idList = implode(',', $postIds);
 
-        $resLikes = $conn->query("SELECT post_id FROM likes WHERE usuario_id = " . (int)$idPerfil . " AND post_id IN ($idList)");
+        $resLikes = $conn->query("SELECT post_id FROM likes WHERE usuario_id = " . (int)$_SESSION['usuario_id'] . " AND post_id IN ($idList)");
         if ($resLikes) {
             while ($r = $resLikes->fetch_assoc()) $likedPosts[(int)$r['post_id']] = true;
             $resLikes->free();
@@ -148,7 +156,7 @@ $conn->close();
     <link rel="stylesheet" href="lib/cropper.min.css">
     <title>Perfil CineBlog</title>
     <!-- 🔹 Estilos globales de tema -->
-    <link rel="stylesheet" href="css/temas.css">
+    <link rel="stylesheet" href="css/temas.css?v=2">
     <!-- 🔹 Script global de tema -->
     <script src="js/temas.js" defer></script>
 </head>
@@ -256,6 +264,9 @@ $conn->close();
                         $pid = (int)($p['id_post'] ?? 0);
                         $postUrl = "post.php?id=" . $pid . "&perfil=" . $idPerfil;
                         $isLiked = $pid && isset($likedPosts[$pid]);
+                        $likesCount = (int)($p['likes_count'] ?? 0);
+                        $rating = isset($p['rating']) ? (int)$p['rating'] : 0;
+                        if ($rating < 1 || $rating > 5) $rating = 0;
                         $comments = $pid && isset($commentsByPost[$pid]) ? $commentsByPost[$pid] : [];
                     ?>
                     <article class="card">
@@ -301,6 +312,10 @@ $conn->close();
                             
                             <!-- Contenido de la publicación, se muestra limitado a 300 caracteres para evitar sobrecargar la tarjeta, se escapa para evitar problemas de seguridad -->
                             <p class="review-copy collapsed"><?php echo nl2br(htmlspecialchars($p['contenido'], ENT_QUOTES, 'UTF-8')); ?></p>
+                            <div class="rating-pill" aria-label="Calificación de la reseña">
+                                <span class="rating-stars" aria-hidden="true"><?php echo str_repeat('<span class="rating-star">★</span>', $rating) . str_repeat('<span class="rating-star empty">★</span>', 5 - $rating); ?></span>
+                                <span><?php echo $rating > 0 ? $rating . '/5' : 'Sin calificar'; ?></span>
+                            </div>
                             <div class="card-footer">
                                 <!-- Botón para mostrar más o menos del contenido de la publicación, cambia su texto dependiendo de si el contenido está expandido o no -->
                                 <button type="button" class="toggle-review">Mostrar más</button>
@@ -312,6 +327,7 @@ $conn->close();
                                         </svg>
                                     </button>
                                     <button type="button" class="icon-btn comment-btn" data-post-id="<?php echo $pid; ?>" aria-label="Comentar">💬</button>
+                                    <span class="post-likecount" data-post-id="<?php echo $pid; ?>">❤ <?php echo $likesCount; ?></span>
                                     <a class="icon-btn" href="<?php echo htmlspecialchars($postUrl, ENT_QUOTES, 'UTF-8'); ?>" aria-label="Ver publicación">↗</a>
                                 </div>
                             </div>
@@ -350,7 +366,7 @@ $conn->close();
     <script>
     console.log("inline test - script works");
     </script>
-    <script src="js/app.js?v=5"></script>
+    <script src="js/app.js?v=7"></script>
     <!-- 🔹 Script para forzar recarga al volver atrás -->
     <script>
         window.addEventListener("pageshow", function(event) {

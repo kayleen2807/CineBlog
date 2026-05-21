@@ -47,6 +47,7 @@ try {
     } else {
         $conn->set_charset("utf8mb4");
         $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS editado_por_admin TINYINT(1) NOT NULL DEFAULT 0");
+        $conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS rating TINYINT UNSIGNED DEFAULT NULL");
         // Consulta para obtener los detalles del post, incluyendo su título, contenido, fecha, autor, categorías asociadas, imágenes asociadas, y datos de TMDB si están disponibles. Se usa GROUP_CONCAT para obtener todas las categorías e imágenes asociadas al post en una sola fila.
         $sql = "
             SELECT
@@ -55,6 +56,7 @@ try {
                 p.contenido,
                 p.fecha,
                 p.editado_por_admin,
+                p.rating,
                 u.nombre AS autor,
                 GROUP_CONCAT(DISTINCT pc.categoria SEPARATOR '||') AS categorias,
                 GROUP_CONCAT(DISTINCT pi.ruta SEPARATOR '||') AS imagenes,
@@ -69,7 +71,7 @@ try {
             LEFT JOIN post_imagenes pi ON pi.post_id = p.id_post
             LEFT JOIN post_tmdb pt ON pt.post_id = p.id_post
             WHERE p.id_post = ?
-            GROUP BY p.id_post
+            GROUP BY p.id_post, p.titulo, p.contenido, p.fecha, p.editado_por_admin, p.rating, u.nombre
             LIMIT 1
         ";
         // Se prepara la consulta para evitar inyecciones SQL, se ejecuta y se obtiene el resultado
@@ -131,6 +133,7 @@ if (!$post) {
 }
 
 // Procesa las categorías e imágenes asociadas al post, que se obtuvieron como cadenas y las convierte en arrays.
+$cats = [];
 if (!empty($post['categorias'])) $cats = array_values(array_filter(explode('||', (string)$post['categorias'])));
 $imgs = [];
 if (!empty($post['imagenes'])) $imgs = array_values(array_filter(explode('||', (string)$post['imagenes'])));
@@ -142,6 +145,8 @@ $tmdbTitle = trim((string)($post['tmdb_titulo'] ?? ''));
 $tmdbPoster = trim((string)($post['tmdb_poster'] ?? ''));
 $tmdbReleaseDate = trim((string)($post['tmdb_release_date'] ?? ''));
 $tmdbYear = strlen($tmdbReleaseDate) >= 4 ? substr($tmdbReleaseDate, 0, 4) : '';
+$rating = isset($post['rating']) ? (int)$post['rating'] : 0;
+if ($rating < 1 || $rating > 5) $rating = 0;
 
 // Determina la imagen de portada para la publicación, se prioriza el poster de TMDB si está disponible, luego la primera imagen asociada al post, y si no hay imágenes se muestra una imagen por defecto.
 $coverImg = "css/cineBlog_Logo.png";
@@ -163,7 +168,7 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
     <link rel="stylesheet" href="css/style_switch.css">
     <title><?php echo htmlspecialchars((string)($post['titulo'] ?? 'Publicación'), ENT_QUOTES, 'UTF-8'); ?> - CineBlog</title>
     <!-- 🔹 Estilos globales de tema -->
-    <link rel="stylesheet" href="css/temas.css">
+    <link rel="stylesheet" href="css/temas.css?v=2">
     <!-- 🔹 Script global de tema -->
     <script src="js/temas.js" defer></script>
 </head>
@@ -237,6 +242,10 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
+                <div class="rating-pill post-rating" aria-label="Calificación de la reseña">
+                    <span class="rating-stars" aria-hidden="true"><?php echo str_repeat('<span class="rating-star">★</span>', $rating) . str_repeat('<span class="rating-star empty">★</span>', 5 - $rating); ?></span>
+                    <span><?php echo $rating > 0 ? $rating . '/5' : 'Sin calificar'; ?></span>
+                </div>
                 <!-- Si el post tiene imágenes asociadas, se muestran en una cuadrícula debajo del contenido del post, se limita a mostrar un máximo de 4 imágenes para evitar sobrecargar la página -->
                 <?php if (count($imgs)) : ?>
                     <div class="post-media-grid" aria-label="Imágenes">
@@ -255,7 +264,7 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
                     </button>
                     <!--Contador de likes y nombre del autor del post-->
                     <button type="button" class="icon-btn comment-btn" data-post-id="<?php echo $postId; ?>" aria-label="Comentar">💬</button>
-                    <span class="post-likecount">❤ <?php echo (int)$likesCount; ?></span>
+                    <span class="post-likecount" data-post-id="<?php echo $postId; ?>">❤ <?php echo (int)$likesCount; ?></span>
                     <span class="post-muted">Por <?php echo htmlspecialchars((string)($post['autor'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                     <?php if (!empty($post['editado_por_admin'])): ?>
                         <span class="post-tag">✏️ Editado por administrador</span>
@@ -286,7 +295,7 @@ $esPropio = ($idPerfil === $_SESSION['usuario_id']);
                         </main>
     </div>
 
-    <script src="js/app.js?v=5"></script>
+    <script src="js/app.js?v=7"></script>
     <!-- 🔹 Script para forzar recarga al volver atrás -->
     <script>
     window.addEventListener("pageshow", function(event) {

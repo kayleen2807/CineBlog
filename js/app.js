@@ -433,6 +433,13 @@ function setupLikes() {
         btn.classList.toggle("liked", next);
         btn.setAttribute("aria-pressed", next ? "true" : "false");
 
+        const updateCounters = (count) => {
+            const selectorPostId = window.CSS && CSS.escape ? CSS.escape(String(postId)) : String(postId).replace(/"/g, '\\"');
+            document.querySelectorAll(`.post-likecount[data-post-id="${selectorPostId}"]`).forEach((counter) => {
+                counter.textContent = `❤ ${count}`;
+            });
+        };
+
         try {
             // Enviar una solicitud POST al servidor para alternar el estado de "Me gusta"
             const body = new URLSearchParams();
@@ -451,8 +458,10 @@ function setupLikes() {
             const liked = !!data.liked;
             btn.classList.toggle("liked", liked);
             btn.setAttribute("aria-pressed", liked ? "true" : "false");
+            if (Number.isFinite(Number(data.likes_count))) updateCounters(Number(data.likes_count));
         } catch {
-            // Si falla, deja el UI como está (para que el usuario vea el cambio).
+            btn.classList.toggle("liked", before);
+            btn.setAttribute("aria-pressed", before ? "true" : "false");
         }
     });
 }

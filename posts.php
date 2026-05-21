@@ -13,6 +13,7 @@ if (!isset($_SESSION['usuario_id'])) {
 }
 
 include 'includes/conexion.php';
+$conn->query("ALTER TABLE posts ADD COLUMN IF NOT EXISTS rating TINYINT UNSIGNED DEFAULT NULL");
 
 if ($_SESSION['rol'] !== 'admin') { header("Location: inicioSesion.php"); exit(); } // Verificar que el usuario es admin
 
@@ -22,13 +23,20 @@ $sql = "SELECT
             p.titulo,
             p.contenido,
             p.fecha,
+            p.rating,
+            COALESCE(lk.likes_count, 0) AS likes_count,
             u.id_usuario AS autor_id,
             u.nombre AS autor,
             GROUP_CONCAT(DISTINCT c.categoria SEPARATOR ', ') AS categorias
         FROM posts p
         LEFT JOIN usuarios u ON p.autor_id = u.id_usuario
         LEFT JOIN post_categorias c ON p.id_post = c.post_id
-        GROUP BY p.id_post
+        LEFT JOIN (
+            SELECT post_id, COUNT(*) AS likes_count
+            FROM likes
+            GROUP BY post_id
+        ) lk ON lk.post_id = p.id_post
+        GROUP BY p.id_post, p.titulo, p.contenido, p.fecha, p.rating, u.id_usuario, u.nombre, lk.likes_count
         ORDER BY p.fecha DESC";
 $result = $conn->query($sql);
 
@@ -43,7 +51,7 @@ $result = $conn->query($sql);
   <link rel="stylesheet" href="css/styles_inicio.css">
   <link rel="stylesheet" href="css/style_switch.css">
   <!-- 🔹 Estilos globales de tema -->
-  <link rel="stylesheet" href="css/temas.css">
+  <link rel="stylesheet" href="css/temas.css?v=2">
   <!-- 🔹 Script global de tema -->
   <script src="js/temas.js" defer></script>
 </head>
@@ -89,6 +97,8 @@ $result = $conn->query($sql);
                         <th>Título</th>
                         <th>Autor</th>
                         <th>Categoría</th>
+                        <th>Likes</th>
+                        <th>Estrellas</th>
                         <th>Fecha</th>
                         <th>Acciones</th>
                     </tr>
@@ -100,6 +110,8 @@ $result = $conn->query($sql);
                         <td><?= $row['titulo'] ?></td>
                         <td><a href="perfil.php?id=<?= $row['autor_id'] ?>"><?= $row['autor'] ?></a></td>
                         <td><?= htmlspecialchars($row['categorias']) ?></td>
+                        <td><span class="post-likecount" data-post-id="<?= (int)$row['id_post'] ?>">❤ <?= (int)$row['likes_count'] ?></span></td>
+                        <td><?= (int)($row['rating'] ?? 0) > 0 ? str_repeat('★', (int)$row['rating']) . ' ' . (int)$row['rating'] . '/5' : 'Sin calificar' ?></td>
                         <td><?= $row['fecha'] ?></td>
                         <td>
                             <a href="editar_post.php?id=<?= $row['id_post'] ?>&from=posts">Editar</a> |
@@ -115,7 +127,7 @@ $result = $conn->query($sql);
 </div>
 
 <script src="js/cinedbg.js"></script>
-<script src="js/app.js?v=5"></script>
+<script src="js/app.js?v=7"></script>
 <!-- 🔹 Script para forzar recarga al volver atrás -->
 <script>
 window.addEventListener("pageshow", function(event) {
