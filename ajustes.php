@@ -378,13 +378,14 @@ $loginTime = $_SESSION['login_time'] ?? time();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajustes - CineBlog</title>
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/settings.css">
-    <link rel="stylesheet" href="css/style_switch.css">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css?v=<?php echo filemtime(__DIR__ . '/css/main.css'); ?>">
+    <link rel="stylesheet" href="css/ajustes_inicio.css?v=<?php echo filemtime(__DIR__ . '/css/ajustes_inicio.css'); ?>">
+    <link rel="stylesheet" href="css/style_switch.css?v=<?php echo filemtime(__DIR__ . '/css/style_switch.css'); ?>">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@600;700&family=Space+Grotesk:wght@300..700&family=Anton&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="js/settings.js" defer></script>
+    <script src="js/cinedbg.js" defer></script>
     <!-- 🔹 Estilos globales de tema -->
-    <link rel="stylesheet" href="css/temas.css">
+    <link rel="stylesheet" href="css/temas.css?v=<?php echo filemtime(__DIR__ . '/css/temas.css'); ?>">
     <!-- 🔹 Script global de tema -->
      <script src="js/temas.js" defer></script>
 </head>
@@ -398,7 +399,9 @@ $loginTime = $_SESSION['login_time'] ?? time();
     <symbol id="icon-save" viewBox="0 0 24 24"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7Zm-5 16a3 3 0 1 1 3-3 3 3 0 0 1-3 3ZM6 5h9v5H6Z"/></symbol>
 </svg>
 
-<div class="settings-cinema-bg"></div>
+<div class="settings-cinema-bg">
+    <canvas id="cineBg"></canvas>
+</div>
 
 <?php if ($flashMessage !== ''): ?>
     <div class="settings-toast <?php echo e($flashType); ?>" role="status">
@@ -429,17 +432,20 @@ $loginTime = $_SESSION['login_time'] ?? time();
         </nav>
 
         <div class="settings-sidebar-footer">
+            <a href="index.php">Inicio</a>
             <a href="perfil.php">Ver perfil</a>
-            <a href="index.php">Volver al inicio</a>
         </div>
     </aside>
 
     <main class="settings-main">
-        <header class="settings-hero">
-            <div>
-                <p class="settings-kicker">Centro de control</p>
-                <h1>Ajustes de cuenta</h1>
-                <p>Personaliza tu perfil, privacidad y experiencia dentro de CineBlog.</p>
+        <header class="settings-topbar">
+            <div class="settings-topbar-brand">
+                <img src="css/cineBlog_Logo.png" alt="CineBlog">
+                <span>CineBlog</span>
+            </div>
+            <div class="settings-search-pill" aria-label="Seccion actual">
+                <span aria-hidden="true">⚙</span>
+                <strong>Perfil, privacidad y preferencias</strong>
             </div>
             <div class="settings-save-status" id="saveStatus">
                 Ultima actualizacion: <?php echo e($user['updated_at'] ?? 'pendiente'); ?>
@@ -502,8 +508,8 @@ $loginTime = $_SESSION['login_time'] ?? time();
                         </div>
                     </div>
 
-                    <aside class="profile-live-preview" aria-label="Vista previa del perfil">
-                        <span>Vista previa</span>
+                    <aside class="profile-live-preview" aria-label="Resumen del perfil">
+                        <span>Resumen</span>
                         <img id="previewPhotoCard" src="uploads/<?php echo e($photo); ?>" alt="">
                         <h3 id="previewName"><?php echo e($user['nombre'] ?? 'Usuario'); ?></h3>
                         <p id="previewBio"><?php echo e($bio !== '' ? $bio : 'Aficionado al cine, reseñas y estrenos.'); ?></p>
@@ -600,12 +606,6 @@ $loginTime = $_SESSION['login_time'] ?? time();
                         <input type="hidden" name="idioma" value="es">
                     </label>
                 </div>
-
-                <label class="toggle-row">
-                    <span><strong>Autoplay de videos</strong><small>Reproducir videos automaticamente cuando CineBlog tenga contenido multimedia embebido.</small></span>
-                    <input type="checkbox" name="autoplay" <?php echo checked_value($user['autoplay'] ?? 0); ?>>
-                    <i></i>
-                </label>
             </section>
 
             <section class="settings-card settings-card-wide reveal" id="seguridad">

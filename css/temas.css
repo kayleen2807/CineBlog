@@ -315,7 +315,10 @@ body.light-theme .post-author{
 }
 
 body.light-theme .post-body{
-    color: var(--text-light);
+  color: var(--text-light);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 body.light-theme .post-cat{
