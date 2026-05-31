@@ -39,6 +39,8 @@
   gap: 14px;
 }
 
+.post-head .post-title{ min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+
 .post-title{
   margin: 0;
   font-size: 1.9rem;

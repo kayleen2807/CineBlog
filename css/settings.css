@@ -12,6 +12,41 @@
     --settings-warning: #ffcf66;
 }
 
+/* Override de compatibilidad: ajustes ya no usa el hero viejo */
+.settings-hero{
+    display:none !important;
+}
+
+.settings-main{
+    width:auto !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+.settings-main::before{
+    content:"";
+    display:block;
+    height:102px;
+    border-bottom:1px solid rgba(59,130,246,.15);
+    background:rgba(18,28,51,.72);
+}
+
+.settings-grid{
+    width:min(820px,100%) !important;
+    margin:0 auto !important;
+    padding:20px 20px 0 !important;
+}
+
+.settings-card{
+    max-width:800px !important;
+    margin:0 auto !important;
+    border-radius:12px !important;
+    background:#131b27 !important;
+    border:1px solid transparent !important;
+    box-shadow:0 4px 10px rgba(0,0,0,.20) !important;
+}
+
 * {
     box-sizing: border-box;
 }
@@ -587,7 +622,7 @@
 }
 
 .toggle-row input:checked + i {
-    background: linear-gradient(90deg, rgba(104, 216, 154, 0.95), rgba(111, 211, 255, 0.95));
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.95), rgba(96, 165, 250, 0.95));
     border-color: transparent;
 }
 

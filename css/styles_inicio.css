@@ -381,10 +381,29 @@ color:#ffd0d0;
   margin-right: 12px;
 }
 .post-info{ display:flex; flex-direction:column; gap:4px; }
+.post-info{ min-width: 0; }
 .post-title{ font-weight:bold; font-size:1.1rem; color:white; }
 .post-author{ font-weight:bold; font-size:1.2rem; color:var(--primary); }
 .post-date{ font-size:0.8rem; color:var(--muted); }
-.post-body{ color:var(--muted); margin-bottom:16px; line-height:1.5; font-size:0.95rem; }
+.post-title{
+  font-weight:bold;
+  font-size:1.1rem;
+  color:white;
+  /* Allow long titles to wrap instead of overflowing */
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  min-width: 0;
+}
+.post-body{
+  color:var(--muted);
+  margin-bottom:16px;
+  line-height:1.5;
+  font-size:0.95rem;
+  /* Prevent long unbroken text from overflowing the card */
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  white-space:pre-wrap; /* keep newlines, allow wrapping */
+}
 
 .post-cats{
   display:flex;
@@ -719,6 +738,9 @@ line-height: 1.35;
   }
   .post-body{
     font-size:0.9rem;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+    white-space:pre-wrap;
   }
   .icon-btn{
     width:36px;
