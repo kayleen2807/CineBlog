@@ -262,8 +262,9 @@ try {
         <div class="sb-item">🕹️ <span><a href="reportes.php">Moderación</a></span></div>
         <div class="sb-item">⚙️ <a href="ajustes.php">Configuración</a></div>
     <?php endif; ?>
-    <!-- Culaquier rol puede cerrar sesion-->
-    <div class="sb-item">🚪<a href="cerrarSesion.php">Cerrar sesión</a></div>
+    <div class="sb-item">🎬 <a href="quienes_somos.php" target="_blank">¿Quiénes somos?</a></div>
+    <!-- Solo usuarios pueden cerrar sesion y los visitantes solo salen-->
+   <div class="sb-item">🚪<a href="cerrarSesion.php"><?php echo $rol === 'visitante' ? 'Salir' : 'Cerrar sesión'; ?></a></div>
   </div>
 </aside>
 <!-- Termina Sidebar -->
