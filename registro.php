@@ -126,12 +126,213 @@ function validarDatosRegistro(mysqli $conn, bool $shouldCheckMx, string &$mensaj
 
     if (!$fecha_nac) {
         $mensaje = "La fecha de nacimiento no es valida.";
-    } elseif ($fecha_nac > $fecha_actual) {
-        $mensaje = "La fecha de nacimiento no puede ser posterior a la actual."; // Agregado.
-    } else {
-        $edad = $fecha_actual->diff($fecha_nac)->y;
-        if ($edad < 18) {
-            $mensaje = "Debes tener al menos 18 años para registrarte."; // Agregado.
+        return null;
+    }
+
+    if ($fecha_nac > $fecha_actual) {
+        $mensaje = "La fecha de nacimiento no puede ser posterior a la actual.";
+        return null;
+    }
+
+    $edad = $fecha_actual->diff($fecha_nac)->y;
+    if ($edad < 18) {
+        $mensaje = "Debes tener al menos 18 años para registrarte.";
+        return null;
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $mensaje = "Por favor ingresa un correo valido.";
+        return null;
+    }
+
+    $dominio = substr(strrchr($email, "@"), 1);
+    if ($shouldCheckMx && function_exists('checkdnsrr') && !checkdnsrr($dominio, "MX")) {
+        $mensaje = "El dominio del correo no existe.";
+        return null;
+    }
+
+    $pattern = "/^(?=.*[A-Z])(?=.*[0-9])(?=.*[\W_]).{8,}$/";
+    if (!preg_match($pattern, $password)) {
+        $mensaje = "La contraseña debe tener al menos 8 caracteres, incluir una mayuscula, un numero y un caracter especial.";
+        return null;
+    }
+
+    if ($password !== $confirm_password) {
+        $mensaje = "Las contraseñas no coinciden.";
+        return null;
+    }
+
+    $stmt_check = $conn->prepare("SELECT id_usuario FROM usuarios WHERE email = ? LIMIT 1");
+    if (!$stmt_check) {
+        $mensaje = "Error al validar el correo: " . $conn->error;
+        return null;
+    }
+
+    $stmt_check->bind_param("s", $email);
+    $stmt_check->execute();
+    $stmt_check->store_result();
+
+    if ($stmt_check->num_rows > 0) {
+        $mensaje = "La cuenta ya esta registrada.";
+        $stmt_check->close();
+        return null;
+    }
+
+    $stmt_check->close();
+
+    return [
+        'nombre' => $nombre,
+        'email' => $email,
+        'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+        'fecha_nacimiento' => $fecha_nacimiento,
+    ];
+}
+
+function obtenerColumnaPassword(mysqli $conn): ?string
+{
+    $res = $conn->query("SHOW COLUMNS FROM usuarios");
+    if (!$res) {
+        return null;
+    }
+
+    while ($row = $res->fetch_assoc()) {
+        $field = (string)$row['Field'];
+        if (strpos($field, 'contra') === 0) {
+            return $field;
+        }
+    }
+
+    return null;
+}
+
+function escaparIdentificadorMysql(string $identifier): string
+{
+    return '`' . str_replace('`', '``', $identifier) . '`';
+}
+
+function insertarUsuarioVerificado(mysqli $conn, array $registro, string &$mensaje): bool
+{
+    $stmt_check = $conn->prepare("SELECT id_usuario FROM usuarios WHERE email = ? LIMIT 1");
+    if (!$stmt_check) {
+        $mensaje = "Error al validar el correo: " . $conn->error;
+        return false;
+    }
+
+    $stmt_check->bind_param("s", $registro['email']);
+    $stmt_check->execute();
+    $stmt_check->store_result();
+
+    if ($stmt_check->num_rows > 0) {
+        $mensaje = "La cuenta ya esta registrada.";
+        $stmt_check->close();
+        return false;
+    }
+
+    $stmt_check->close();
+
+    $passwordColumn = obtenerColumnaPassword($conn);
+    if (!$passwordColumn) {
+        $mensaje = "No se encontro la columna de contraseña en la tabla usuarios.";
+        return false;
+    }
+
+    $rol = 'editor';
+    $stmt_insert = $conn->prepare(
+        "INSERT INTO usuarios (nombre, email, " . escaparIdentificadorMysql($passwordColumn) . ", fecha_nac, rol) VALUES (?, ?, ?, ?, ?)"
+    );
+    if (!$stmt_insert) {
+        $mensaje = "Error al preparar el registro: " . $conn->error;
+        return false;
+    }
+
+    $stmt_insert->bind_param(
+        "sssss",
+        $registro['nombre'],
+        $registro['email'],
+        $registro['password_hash'],
+        $registro['fecha_nacimiento'],
+        $rol
+    );
+
+    if (!$stmt_insert->execute()) {
+        $mensaje = ((int)$stmt_insert->errno === 1062) ? "La cuenta ya esta registrada." : "Error al registrar: " . $stmt_insert->error;
+        $stmt_insert->close();
+        return false;
+    }
+
+    $stmt_insert->close();
+    return true;
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $accion = (string)($_POST['accion'] ?? 'enviar_codigo');
+
+    if ($accion === 'reiniciar') {
+        unset($_SESSION['registro_pendiente']);
+        header("Location: registro.php");
+        exit();
+    }
+
+    if ($accion === 'enviar_codigo') {
+        $registro = validarDatosRegistro($conn, $shouldCheckMx, $mensaje);
+        if ($registro) {
+            $codigo = (string)random_int(100000, 999999);
+
+            try {
+                enviarCodigoVerificacion($registro['email'], $registro['nombre'], $codigo, $mailConfig, $mailerAvailable);
+
+                $_SESSION['registro_pendiente'] = $registro + [
+                    'codigo_hash' => password_hash($codigo, PASSWORD_DEFAULT),
+                    'codigo_expira' => time() + (15 * 60),
+                    'intentos' => 0,
+                ];
+
+                $tipoMensaje = "success";
+                $mensaje = "Te enviamos un codigo de verificacion a " . $registro['email'] . ". Revisa tu bandeja de entrada.";
+            } catch (Throwable $e) {
+                $mensaje = "No se pudo enviar el codigo: " . $e->getMessage();
+            }
+        }
+    }
+
+    if ($accion === 'reenviar_codigo' && isset($_SESSION['registro_pendiente'])) {
+        $codigo = (string)random_int(100000, 999999);
+
+        try {
+            enviarCodigoVerificacion(
+                $_SESSION['registro_pendiente']['email'],
+                $_SESSION['registro_pendiente']['nombre'],
+                $codigo,
+                $mailConfig,
+                $mailerAvailable
+            );
+
+            $_SESSION['registro_pendiente']['codigo_hash'] = password_hash($codigo, PASSWORD_DEFAULT);
+            $_SESSION['registro_pendiente']['codigo_expira'] = time() + (15 * 60);
+            $_SESSION['registro_pendiente']['intentos'] = 0;
+
+            $tipoMensaje = "success";
+            $mensaje = "Enviamos un nuevo codigo de verificacion.";
+        } catch (Throwable $e) {
+            $mensaje = "No se pudo reenviar el codigo: " . $e->getMessage();
+        }
+    }
+
+    if ($accion === 'verificar_codigo') {
+        $registro = $_SESSION['registro_pendiente'] ?? null;
+        $codigoIngresado = preg_replace('/\D/', '', (string)($_POST['codigo_verificacion'] ?? ''));
+
+        if (!$registro) {
+            $mensaje = "Primero solicita un codigo de verificacion.";
+        } elseif (time() > (int)$registro['codigo_expira']) {
+            unset($_SESSION['registro_pendiente']);
+            $mensaje = "El codigo vencio. Vuelve a llenar el registro para recibir uno nuevo.";
+        } elseif ((int)$registro['intentos'] >= 5) {
+            unset($_SESSION['registro_pendiente']);
+            $mensaje = "Se agotaron los intentos. Vuelve a iniciar el registro.";
+        } elseif (!password_verify($codigoIngresado, (string)$registro['codigo_hash'])) {
+            $_SESSION['registro_pendiente']['intentos'] = (int)$registro['intentos'] + 1;
+            $mensaje = "El codigo no coincide. Revisa el correo e intenta de nuevo.";
         } else {
             if (insertarUsuarioVerificado($conn, $registro, $mensaje)) {
                 unset($_SESSION['registro_pendiente']);
