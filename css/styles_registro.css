@@ -129,7 +129,98 @@ button:hover {
     font-size: 1.2rem;
 }
 
+.icon-back::before {
+    content: "<";
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.icon-eye {
+    display: inline-block;
+    width: 22px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-radius: 50% / 65%;
+    position: relative;
+}
+
+.icon-eye::before {
+    content: "";
+    position: absolute;
+    inset: 3px 7px;
+    background: currentColor;
+    border-radius: 50%;
+}
+
+.icon-eye.is-hidden::after {
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: 5px;
+    width: 28px;
+    height: 2px;
+    background: currentColor;
+    transform: rotate(-35deg);
+    transform-origin: center;
+}
+
 .form-message{
     color: red; 
     margin-top: 15px;
+}
+
+.form-message.is-success {
+    color: #5ee28a;
+}
+
+.verification-box {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 14px;
+    margin: 12px 0 18px;
+}
+
+.verification-box p {
+    margin: 0 0 8px;
+}
+
+.verification-box strong {
+    color: #9fd2ff;
+    overflow-wrap: anywhere;
+}
+
+.verification-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.verification-actions form {
+    margin: 0;
+}
+
+.btn-secondary {
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    font-size: 14px;
+    padding: 12px;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 430px) {
+    .verification-actions {
+        grid-template-columns: 1fr;
+    }
 }
