@@ -415,7 +415,37 @@ function setupBackButton() {
     });
 }
 
+function setupMobileSidebarToggle() {
+    const toggle = document.querySelector(".sidebar-toggle-btn");
+    const backdrop = document.querySelector(".sidebar-backdrop");
+    if (!toggle || !backdrop) return;
+
+    const closeSidebar = () => {
+        document.body.classList.remove("sidebar-open");
+        toggle.setAttribute("aria-expanded", "false");
+    };
+
+    const openSidebar = () => {
+        document.body.classList.add("sidebar-open");
+        toggle.setAttribute("aria-expanded", "true");
+    };
+
+    toggle.addEventListener("click", () => {
+        if (document.body.classList.contains("sidebar-open")) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    backdrop.addEventListener("click", closeSidebar);
+    window.addEventListener("resize", () => {
+        if (window.innerWidth > 768) closeSidebar();
+    });
+}
+
 setupBackButton();
+setupMobileSidebarToggle();
 
 // Funcion para configurar la funcionalidad de "Me gusta" en las publicaciones/posts
 function setupLikes() {
