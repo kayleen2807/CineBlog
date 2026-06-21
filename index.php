@@ -185,21 +185,13 @@ try {
   }
 </style>
 <body>
-<!-- 🔹 Switch de tema (arriba a la derecha) -->
-<div class="theme-toggle">
-    <input type="checkbox" id="theme-switch">
-    <label for="theme-switch" class="switch">
-        <span class="icon-sun">☀️</span>
-        <span class="icon-moon">🌙</span>
-    </label>
-</div>
 
 <div class="cine-bg">
   <canvas id="cineBg"></canvas>
 </div>
 
 <!-- Sidebar de navegación lateral -->
-<aside class="sidebar">
+<aside id="sidebar" class="sidebar" arial-label="Barra lateral">
   <div style="display:flex;flex-direction:column;gap:15px;">
     <!-- Logica php para mostrar funciones dependiendo el rol (por el momento pruebas) -->
             <!-- Si el rol es editor, moderador o admin se muestra el avatar y su nombre de usuario en la side bar y lo lleva a su perfil (perfil.php)-->
@@ -267,29 +259,34 @@ try {
    <div class="sb-item">🚪<a href="cerrarSesion.php"><?php echo $rol === 'visitante' ? 'Salir' : 'Cerrar sesión'; ?></a></div>
   </div>
 </aside>
+<div class="sidebar-backdrop" aria-hidden="true"></div>
 <!-- Termina Sidebar -->
 
   <!-- Apartado principal (feed para posts y comentarios)-->
   <div class="main">
     <header class="topbar">
-      <div class="logo-stack">
-        <img class="logo-mark" src="css/cineBlog_Logo.png" alt="Logo CineBlog">
-        <div class="logo-text">CineBlog</div>
+      <div class="topbar-left">
+        <div class="logo-stack">
+          <img class="logo-mark" src="css/cineBlog_Logo.png" alt="Logo CineBlog">
+          <div class="logo-text">CineBlog</div>
+        </div>
+        <div class="topbar-actions">
+          <button type="button" class="sidebar-toggle-btn" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir filtros">
+            <span class="sidebar-toggle-icon">☰</span>
+          </button>
+          <div class="theme-toggle theme-icon-toggle">
+            <input type="checkbox" id="theme-switch" aria-label="Cambiar tema">
+            <label for="theme-switch" class="theme-toggle-btn">
+              <span class="theme-icon sun" aria-hidden="true">☀</span>
+              <span class="theme-icon moon" aria-hidden="true">🌙</span>
+            </label>
+          </div>
+        </div>
       </div>
-      <!-- Barra de búsqueda-->
       <div class="search-wrap">
         <!-- El buscador utiliza la API de TMDB para buscar películas o series -->
         🔍 <input type="text" id="tmdbGlobalSearch" placeholder="Busca peliculas o series...">
         <div class="search-results" id="tmdbGlobalResults" aria-live="polite"></div>
-      </div>
-
-      <!-- 🔹 Toggle de tema con sol/luna -->
-      <div class="theme-toggle theme-icon-toggle">
-        <input type="checkbox" id="theme-switch" aria-label="Cambiar tema">
-        <label for="theme-switch" class="theme-toggle-btn">
-          <span class="theme-icon sun" aria-hidden="true">☀</span>
-          <span class="theme-icon moon" aria-hidden="true">🌙</span>
-        </label>
       </div>
     </header>
     <!-- Feed de publicaciones -->

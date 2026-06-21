@@ -165,6 +165,22 @@ body{
   z-index: 30;
 }
 
+.topbar-left{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  min-width:0;
+}
+
+.topbar-actions {
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:10px;
+  min-width: max-content;
+}
+
 .logo-stack{ display:flex; align-items:center; gap:12px; flex:0 0 auto; }
 .logo-mark{
   width:48px;
@@ -186,9 +202,21 @@ body{
 }
 
 .theme-icon-toggle{
-  justify-self:end;
   position: relative;
 }
+
+.topbar .theme-toggle {
+  position: static !important;
+  top: auto !important;
+  right: auto !important;
+  z-index: auto !important;
+  margin: 0;
+}
+
+.topbar .switch {
+  margin: 0;
+}
+
 .search-wrap input{
   background:transparent; border:none; padding:0;
   color:white; width:100%; font-size:0.9rem; outline:none;
@@ -264,6 +292,61 @@ body.light-theme .theme-toggle-btn {
   flex-direction:column;
   gap:6px;
   padding:8px;
+}
+
+.sidebar {
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.sidebar-toggle-btn {
+  display: none;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(17,24,39,.65);
+  color: white;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(59,130,246,.22);
+  transform: translateY(-1px);
+}
+
+.sidebar-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 15;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+body.sidebar-open .sidebar-backdrop {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+body.sidebar-open .sidebar {
+  transform: translateX(0) !important;
 }
 
 .search-item{
@@ -684,25 +767,62 @@ line-height: 1.35;
     flex-direction:column; 
   }
   .sidebar{
-    width:100%; 
-    height:auto;
-    min-height:auto; 
-    flex-direction:row;
-    justify-content:flex-start; 
-    gap:20px;
-    border-right:none; 
-    border-bottom:1px solid var(--card); 
-    overflow-x:auto;
-    padding:15px;
-    position:relative;
-    top:auto;
+    position: fixed;
+    top: 72px;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 90vw;
+    height: calc(100vh - 72px);
+    margin: 0;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid rgba(59,130,246,0.15);
+    border-bottom: none;
+    background: rgba(2, 6, 23, 0.95);
+    transform: translateX(-110%);
+    z-index: 20;
+    box-shadow: 12px 0 40px rgba(0,0,0,0.35);
+    flex-direction: column;
+    gap: 24px;
+  }
+  .sidebar-toggle-btn{
+    display: inline-flex;
   }
   .main{
     min-height:auto;
   }
   .topbar{ 
+    display:flex;
     flex-wrap:wrap; 
+    justify-content:space-between;
+    gap:14px;
     padding:15px;
+    position: sticky;
+    top: 0;
+    z-index: 25;
+    background: rgba(18, 28, 51, 0.92);
+    backdrop-filter: blur(10px);
+    align-items: center;
+  }
+  .topbar-left{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .topbar-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .sidebar-toggle-btn{
+    margin-left:0;
+  }
+  .theme-toggle{
+    order: 0;
   }
   .logo-text{
     font-size:1.5rem;
@@ -779,6 +899,26 @@ line-height: 1.35;
     flex-direction:column;
     align-items:stretch;
     padding:10px;
+  }
+  .topbar-left{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .topbar-actions{
+    display:flex;
+    flex-wrap:nowrap;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+    min-width: max-content;
+  }
+  .theme-toggle{
+    align-self:auto;
+    order: 0;
   }
   .logo-text{
     font-size:1.3rem;
